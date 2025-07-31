@@ -28,4 +28,16 @@ export function setupTestAuth(app: Express) {
     console.log("Redirecting to:", replitAuthUrl);
     res.redirect(302, replitAuthUrl);
   });
+
+  // Test callback endpoint to see what Replit is sending
+  app.get("/api/test-callback", (req, res) => {
+    console.log("=== TEST CALLBACK ===");
+    console.log("Query params:", JSON.stringify(req.query, null, 2));
+    console.log("Headers:", JSON.stringify(req.headers, null, 2));
+    res.json({
+      message: "Test callback received",
+      query: req.query,
+      headers: req.headers
+    });
+  });
 }
