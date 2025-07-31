@@ -29,6 +29,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   const { data: messages = [] } = useQuery<ChatMessage[]>({
@@ -90,6 +91,11 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   });
 
   const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      container.scrollTop = container.scrollHeight;
+    }
+    // Fallback to the messagesEndRef method
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -181,11 +187,11 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     <div className={`
       ${isMobile 
         ? 'h-96 bg-white border-t border-gray-200 rounded-t-xl' 
-        : 'w-96 bg-white border-l border-gray-200'
+        : 'w-96 h-full bg-white border-l border-gray-200'
       } 
       flex flex-col slide-in-right
     `}>
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-medical-blue to-accent-purple rounded-full flex items-center justify-center">
@@ -209,7 +215,17 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div 
+        ref={scrollContainerRef}
+        className={`
+          flex-1 overflow-y-auto p-4 space-y-4 
+          ${isMobile ? 'max-h-64' : 'min-h-0'}
+          scrollbar-thin chat-scroll
+        `}
+        style={{ 
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch'
+        }}>
         {/* Welcome Message */}
         <div className="flex items-start space-x-3">
           <div className="w-8 h-8 bg-gradient-to-br from-medical-blue to-accent-purple rounded-full flex items-center justify-center flex-shrink-0">
@@ -229,14 +245,14 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
         {/* Chat Messages */}
         {messages.map((msg) => (
-          <div key={msg.id}>
+          <div key={msg.id} className="group">
             {/* User Message */}
             <div className="flex items-start space-x-3 justify-end mb-4">
               <div className="flex-1">
-                <div className="bg-medical-blue rounded-lg p-3 ml-8">
-                  <p className="text-sm text-white">{msg.message}</p>
+                <div className="bg-medical-blue rounded-lg p-3 ml-8 transition-all duration-200 hover:shadow-md">
+                  <p className="text-sm text-white select-text">{msg.message}</p>
                 </div>
-                <p className="text-xs text-gray-500 mt-1 text-right">
+                <p className="text-xs text-gray-500 mt-1 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   {formatTimestamp(msg.timestamp)}
                 </p>
               </div>
@@ -251,10 +267,10 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <Bot className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1">
-                <div className="bg-gray-100 rounded-lg p-3">
-                  <p className="text-sm text-text-dark whitespace-pre-wrap">{msg.response}</p>
+                <div className="bg-gray-100 hover:bg-gray-50 rounded-lg p-3 transition-all duration-200 hover:shadow-md">
+                  <p className="text-sm text-text-dark whitespace-pre-wrap select-text">{msg.response}</p>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   {formatTimestamp(msg.timestamp)}
                 </p>
               </div>
@@ -284,7 +300,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       </div>
 
       {/* Chat Input */}
-      <div className={`${isMobile ? 'p-3' : 'p-4'} border-t border-gray-200`}>
+      <div className={`${isMobile ? 'p-3' : 'p-4'} border-t border-gray-200 flex-shrink-0`}>
         <div className={`flex space-x-2 mb-2`}>
           <Input
             type="text"
