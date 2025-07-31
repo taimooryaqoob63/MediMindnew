@@ -63,10 +63,9 @@ export default function Landing() {
             <Card>
               <CardHeader>
                 <Play className="w-10 h-10 text-[hsl(202,71%,44%)] mb-2" />
-                <CardTitle>Interactive Video Training</CardTitle>
+                <CardTitle>Interactive Training</CardTitle>
                 <CardDescription>
-                  Comprehensive video modules covering insulin administration, 
-                  blood glucose monitoring, and diabetes management protocols.
+                  Comprehensive interactive modules.
                 </CardDescription>
               </CardHeader>
             </Card>
