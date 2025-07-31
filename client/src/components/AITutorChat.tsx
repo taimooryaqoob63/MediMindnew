@@ -13,17 +13,10 @@ interface AITutorChatProps {
 
 interface ChatResponse {
   message: ChatMessage;
-  suggestedQuestions: string[];
 }
 
 export default function AITutorChat({ courseId, currentModule }: AITutorChatProps) {
   const [inputMessage, setInputMessage] = useState("");
-  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([
-    "What are the normal blood glucose ranges I should be monitoring for?",
-    "How do I properly dispose of insulin needles?",
-    "What are signs of hypoglycemia to watch for?",
-    "How often should blood glucose be checked?"
-  ]);
   
   // TTS and STT state
   const [isListening, setIsListening] = useState(false);
@@ -84,7 +77,6 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
-      setSuggestedQuestions(data.suggestedQuestions);
       setInputMessage("");
       
       // Read the AI response aloud if TTS is enabled
@@ -162,10 +154,6 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
       courseId,
       context,
     });
-  };
-
-  const handleSuggestedQuestion = (question: string) => {
-    setInputMessage(question);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -267,26 +255,6 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Suggested Questions */}
-        {suggestedQuestions.length > 0 && (
-          <div className="border-t border-gray-200 pt-4">
-            <p className="text-xs font-medium text-gray-500 mb-2">Suggested questions:</p>
-            <div className="space-y-2">
-              {suggestedQuestions.map((question, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-left p-2 text-xs text-medical-blue bg-blue-50 border-blue-200 hover:bg-blue-100 h-auto whitespace-normal"
-                  onClick={() => handleSuggestedQuestion(question)}
-                >
-                  {question}
-                </Button>
-              ))}
             </div>
           </div>
         )}

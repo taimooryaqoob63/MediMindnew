@@ -7,7 +7,6 @@ const openai = new OpenAI({
 
 interface AITutorResponse {
   response: string;
-  suggestedQuestions: string[];
 }
 
 export async function getAITutorResponse(question: string, context?: string): Promise<AITutorResponse> {
@@ -23,9 +22,7 @@ Provide accurate, practical, and actionable information for care workers, nurses
 
 When appropriate, include specific blood glucose ranges, medication guidelines, or emergency procedures. Always remind users to follow individual care plans and consult healthcare professionals for specific cases.
 
-After your main response, suggest 2-3 relevant follow-up questions that would help the user learn more about the topic.
-
-Respond in JSON format with "response" and "suggestedQuestions" fields.`;
+Respond in JSON format with a "response" field containing your answer.`;
 
     const userPrompt = context 
       ? `Context: ${context}\n\nQuestion: ${question}`
@@ -45,18 +42,12 @@ Respond in JSON format with "response" and "suggestedQuestions" fields.`;
     const result = JSON.parse(completion.choices[0].message.content || '{}');
     
     return {
-      response: result.response || "I apologize, but I couldn't generate a proper response. Please try rephrasing your question.",
-      suggestedQuestions: result.suggestedQuestions || []
+      response: result.response || "I apologize, but I couldn't generate a proper response. Please try rephrasing your question."
     };
   } catch (error) {
     console.error('OpenAI API error:', error);
     return {
-      response: "I'm experiencing technical difficulties. Please try again later or consult your local healthcare guidelines for immediate assistance.",
-      suggestedQuestions: [
-        "What are the normal blood glucose ranges?",
-        "How do I recognize signs of hypoglycemia?",
-        "What are the proper insulin storage requirements?"
-      ]
+      response: "I'm experiencing technical difficulties. Please try again later or consult your local healthcare guidelines for immediate assistance."
     };
   }
 }
