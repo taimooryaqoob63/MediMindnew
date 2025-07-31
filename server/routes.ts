@@ -293,7 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Message and courseId are required" });
       }
 
-      // Get AI response
+      // Get AI response with references
       const aiResponse = await getAITutorResponse(message, context);
       
       // Save chat message
@@ -306,7 +306,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       res.json({ 
-        message: chatMessage
+        message: chatMessage,
+        references: aiResponse.references
       });
     } catch (error) {
       console.error('Chat error:', error);
@@ -389,8 +390,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Initialize document processor on startup
-  documentProcessor.initializeVectorStore().catch(console.error);
+  // Rebuild vector store - Protected route (for admin use)
+  app.post('/api/documents/rebuild', isAuthenticated, async (req: any, res) => {
+    try {
+      console.log("Rebuilding vector store...");
+      await documentProcessor.rebuildVectorStore();
+      res.json({ message: 'Vector store rebuilt successfully' });
+    } catch (error) {
+      console.error('Error rebuilding vector store:', error);
+      res.status(500).json({ message: 'Failed to rebuild vector store' });
+    }
+  });
+
+  // Initialize document processor on startup and process existing documents
+  documentProcessor.initializeVectorStore()
+    .then(() => documentProcessor.processDocuments())
+    .catch(console.error);
 
   const httpServer = createServer(app);
   return httpServer;
