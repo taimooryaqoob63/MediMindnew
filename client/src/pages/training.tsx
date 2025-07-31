@@ -7,7 +7,7 @@ import AppHeader from "@/components/AppHeader";
 import Sidebar from "@/components/Sidebar";
 import VideoSection from "@/components/VideoSection";
 import AITutorChat from "@/components/AITutorChat";
-import QuickAccessToolbar from "@/components/QuickAccessToolbar";
+
 
 import type { Course, Module, User, UserProgress } from "@shared/schema";
 
@@ -165,13 +165,7 @@ export default function TrainingPage() {
         )}
       </div>
       
-      {/* Quick Access Toolbar */}
-      <QuickAccessToolbar
-        onChatToggle={() => setIsChatOpen(!isChatOpen)}
-        onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        isMobile={isMobile}
-        isChatOpen={isChatOpen}
-      />
+
     </div>
   );
 }
