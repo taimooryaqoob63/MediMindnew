@@ -390,6 +390,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete uploaded document - Protected
+  app.delete('/api/documents/:filename', isAuthenticated, async (req, res) => {
+    try {
+      const { filename } = req.params;
+      const documentsDir = './documents';
+      const filePath = path.join(documentsDir, filename);
+      
+      // Security check: ensure the filename doesn't contain path traversal
+      if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+        return res.status(400).json({ message: 'Invalid filename' });
+      }
+      
+      // Check if file exists
+      try {
+        await fs.access(filePath);
+      } catch {
+        return res.status(404).json({ message: 'Document not found' });
+      }
+      
+      // Delete the file
+      await fs.unlink(filePath);
+      
+      // Re-process documents to update vector store
+      const documentProcessor = require('./services/documentProcessor').documentProcessor;
+      if (documentProcessor && documentProcessor.processDocuments) {
+        await documentProcessor.processDocuments();
+      }
+      
+      res.json({ message: 'Document deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      res.status(500).json({ message: 'Failed to delete document' });
+    }
+  });
+
   // Rebuild vector store - Protected route (for admin use)
   app.post('/api/documents/rebuild', isAuthenticated, async (req: any, res) => {
     try {

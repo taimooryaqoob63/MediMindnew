@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileText, Loader2 } from "lucide-react";
+import { Upload, FileText, Loader2, Trash2 } from "lucide-react";
 
 interface Document {
   filename: string;
@@ -110,6 +110,32 @@ export default function DocumentUpload() {
     }
   };
 
+  const deleteDocument = async (filename: string) => {
+    try {
+      const response = await fetch(`/api/documents/${encodeURIComponent(filename)}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Document deleted",
+          description: `${filename} has been removed successfully`,
+        });
+        loadDocuments(); // Refresh the list
+      } else {
+        const error = await response.json();
+        throw new Error(error.message);
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Delete failed",
+        description: error instanceof Error ? error.message : "Failed to delete document",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     loadDocuments();
   }, []);
@@ -211,9 +237,19 @@ export default function DocumentUpload() {
                       </p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(doc.category)}`}>
-                    {doc.category}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(doc.category)}`}>
+                      {doc.category}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteDocument(doc.filename)}
+                      className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
