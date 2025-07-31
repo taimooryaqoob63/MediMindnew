@@ -129,9 +129,11 @@ export default function TrainingPage() {
             <VideoSection 
               module={currentModule}
               onProgressUpdate={(moduleId, progressValue) => {
-                // Will implement progress tracking
+                // Progress is now tracked automatically via the API
               }}
               isMobile={isMobile}
+              userId={user?.id}
+              courseId={selectedCourseId || undefined}
             />
           </div>
           
