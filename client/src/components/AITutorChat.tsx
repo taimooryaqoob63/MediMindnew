@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Shield } from "lucide-react";
+import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,12 +25,57 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
     "How often should blood glucose be checked?"
   ]);
   
+  // TTS and STT state
+  const [isListening, setIsListening] = useState(false);
+  const [isTTSEnabled, setIsTTSEnabled] = useState(true);
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null);
+  const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
   const { data: messages = [] } = useQuery<ChatMessage[]>({
     queryKey: ["/api/chat", courseId],
   });
+
+  // Initialize TTS and STT
+  useEffect(() => {
+    // Initialize Speech Recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInputMessage(transcript);
+        setIsListening(false);
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      setRecognition(recognition);
+    }
+
+    // Initialize Speech Synthesis
+    if ('speechSynthesis' in window) {
+      setSynthesis(window.speechSynthesis);
+    }
+  }, []);
 
   const chatMutation = useMutation({
     mutationFn: async (data: { message: string; courseId: string; context?: string }) => {
@@ -41,6 +86,11 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       setSuggestedQuestions(data.suggestedQuestions);
       setInputMessage("");
+      
+      // Read the AI response aloud if TTS is enabled
+      if (isTTSEnabled && synthesis && data.message.response) {
+        speakText(data.message.response);
+      }
     },
   });
 
@@ -51,6 +101,56 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // TTS Functions
+  const speakText = (text: string) => {
+    if (!synthesis) return;
+    
+    // Stop any current speech
+    synthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 0.8;
+    
+    // Find a suitable voice (prefer English voices)
+    const voices = synthesis.getVoices();
+    const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+    
+    setCurrentUtterance(utterance);
+    synthesis.speak(utterance);
+  };
+
+  const stopSpeaking = () => {
+    if (synthesis) {
+      synthesis.cancel();
+      setCurrentUtterance(null);
+    }
+  };
+
+  const toggleTTS = () => {
+    setIsTTSEnabled(!isTTSEnabled);
+    if (!isTTSEnabled && synthesis) {
+      synthesis.cancel();
+    }
+  };
+
+  // STT Functions
+  const startListening = () => {
+    if (recognition && !isListening) {
+      recognition.start();
+    }
+  };
+
+  const stopListening = () => {
+    if (recognition && isListening) {
+      recognition.stop();
+    }
+  };
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
@@ -196,16 +296,30 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
 
       {/* Chat Input */}
       <div className="p-4 border-t border-gray-200">
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 mb-2">
           <Input
             type="text"
-            placeholder="Ask about diabetes care guidelines..."
+            placeholder={isListening ? "Listening..." : "Ask about diabetes care guidelines..."}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             className="flex-1 text-sm"
-            disabled={chatMutation.isPending}
+            disabled={chatMutation.isPending || isListening}
           />
+          
+          {/* Microphone Button */}
+          <Button
+            onClick={isListening ? stopListening : startListening}
+            disabled={chatMutation.isPending || !recognition}
+            variant={isListening ? "default" : "outline"}
+            size="sm"
+            className={isListening ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+            title={isListening ? "Stop listening" : "Start voice input"}
+          >
+            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+          </Button>
+          
+          {/* Send Button */}
           <Button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || chatMutation.isPending}
@@ -215,10 +329,44 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
             <Send className="w-4 h-4" />
           </Button>
         </div>
-        <p className="text-xs text-gray-500 mt-2 flex items-center">
-          <Shield className="w-3 h-3 medical-blue mr-1" />
-          Responses based on NICE, NHS & CQC guidelines
-        </p>
+        
+        {/* TTS Controls and Info */}
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-gray-500 flex items-center">
+            <Shield className="w-3 h-3 medical-blue mr-1" />
+            Responses based on NICE, NHS & CQC guidelines
+          </p>
+          
+          <div className="flex items-center space-x-2">
+            {/* TTS Toggle */}
+            <Button
+              onClick={toggleTTS}
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2"
+              title={isTTSEnabled ? "Disable text-to-speech" : "Enable text-to-speech"}
+            >
+              {isTTSEnabled ? (
+                <Volume2 className="w-3 h-3 text-green-600" />
+              ) : (
+                <VolumeX className="w-3 h-3 text-gray-400" />
+              )}
+            </Button>
+            
+            {/* Stop Speaking Button */}
+            {currentUtterance && synthesis && !synthesis.paused && (
+              <Button
+                onClick={stopSpeaking}
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-red-500"
+                title="Stop speaking"
+              >
+                Stop
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
