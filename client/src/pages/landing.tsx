@@ -136,7 +136,7 @@ export default function Landing() {
             </div>
             <div className="lg:text-center">
               <div className="bg-[hsl(202,71%,44%)] dark:bg-[hsl(202,71%,44%)] rounded-2xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-4">Ready to Improve Care Quality?</h3>
+                <h3 className="text-2xl font-bold mb-4">Ready to Improve Care Quality ?</h3>
                 <p className="text-blue-100 mb-6">
                   Join healthcare professionals already using MediMind AI.
                 </p>
