@@ -29,9 +29,6 @@ export default function Landing() {
               <Button variant="outline" asChild>
                 <a href="/api/login">Sign In</a>
               </Button>
-              <Button asChild>
-                <a href="/api/login">Get Started</a>
-              </Button>
             </div>
           </div>
         </div>
@@ -147,6 +144,88 @@ export default function Landing() {
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sign Up Section */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              Ready to Get Started?
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Choose the option that best fits your needs and start your training journey today.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <Card className="p-8 text-center">
+              <CardHeader>
+                <Users className="w-12 h-12 text-[hsl(202,71%,44%)] mx-auto mb-4" />
+                <CardTitle className="text-2xl mb-2">Individual Healthcare Worker</CardTitle>
+                <CardDescription className="text-lg">
+                  Perfect for individual care workers looking to enhance their diabetes care skills
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <ul className="text-left space-y-2 mb-6 text-gray-600 dark:text-gray-400">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    Access to all training modules
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    AI tutor support
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    Progress tracking
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    Certificate of completion
+                  </li>
+                </ul>
+                <Button size="lg" className="w-full bg-[hsl(202,71%,44%)] hover:bg-[hsl(202,71%,40%)]" asChild>
+                  <a href="/api/login">Sign Up Individual</a>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="p-8 text-center border-2 border-[hsl(202,71%,44%)]">
+              <CardHeader>
+                <Shield className="w-12 h-12 text-[hsl(202,71%,44%)] mx-auto mb-4" />
+                <CardTitle className="text-2xl mb-2">Company/Care Home</CardTitle>
+                <CardDescription className="text-lg">
+                  Comprehensive training solution for care homes and healthcare organizations
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <ul className="text-left space-y-2 mb-6 text-gray-600 dark:text-gray-400">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    Multiple user accounts
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    Team progress monitoring
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    Compliance reporting
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    Priority support
+                  </li>
+                </ul>
+                <Button size="lg" className="w-full bg-[hsl(202,71%,44%)] hover:bg-[hsl(202,71%,40%)]" asChild>
+                  <a href="/api/login">Sign Up Company</a>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
