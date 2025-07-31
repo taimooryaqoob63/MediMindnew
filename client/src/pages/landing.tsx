@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Users, Shield, BookOpen, GraduationCap } from "lucide-react";
+import { CheckCircle, Users, Shield, BookOpen } from "lucide-react";
 import logoPath from "@assets/logo (1)_1753961810037.png";
 
 export default function Landing() {
@@ -27,7 +27,10 @@ export default function Landing() {
             </div>
             <div className="flex space-x-3">
               <Button variant="outline" asChild>
-                <a href="/api/login">Log In</a>
+                <a href="/api/login">Sign In</a>
+              </Button>
+              <Button asChild>
+                <a href="/api/login">Get Started</a>
               </Button>
             </div>
           </div>
@@ -37,10 +40,21 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+            Professional Diabetes Care Training
+          </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-            Elevate your professional development with our cutting-edge platform. You will get interactive courses, comprehensive care training, and an AI tutor rigorously trained on NICE, NHS, and CQC guidelines. This ensures your learning is always accurate and aligned with the highest standards. Benefit from the combined power of expert educators and intelligent AI supervision, delivering the best possible professional growth for healthcare workers.
+            Comprehensive, evidence-based training for healthcare workers in care homes and nursing facilities. 
+            Learn best practices aligned with NICE guidelines, NHS standards, and CQC requirements.
           </p>
-          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="text-lg px-8 py-3" asChild>
+              <a href="/api/login">Start Training Now</a>
+            </Button>
+            <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+              Learn More
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -52,17 +66,18 @@ export default function Landing() {
               Evidence-Based Learning
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Interactive training modules designed specifically for healthcare professionals.
+              Interactive training modules designed specifically for healthcare professionals in residential care settings.
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
             <Card>
               <CardHeader>
-                <GraduationCap className="w-10 h-10 text-[hsl(202,71%,44%)] mb-2" />
-                <CardTitle>Interactive Training</CardTitle>
+                <BookOpen className="w-10 h-10 text-[hsl(202,71%,44%)] mb-2" />
+                <CardTitle>Interactive Video Training</CardTitle>
                 <CardDescription>
-                  Comprehensive interactive modules.
+                  Comprehensive video modules covering insulin administration, 
+                  blood glucose monitoring, and diabetes management protocols.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -104,8 +119,8 @@ export default function Landing() {
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">Guidelines Compliance</h3>
-                    <p className="text-gray-600 dark:text-gray-400">Training content directly aligned with current updated guidelines.</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">NICE Guidelines Compliance</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Training content directly aligned with current NICE diabetes guidelines.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -119,7 +134,7 @@ export default function Landing() {
                   <CheckCircle className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0" />
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-gray-100">Expert Support</h3>
-                    <p className="text-gray-600 dark:text-gray-400">AI tutor rigorously trained on NICE, NHS, and CQC guidelines provides instant, expert-level guidance based on evidence-based practices.</p>
+                    <p className="text-gray-600 dark:text-gray-400">AI tutor provides instant, expert-level guidance based on evidence-based practices.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -133,59 +148,16 @@ export default function Landing() {
             </div>
             <div className="lg:text-center">
               <div className="bg-[hsl(202,71%,44%)] dark:bg-[hsl(202,71%,44%)] rounded-2xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-4">Ready to Improve Care Quality ?</h3>
+                <h3 className="text-2xl font-bold mb-4">Ready to Improve Care Quality?</h3>
                 <p className="text-blue-100 mb-6">
-                  Join healthcare professionals already using MediMind AI.
+                  Join healthcare professionals already using MediMind AI to deliver 
+                  better diabetes care with confidence.
                 </p>
                 <Button size="lg" className="bg-white text-[hsl(202,71%,44%)] hover:bg-gray-100" asChild>
-                  <a href="/api/login">Start Your Journey</a>
+                  <a href="/api/login">Start Your Training Journey</a>
                 </Button>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sign Up Section */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8">
-            Ready to Get Started?
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-12">
-            Choose the option that best fits your needs
-          </p>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-            <Card className="p-8 border-2 hover:border-[hsl(202,71%,44%)] transition-colors">
-              <CardHeader className="text-center pb-4">
-                <Users className="w-12 h-12 text-[hsl(202,71%,44%)] mx-auto mb-4" />
-                <CardTitle className="text-xl mb-2">Individual Healthcare Professional</CardTitle>
-                <CardDescription className="text-gray-600">
-                  Perfect for individual healthcare workers looking to enhance their skills
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <Button size="lg" className="w-full bg-[hsl(202,71%,44%)] hover:bg-[hsl(202,71%,38%)]" asChild>
-                  <a href="/api/login">Sign Up as Individual</a>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="p-8 border-2 hover:border-[hsl(202,71%,44%)] transition-colors">
-              <CardHeader className="text-center pb-4">
-                <Shield className="w-12 h-12 text-[hsl(202,71%,44%)] mx-auto mb-4" />
-                <CardTitle className="text-xl mb-2">Healthcare Organization</CardTitle>
-                <CardDescription className="text-gray-600">
-                  Ideal for Nursing / Care Homes
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <Button size="lg" variant="outline" className="w-full border-[hsl(202,71%,44%)] text-[hsl(202,71%,44%)] hover:bg-[hsl(202,71%,44%)] hover:text-white" asChild>
-                  <a href="/api/login">Sign Up as Organization</a>
-                </Button>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
@@ -203,7 +175,7 @@ export default function Landing() {
               <span className="text-xl font-bold">MediMind AI</span>
             </div>
             <p className="text-gray-400 mb-4">
-              Professional training for healthcare workers
+              Professional diabetes care training for healthcare workers
             </p>
             <p className="text-sm text-gray-500">
               © 2025 MediMind AI. All rights reserved.

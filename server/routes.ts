@@ -4,14 +4,10 @@ import { storage } from "./storage";
 import { getAITutorResponse } from "./services/openai";
 import { insertChatMessageSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { setupTestAuth } from "./testAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
-  
-  // Test auth endpoints for debugging
-  setupTestAuth(app);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {

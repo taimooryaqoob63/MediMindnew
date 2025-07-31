@@ -81,7 +81,7 @@ export default function TrainingPage() {
           modules={modules}
           progress={progress}
           overallProgress={overallProgress}
-          selectedModuleId={selectedModuleId || ""}
+          selectedModuleId={selectedModuleId}
           onModuleSelect={setSelectedModuleId}
         />
         
@@ -94,7 +94,7 @@ export default function TrainingPage() {
           />
           
           <AITutorChat 
-            courseId={selectedCourseId || ""}
+            courseId={selectedCourseId}
             currentModule={currentModule}
           />
         </main>

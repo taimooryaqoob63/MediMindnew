@@ -122,9 +122,9 @@ export default function VideoSection({ module, onProgressUpdate }: VideoSectionP
             <TabsContent value="overview" className="p-6">
               <div className="prose max-w-none">
                 <h3 className="text-lg font-semibold mb-4">Learning Objectives</h3>
-{module.content && typeof module.content === 'object' && 'learningObjectives' in module.content && Array.isArray((module.content as any).learningObjectives) ? (
+{module.content && typeof module.content === 'object' && 'learningObjectives' in module.content && Array.isArray(module.content.learningObjectives) && (
                   <ul className="space-y-2 mb-6">
-                    {(module.content as any).learningObjectives.map((objective: string, index: number) => (
+                    {module.content.learningObjectives.map((objective: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <div className="w-5 h-5 rounded-full bg-success-green flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
                           <div className="w-2 h-2 bg-white rounded-full" />
@@ -133,13 +133,13 @@ export default function VideoSection({ module, onProgressUpdate }: VideoSectionP
                       </li>
                     ))}
                   </ul>
-                ) : null}
+                )}
 
-{module.content && typeof module.content === 'object' && 'keyTakeaways' in module.content && Array.isArray((module.content as any).keyTakeaways) ? (
-                  <div>
+{module.content && typeof module.content === 'object' && 'keyTakeaways' in module.content && Array.isArray(module.content.keyTakeaways) && (
+                  <>
                     <h3 className="text-lg font-semibold mb-4">Key Takeaways</h3>
                     <div className="space-y-4">
-                      {(module.content as any).keyTakeaways.map((takeaway: any, index: number) => (
+                      {module.content.keyTakeaways.map((takeaway: any, index: number) => (
                         <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                           <div className="flex items-start">
                             <div className="w-6 h-6 rounded-full bg-medical-blue flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
@@ -153,8 +153,8 @@ export default function VideoSection({ module, onProgressUpdate }: VideoSectionP
                         </div>
                       ))}
                     </div>
-                  </div>
-                ) : null}
+                  </>
+                )}
               </div>
             </TabsContent>
 

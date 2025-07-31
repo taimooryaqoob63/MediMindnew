@@ -14,18 +14,10 @@ if (!process.env.REPLIT_DOMAINS) {
 
 const getOidcConfig = memoize(
   async () => {
-    try {
-      console.log("Discovering OIDC config with REPL_ID:", process.env.REPL_ID);
-      const config = await client.discovery(
-        new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-        process.env.REPL_ID!
-      );
-      console.log("OIDC Config discovered successfully");
-      return config;
-    } catch (error) {
-      console.error("OIDC Config Error:", error);
-      throw error;
-    }
+    return await client.discovery(
+      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
+      process.env.REPL_ID!
+    );
   },
   { maxAge: 3600 * 1000 }
 );
@@ -46,7 +38,7 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       maxAge: sessionTtl,
     },
   });
@@ -80,14 +72,7 @@ export async function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  let config;
-  try {
-    config = await getOidcConfig();
-    console.log("OIDC Config loaded successfully");
-  } catch (error) {
-    console.error("Failed to load OIDC config:", error);
-    throw error;
-  }
+  const config = await getOidcConfig();
 
   const verify: VerifyFunction = async (
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
@@ -101,9 +86,6 @@ export async function setupAuth(app: Express) {
 
   for (const domain of process.env
     .REPLIT_DOMAINS!.split(",")) {
-    console.log(`Setting up strategy for domain: ${domain}`);
-    console.log(`Callback URL will be: https://${domain}/api/callback`);
-    
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
@@ -114,69 +96,22 @@ export async function setupAuth(app: Express) {
       verify,
     );
     passport.use(strategy);
-    console.log(`Registered auth strategy for domain: ${domain}`);
   }
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    // Use the first domain from REPLIT_DOMAINS instead of req.hostname for local dev
-    const domain = process.env.REPLIT_DOMAINS!.split(",")[0];
-    console.log("Login attempt for domain:", domain, "hostname:", req.hostname);
-    passport.authenticate(`replitauth:${domain}`, {
+    passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    // Use the first domain from REPLIT_DOMAINS instead of req.hostname for local dev
-    const domain = process.env.REPLIT_DOMAINS!.split(",")[0];
-    console.log("=== OAUTH CALLBACK START ===");
-    console.log("Callback for domain:", domain, "hostname:", req.hostname);
-    console.log("Callback query params:", JSON.stringify(req.query, null, 2));
-    console.log("Callback headers:", JSON.stringify({
-      'user-agent': req.headers['user-agent'],
-      'referer': req.headers['referer'],
-      'host': req.headers['host']
-    }, null, 2));
-    
-    // Check if we have the required parameters
-    if (!req.query.code && !req.query.error) {
-      console.error("No authorization code or error in callback");
-      return res.status(400).send("Invalid callback - missing code or error parameter");
-    }
-    
-    if (req.query.error) {
-      console.error("OAuth error in callback:", req.query.error, req.query.error_description);
-      return res.status(400).send(`OAuth error: ${req.query.error} - ${req.query.error_description}`);
-    }
-    
-    passport.authenticate(`replitauth:${domain}`, (err, user, info) => {
-      console.log("Passport authenticate result:");
-      console.log("- Error:", err);
-      console.log("- User:", user ? "User object present" : "No user");
-      console.log("- Info:", info);
-      
-      if (err) {
-        console.error("Authentication error details:", err);
-        return res.status(500).send(`Authentication error: ${err.message}`);
-      }
-      if (!user) {
-        console.error("Authentication failed - no user. Info:", info);
-        return res.status(401).send(`Authentication failed: ${info ? info.message || info : 'Unknown error'}`);
-      }
-      
-      req.logIn(user, (err) => {
-        if (err) {
-          console.error("Login error:", err);
-          return res.status(500).send(`Login error: ${err.message}`);
-        }
-        console.log("Authentication successful, redirecting to /");
-        console.log("=== OAUTH CALLBACK SUCCESS ===");
-        return res.redirect("/");
-      });
+    passport.authenticate(`replitauth:${req.hostname}`, {
+      successReturnToOrRedirect: "/",
+      failureRedirect: "/api/login",
     })(req, res, next);
   });
 
