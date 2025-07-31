@@ -14,10 +14,15 @@ if (!process.env.REPLIT_DOMAINS) {
 
 const getOidcConfig = memoize(
   async () => {
-    return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
+    try {
+      return await client.discovery(
+        new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
+        process.env.REPL_ID!
+      );
+    } catch (error) {
+      console.error("OIDC Config Error:", error);
+      throw error;
+    }
   },
   { maxAge: 3600 * 1000 }
 );
@@ -102,14 +107,20 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    // Use the first domain from REPLIT_DOMAINS instead of req.hostname for local dev
+    const domain = process.env.REPLIT_DOMAINS!.split(",")[0];
+    console.log("Login attempt for domain:", domain, "hostname:", req.hostname);
+    passport.authenticate(`replitauth:${domain}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    // Use the first domain from REPLIT_DOMAINS instead of req.hostname for local dev
+    const domain = process.env.REPLIT_DOMAINS!.split(",")[0];
+    console.log("Callback for domain:", domain, "hostname:", req.hostname);
+    passport.authenticate(`replitauth:${domain}`, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
     })(req, res, next);
