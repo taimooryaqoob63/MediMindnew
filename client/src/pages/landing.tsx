@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Users, Shield, BookOpen } from "lucide-react";
+import logoPath from "@assets/logo (1)_1753961810037.png";
 
 export default function Landing() {
   return (
@@ -10,17 +11,11 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[hsl(202,71%,44%)] dark:bg-[hsl(202,71%,44%)] rounded-lg flex items-center justify-center">
-                <svg 
-                  viewBox="0 0 24 24" 
-                  className="w-6 h-6 text-white" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2"
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-              </div>
+              <img 
+                src={logoPath} 
+                alt="MediMind AI Logo" 
+                className="w-10 h-10 object-contain"
+              />
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                   MediMind AI
@@ -172,17 +167,11 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-[hsl(202,71%,44%)] rounded-lg flex items-center justify-center">
-                <svg 
-                  viewBox="0 0 24 24" 
-                  className="w-5 h-5 text-white" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2"
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-              </div>
+              <img 
+                src={logoPath} 
+                alt="MediMind AI Logo" 
+                className="w-8 h-8 object-contain"
+              />
               <span className="text-xl font-bold">MediMind AI</span>
             </div>
             <p className="text-gray-400 mb-4">

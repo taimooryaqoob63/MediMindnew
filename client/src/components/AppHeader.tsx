@@ -1,7 +1,7 @@
 import { Clock, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { User } from "@shared/schema";
-import logoPath from "@assets/logo (1)_1753960640359.png";
+import logoPath from "@assets/logo (1)_1753961810037.png";
 
 interface AppHeaderProps {
   user?: User;

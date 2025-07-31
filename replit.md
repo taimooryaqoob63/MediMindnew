@@ -7,6 +7,7 @@ MediMind AI is a comprehensive diabetes care training platform designed for heal
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Branding: Use consistent MediMind AI logo (healthcare hands/heart design) across all pages.
 
 ## System Architecture
 
