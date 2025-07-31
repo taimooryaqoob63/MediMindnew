@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Users, Shield, BookOpen, Play } from "lucide-react";
+import { CheckCircle, Users, Shield, BookOpen, Play, GraduationCap } from "lucide-react";
 import logoPath from "@assets/logo (1)_1753961810037.png";
 
 export default function Landing() {
@@ -62,7 +62,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-8">
             <Card>
               <CardHeader>
-                <Play className="w-10 h-10 text-[hsl(202,71%,44%)] mb-2" />
+                <GraduationCap className="w-10 h-10 text-[hsl(202,71%,44%)] mb-2" />
                 <CardTitle>Interactive Training</CardTitle>
                 <CardDescription>
                   Comprehensive interactive modules.
