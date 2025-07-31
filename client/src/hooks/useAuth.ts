@@ -1,20 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import type { User } from "@shared/schema";
 
 export function useAuth() {
-  const { data: user, isLoading, error } = useQuery<User | null>({
+  const { data: user, isLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
-  // Handle the case where user is null but request succeeded (not authenticated)
-  const isAuthenticated = user !== null && user !== undefined;
-
   return {
-    user: user || null,
+    user,
     isLoading,
-    isAuthenticated,
+    isAuthenticated: !!user && !error,
     error,
   };
 }
