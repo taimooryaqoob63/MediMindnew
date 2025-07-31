@@ -107,8 +107,8 @@ export default function Landing() {
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">NICE Guidelines Compliance</h3>
-                    <p className="text-gray-600 dark:text-gray-400">Training content directly aligned with current NICE diabetes guidelines.</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">Guidelines Compliance</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Training content directly aligned with current updated guidelines.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -122,7 +122,7 @@ export default function Landing() {
                   <CheckCircle className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0" />
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-gray-100">Expert Support</h3>
-                    <p className="text-gray-600 dark:text-gray-400">AI tutor provides instant, expert-level guidance based on evidence-based practices.</p>
+                    <p className="text-gray-600 dark:text-gray-400">AI tutor rigorously trained on NICE, NHS, and CQC guidelines provides instant, expert-level guidance based on evidence-based practices.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -162,7 +162,7 @@ export default function Landing() {
               <span className="text-xl font-bold">MediMind AI</span>
             </div>
             <p className="text-gray-400 mb-4">
-              Professional diabetes care training for healthcare workers
+              Professional training for healthcare workers
             </p>
             <p className="text-sm text-gray-500">
               © 2025 MediMind AI. All rights reserved.
