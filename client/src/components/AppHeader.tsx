@@ -68,11 +68,19 @@ export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobil
           
           <div className="flex items-center space-x-6">
             <nav className="hidden md:flex items-center space-x-6">
-              <Button variant="ghost" className="text-gray-600 hover:text-medical-blue button-interactive">
-                Home
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 hover:text-medical-blue button-interactive"
+                onClick={() => window.location.href = '/training'}
+              >
+                Training
               </Button>
-              <Button variant="ghost" className="text-gray-600 hover:text-medical-blue button-interactive">
-                Courses
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 hover:text-medical-blue button-interactive"
+                onClick={() => window.location.href = '/manage'}
+              >
+                Manage Courses
               </Button>
               <Button 
                 variant="outline" 

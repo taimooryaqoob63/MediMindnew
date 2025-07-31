@@ -23,6 +23,8 @@ export interface IStorage {
   getModulesByCourse(courseId: string): Promise<Module[]>;
   getModule(id: string): Promise<Module | undefined>;
   createModule(module: InsertModule): Promise<Module>;
+  updateModule(id: string, module: Partial<InsertModule>): Promise<Module>;
+  deleteModule(id: string): Promise<void>;
 
   // User Progress
   getUserProgress(userId: string, courseId: string): Promise<UserProgress[]>;
@@ -49,6 +51,10 @@ export class DatabaseStorage implements IStorage {
         .insert(users)
         .values({
           ...userData,
+          email: userData.email || null,
+          firstName: userData.firstName || null,
+          lastName: userData.lastName || null,
+          profileImageUrl: userData.profileImageUrl || null,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
@@ -56,6 +62,10 @@ export class DatabaseStorage implements IStorage {
           target: users.id,
           set: {
             ...userData,
+            email: userData.email || null,
+            firstName: userData.firstName || null,
+            lastName: userData.lastName || null,
+            profileImageUrl: userData.profileImageUrl || null,
             updatedAt: new Date(),
           },
         })
@@ -69,14 +79,18 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { 
+    const userToInsert = { 
       ...insertUser, 
       id,
       role: insertUser.role || "care_worker",
+      email: insertUser.email || null,
+      firstName: insertUser.firstName || null,
+      lastName: insertUser.lastName || null,
+      profileImageUrl: insertUser.profileImageUrl || null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    const [createdUser] = await db.insert(users).values(user).returning();
+    const [createdUser] = await db.insert(users).values(userToInsert).returning();
     return createdUser;
   }
 
@@ -110,17 +124,28 @@ export class DatabaseStorage implements IStorage {
     return module;
   }
 
+  async updateModule(id: string, updateData: Partial<InsertModule>): Promise<Module> {
+    const [module] = await db.update(modules)
+      .set(updateData)
+      .where(eq(modules.id, id))
+      .returning();
+    return module;
+  }
+
+  async deleteModule(id: string): Promise<void> {
+    await db.delete(modules).where(eq(modules.id, id));
+  }
+
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
     return await db.select().from(userProgress)
-      .where(eq(userProgress.userId, userId))
-      .where(eq(userProgress.courseId, courseId));
+      .where(eq(userProgress.userId, userId) && eq(userProgress.courseId, courseId));
   }
 
   async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
     const existing = await db.select().from(userProgress)
-      .where(eq(userProgress.userId, insertProgress.userId))
-      .where(eq(userProgress.courseId, insertProgress.courseId))
-      .where(eq(userProgress.moduleId, insertProgress.moduleId || ""));
+      .where(eq(userProgress.userId, insertProgress.userId) && 
+             eq(userProgress.courseId, insertProgress.courseId) && 
+             eq(userProgress.moduleId, insertProgress.moduleId || ""));
     
     if (existing.length > 0) {
       const [updated] = await db
@@ -137,8 +162,7 @@ export class DatabaseStorage implements IStorage {
 
   async getChatMessages(userId: string, courseId: string): Promise<ChatMessage[]> {
     return await db.select().from(chatMessages)
-      .where(eq(chatMessages.userId, userId))
-      .where(eq(chatMessages.courseId, courseId))
+      .where(eq(chatMessages.userId, userId) && eq(chatMessages.courseId, courseId))
       .orderBy(chatMessages.timestamp);
   }
 
@@ -173,9 +197,13 @@ export class MemStorage implements IStorage {
     // Create sample user
     const sampleUser: User = {
       id: "user-1",
-      username: "jane.doe",
-      name: "Jane Doe",
-      role: "care_worker"
+      email: "jane.doe@example.com",
+      firstName: "Jane",
+      lastName: "Doe",
+      profileImageUrl: null,
+      role: "care_worker",
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(sampleUser.id, sampleUser);
 
@@ -333,8 +361,29 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const existingUser = this.users.get(userData.id);
+    if (existingUser) {
+      const updatedUser = { 
+        ...existingUser, 
+        ...userData,
+        updatedAt: new Date() 
+      };
+      this.users.set(userData.id, updatedUser);
+      return updatedUser;
+    } else {
+      const newUser: User = { 
+        ...userData,
+        email: userData.email || null,
+        firstName: userData.firstName || null,
+        lastName: userData.lastName || null,
+        profileImageUrl: userData.profileImageUrl || null,
+        createdAt: new Date(),
+        updatedAt: new Date() 
+      };
+      this.users.set(userData.id, newUser);
+      return newUser;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -342,7 +391,13 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id,
-      role: insertUser.role || "care_worker"
+      email: insertUser.email || null,
+      firstName: insertUser.firstName || null,
+      lastName: insertUser.lastName || null,
+      profileImageUrl: insertUser.profileImageUrl || null,
+      role: insertUser.role || "care_worker",
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(id, user);
     return user;
@@ -388,6 +443,20 @@ export class MemStorage implements IStorage {
     };
     this.modules.set(id, module);
     return module;
+  }
+
+  async updateModule(id: string, updateData: Partial<InsertModule>): Promise<Module> {
+    const existing = this.modules.get(id);
+    if (!existing) {
+      throw new Error("Module not found");
+    }
+    const updated = { ...existing, ...updateData };
+    this.modules.set(id, updated);
+    return updated;
+  }
+
+  async deleteModule(id: string): Promise<void> {
+    this.modules.delete(id);
   }
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {

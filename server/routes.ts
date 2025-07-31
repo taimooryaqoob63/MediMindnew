@@ -2,10 +2,47 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { getAITutorResponse } from "./services/openai";
-import { insertChatMessageSchema } from "@shared/schema";
+import { insertChatMessageSchema, insertModuleSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import express from "express";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup multer for video uploads
+  const storage_multer = multer.diskStorage({
+    destination: function (req, file, cb) {
+      const uploadPath = 'uploads/videos';
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+
+  const upload = multer({ 
+    storage: storage_multer,
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = /mp4|avi|mov|wmv|flv|webm|mkv/;
+      const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+      const mimetype = allowedTypes.test(file.mimetype);
+      
+      if (mimetype && extname) {
+        return cb(null, true);
+      } else {
+        cb(new Error('Only video files are allowed'));
+      }
+    },
+    limits: {
+      fileSize: 500 * 1024 * 1024 // 500MB limit
+    }
+  });
+
   // Auth middleware
   await setupAuth(app);
 
@@ -148,6 +185,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get resources" });
     }
   });
+
+  // Video upload and module management routes (Protected)
+  
+  // Upload video and create/update module
+  app.post("/api/modules/upload", isAuthenticated, upload.single('video'), async (req: any, res) => {
+    try {
+      const { courseId, title, description, duration, orderIndex, moduleId } = req.body;
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No video file uploaded" });
+      }
+
+      const videoUrl = `/uploads/videos/${req.file.filename}`;
+      
+      const moduleData = {
+        courseId,
+        title,
+        description,
+        videoUrl,
+        duration,
+        orderIndex: parseInt(orderIndex),
+        content: null
+      };
+
+      let module;
+      if (moduleId) {
+        // Update existing module
+        module = await storage.updateModule(moduleId, moduleData);
+      } else {
+        // Create new module
+        module = await storage.createModule(moduleData);
+      }
+
+      res.json(module);
+    } catch (error) {
+      console.error('Video upload error:', error);
+      res.status(500).json({ message: "Failed to upload video and create module" });
+    }
+  });
+
+  // Update module without video
+  app.put("/api/modules/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { title, description, duration, orderIndex, content } = req.body;
+      const moduleData = {
+        title,
+        description,
+        duration,
+        orderIndex: parseInt(orderIndex),
+        content
+      };
+
+      const module = await storage.updateModule(req.params.id, moduleData);
+      res.json(module);
+    } catch (error) {
+      console.error('Module update error:', error);
+      res.status(500).json({ message: "Failed to update module" });
+    }
+  });
+
+  // Delete module
+  app.delete("/api/modules/:id", isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteModule(req.params.id);
+      res.json({ message: "Module deleted successfully" });
+    } catch (error) {
+      console.error('Module delete error:', error);
+      res.status(500).json({ message: "Failed to delete module" });
+    }
+  });
+
+  // Create new course
+  app.post("/api/courses", isAuthenticated, async (req, res) => {
+    try {
+      const { title, description, category } = req.body;
+      const course = await storage.createCourse({ title, description, category });
+      res.json(course);
+    } catch (error) {
+      console.error('Course creation error:', error);
+      res.status(500).json({ message: "Failed to create course" });
+    }
+  });
+
+  // Serve uploaded videos
+  app.use('/uploads', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+  });
+  
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
   const httpServer = createServer(app);
   return httpServer;
