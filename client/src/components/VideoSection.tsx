@@ -65,19 +65,31 @@ export default function VideoSection({ module, onProgressUpdate, isMobile }: Vid
 
       <div className={`flex-1 ${isMobile ? 'p-4' : 'p-6'}`}>
         <div className="bg-black rounded-lg overflow-hidden shadow-lg mb-6 card-hover">
-          <div className="relative aspect-video bg-gray-900 flex items-center justify-center">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-            
-            <div className="text-center text-white z-10">
-              <div 
-                className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-all duration-300 interactive-hover"
-                onClick={handlePlayPause}
+          <div className="relative aspect-video bg-gray-900">
+            {module.videoUrl && module.videoUrl !== "https://example.com/video1" ? (
+              <video
+                className="w-full h-full object-cover"
+                controls
+                poster="/api/placeholder-image"
               >
-                <Play className="w-8 h-8 ml-1" />
+                <source src={module.videoUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                <div className="text-center text-white z-10">
+                  <div 
+                    className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-all duration-300 interactive-hover"
+                    onClick={handlePlayPause}
+                  >
+                    <Play className="w-8 h-8 ml-1" />
+                  </div>
+                  <p className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>{module.title}</p>
+                  <p className="text-sm opacity-80">Duration: {module.duration}</p>
+                </div>
               </div>
-              <p className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>{module.title}</p>
-              <p className="text-sm opacity-80">Duration: {module.duration}</p>
-            </div>
+            )}
 
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
               <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
