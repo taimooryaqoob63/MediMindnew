@@ -40,21 +40,10 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-            Professional Diabetes Care Training
-          </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-            Comprehensive, evidence-based training for healthcare workers in care homes and nursing facilities. 
-            Learn best practices aligned with NICE guidelines, NHS standards, and CQC requirements.
+            Elevate your professional development with our cutting-edge platform. You'll get interactive courses, comprehensive diabetes care training, and an AI tutor rigorously trained on NICE, NHS, and CQC guidelines. This ensures your learning is always accurate and aligned with the highest standards. Benefit from the combined power of expert educators and intelligent AI supervision, delivering the best possible professional growth for healthcare workers.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-lg px-8 py-3" asChild>
-              <a href="/api/login">Start Training Now</a>
-            </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-3">
-              Learn More
-            </Button>
-          </div>
+          
         </div>
       </section>
 
@@ -66,7 +55,7 @@ export default function Landing() {
               Evidence-Based Learning
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Interactive training modules designed specifically for healthcare professionals in residential care settings.
+              Interactive training modules designed specifically for healthcare professionals.
             </p>
           </div>
           
