@@ -55,7 +55,7 @@ export default function AppHeader({ user }: AppHeaderProps) {
                 Home
               </Button>
               <Button variant="ghost" className="text-gray-600 hover:text-medical-blue">
-                Training
+                Courses
               </Button>
               <Button 
                 variant="outline" 
