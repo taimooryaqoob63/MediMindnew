@@ -138,11 +138,10 @@ export default function Landing() {
               <div className="bg-[hsl(202,71%,44%)] dark:bg-[hsl(202,71%,44%)] rounded-2xl p-8 text-white">
                 <h3 className="text-2xl font-bold mb-4">Ready to Improve Care Quality?</h3>
                 <p className="text-blue-100 mb-6">
-                  Join healthcare professionals already using MediMind AI to deliver 
-                  better diabetes care with confidence.
+                  Join healthcare professionals already using MediMind AI.
                 </p>
                 <Button size="lg" className="bg-white text-[hsl(202,71%,44%)] hover:bg-gray-100" asChild>
-                  <a href="/api/login">Start Your Training Journey</a>
+                  <a href="/api/login">Start Your Journey</a>
                 </Button>
               </div>
             </div>
