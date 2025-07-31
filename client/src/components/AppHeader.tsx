@@ -1,13 +1,16 @@
-import { Clock, Bell } from "lucide-react";
+import { Clock, Bell, Menu, MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { User } from "@shared/schema";
 import logoPath from "@assets/logo (1)_1753961810037.png";
 
 interface AppHeaderProps {
   user?: User;
+  onSidebarToggle?: () => void;
+  onChatToggle?: () => void;
+  isMobile?: boolean;
 }
 
-export default function AppHeader({ user }: AppHeaderProps) {
+export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobile }: AppHeaderProps) {
   const currentTime = new Date().toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
@@ -39,39 +42,65 @@ export default function AppHeader({ user }: AppHeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
+            {/* Mobile Menu Button */}
+            {isMobile && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onSidebarToggle}
+                className="p-2 text-gray-600 hover:text-medical-blue button-interactive"
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+            )}
+            
             <div className="flex items-center space-x-2">
               <img 
                 src={logoPath} 
                 alt="MediMind AI Logo" 
                 className="w-8 h-8 object-contain"
               />
-              <h1 className="text-xl font-semibold medical-blue">MediMind AI</h1>
+              <h1 className={`font-semibold medical-blue ${isMobile ? 'text-lg' : 'text-xl'}`}>
+                MediMind AI
+              </h1>
             </div>
           </div>
           
           <div className="flex items-center space-x-6">
             <nav className="hidden md:flex items-center space-x-6">
-              <Button variant="ghost" className="text-gray-600 hover:text-medical-blue">
+              <Button variant="ghost" className="text-gray-600 hover:text-medical-blue button-interactive">
                 Home
               </Button>
-              <Button variant="ghost" className="text-gray-600 hover:text-medical-blue">
+              <Button variant="ghost" className="text-gray-600 hover:text-medical-blue button-interactive">
                 Courses
               </Button>
               <Button 
                 variant="outline" 
-                className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white"
+                className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white button-interactive"
                 onClick={() => window.location.href = '/api/logout'}
               >
                 Logout
               </Button>
             </nav>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              {/* Mobile Chat Button */}
+              {isMobile && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onChatToggle}
+                  className="p-2 text-gray-600 hover:text-medical-blue button-interactive"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                </Button>
+              )}
+              
               <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600">
                 <Clock className="w-4 h-4 medical-blue" />
                 <span>{currentTime}</span>
               </div>
-              <Button variant="ghost" size="sm" className="p-2 text-gray-400 hover:text-medical-blue">
+              <Button variant="ghost" size="sm" className="p-2 text-gray-400 hover:text-medical-blue button-interactive">
                 <Bell className="w-4 h-4" />
               </Button>
               <div className="flex items-center space-x-2">

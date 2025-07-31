@@ -8,9 +8,10 @@ import type { Module } from "@shared/schema";
 interface VideoSectionProps {
   module?: Module;
   onProgressUpdate: (moduleId: string, progress: number) => void;
+  isMobile?: boolean;
 }
 
-export default function VideoSection({ module, onProgressUpdate }: VideoSectionProps) {
+export default function VideoSection({ module, onProgressUpdate, isMobile }: VideoSectionProps) {
   const [videoProgress, setVideoProgress] = useState(35);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -25,7 +26,12 @@ export default function VideoSection({ module, onProgressUpdate }: VideoSectionP
   if (!module) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-100">
-        <p className="text-gray-500">Select a module to begin</p>
+        <div className="text-center fade-in">
+          <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <Play className="w-8 h-8 text-gray-400" />
+          </div>
+          <p className="text-gray-500">Select a module to begin</p>
+        </div>
       </div>
     );
   }
@@ -35,62 +41,73 @@ export default function VideoSection({ module, onProgressUpdate }: VideoSectionP
   };
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col fade-in">
       <div className="bg-white border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-text-dark">{module.title}</h2>
+        <div className={`flex items-center justify-between ${isMobile ? 'flex-col space-y-3' : ''}`}>
+          <div className={isMobile ? 'text-center' : ''}>
+            <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold text-text-dark`}>
+              {module.title}
+            </h2>
             <p className="text-sm text-gray-600 mt-1">{module.description}</p>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+          <div className={`flex items-center space-x-2 ${isMobile ? 'w-full justify-center' : ''}`}>
+            <Button variant="outline" size="sm" className="button-interactive">
               <Bookmark className="w-4 h-4 mr-2" />
-              Bookmark
+              {isMobile ? '' : 'Bookmark'}
             </Button>
-            <Button size="sm" className="bg-medical-blue hover:bg-medical-blue/90">
+            <Button size="sm" className="bg-medical-blue hover:bg-medical-blue/90 button-interactive">
               <Award className="w-4 h-4 mr-2" />
-              Take Quiz
+              {isMobile ? 'Quiz' : 'Take Quiz'}
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 p-6">
-        <div className="bg-black rounded-lg overflow-hidden shadow-lg mb-6">
+      <div className={`flex-1 ${isMobile ? 'p-4' : 'p-6'}`}>
+        <div className="bg-black rounded-lg overflow-hidden shadow-lg mb-6 card-hover">
           <div className="relative aspect-video bg-gray-900 flex items-center justify-center">
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
             
             <div className="text-center text-white z-10">
-              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-colors">
+              <div 
+                className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-all duration-300 interactive-hover"
+                onClick={handlePlayPause}
+              >
                 <Play className="w-8 h-8 ml-1" />
               </div>
-              <p className="text-lg font-medium">{module.title}</p>
+              <p className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>{module.title}</p>
               <p className="text-sm opacity-80">Duration: {module.duration}</p>
             </div>
 
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-              <div className="flex items-center space-x-4">
+              <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handlePlayPause}
-                  className="text-white hover:text-medical-blue"
+                  className="text-white hover:text-medical-blue button-interactive"
                 >
                   <Play className="w-5 h-5" />
                 </Button>
                 <div className="flex-1">
                   <Progress 
                     value={videoProgress} 
-                    className="h-2 bg-white/20" 
+                    className="h-2 bg-white/20 cursor-pointer" 
                   />
                 </div>
-                <span className="text-white text-sm">04:25 / {module.duration}</span>
-                <Button variant="ghost" size="sm" className="text-white hover:text-medical-blue">
-                  <Volume2 className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="text-white hover:text-medical-blue">
-                  <Maximize className="w-4 h-4" />
-                </Button>
+                <span className={`text-white ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                  04:25 / {module.duration}
+                </span>
+                {!isMobile && (
+                  <>
+                    <Button variant="ghost" size="sm" className="text-white hover:text-medical-blue button-interactive">
+                      <Volume2 className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-white hover:text-medical-blue button-interactive">
+                      <Maximize className="w-4 h-4" />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

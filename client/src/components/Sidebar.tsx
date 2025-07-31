@@ -10,6 +10,7 @@ interface SidebarProps {
   overallProgress: number;
   selectedModuleId: string;
   onModuleSelect: (moduleId: string) => void;
+  isMobile?: boolean;
 }
 
 export default function Sidebar({ 
@@ -18,7 +19,8 @@ export default function Sidebar({
   progress, 
   overallProgress, 
   selectedModuleId, 
-  onModuleSelect 
+  onModuleSelect,
+  isMobile 
 }: SidebarProps) {
   const isModuleCompleted = (moduleId: string) => {
     return progress.some(p => p.moduleId === moduleId && p.completed);
@@ -35,13 +37,18 @@ export default function Sidebar({
   ];
 
   return (
-    <aside className="w-80 bg-white shadow-lg border-r border-gray-200 overflow-y-auto">
-      <div className="p-6">
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-text-dark mb-2">
+    <aside className={`
+      ${isMobile ? 'w-80' : 'w-80'} 
+      bg-white shadow-lg border-r border-gray-200 overflow-y-auto
+      ${isMobile ? 'h-full' : ''}
+      slide-in-left
+    `}>
+      <div className={`${isMobile ? 'p-4' : 'p-6'}`}>
+        <div className="mb-6 fade-in">
+          <h2 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-text-dark mb-2`}>
             {course?.title || 'Course Title'}
           </h2>
-          <div className="bg-medical-blue/10 rounded-lg p-3">
+          <div className="bg-medical-blue/10 rounded-lg p-3 card-hover">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium medical-blue">Course Progress</span>
               <span className="text-sm font-semibold medical-blue">{overallProgress}%</span>
@@ -66,24 +73,24 @@ export default function Sidebar({
                   <Button
                     key={module.id}
                     variant={isSelected ? "default" : "ghost"}
-                    className={`w-full justify-start px-3 py-2 text-sm h-auto ${
+                    className={`w-full justify-start px-3 py-2 text-sm h-auto transition-all duration-200 ${
                       isSelected 
-                        ? 'bg-medical-blue text-white hover:bg-medical-blue/90' 
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
+                        ? 'bg-medical-blue text-white hover:bg-medical-blue/90 shadow-md' 
+                        : 'text-gray-700 hover:bg-gray-50 hover:shadow-sm'
+                    } button-interactive`}
                     onClick={() => onModuleSelect(module.id)}
                   >
-                    <PlayCircle className={`mr-3 w-4 h-4 ${
+                    <PlayCircle className={`mr-3 w-4 h-4 transition-all duration-200 ${
                       isSelected ? 'text-white' : 'text-gray-400'
                     }`} />
                     <span className="flex-1 text-left">
                       {index + 1}. {module.title}
                     </span>
                     {isCompleted && (
-                      <Check className="ml-2 w-4 h-4 success-green" />
+                      <Check className="ml-2 w-4 h-4 success-green animate-pulse" />
                     )}
                     {isInProgress && !isCompleted && (
-                      <div className="w-2 h-2 bg-medical-blue rounded-full ml-2" />
+                      <div className="w-2 h-2 bg-medical-blue rounded-full ml-2 pulse-soft" />
                     )}
                   </Button>
                 );

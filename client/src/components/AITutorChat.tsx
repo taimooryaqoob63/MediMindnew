@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,19 +9,22 @@ import type { ChatMessage, Module } from "@shared/schema";
 interface AITutorChatProps {
   courseId: string;
   currentModule?: Module;
+  isMobile?: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 interface ChatResponse {
   message: ChatMessage;
 }
 
-export default function AITutorChat({ courseId, currentModule }: AITutorChatProps) {
+export default function AITutorChat({ courseId, currentModule, isMobile, isOpen, onClose }: AITutorChatProps) {
   const [inputMessage, setInputMessage] = useState("");
   
   // TTS and STT state
   const [isListening, setIsListening] = useState(false);
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [recognition, setRecognition] = useState<any>(null);
   const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null);
   const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
   
@@ -175,16 +178,34 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
   };
 
   return (
-    <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+    <div className={`
+      ${isMobile 
+        ? 'h-96 bg-white border-t border-gray-200 rounded-t-xl' 
+        : 'w-96 bg-white border-l border-gray-200'
+      } 
+      flex flex-col slide-in-right
+    `}>
       <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-medical-blue to-accent-purple rounded-full flex items-center justify-center">
-            <Bot className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-medical-blue to-accent-purple rounded-full flex items-center justify-center">
+              <Bot className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-text-dark">AI Tutor</h3>
+              <p className="text-sm text-gray-500">Ask me anything about diabetes care</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-text-dark">AI Tutor</h3>
-            <p className="text-sm text-gray-500">Ask me anything about diabetes care</p>
-          </div>
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="p-2 text-gray-400 hover:text-gray-600 button-interactive"
+            >
+              <ChevronDown className="w-5 h-5" />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -263,11 +284,11 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
       </div>
 
       {/* Chat Input */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex space-x-2 mb-2">
+      <div className={`${isMobile ? 'p-3' : 'p-4'} border-t border-gray-200`}>
+        <div className={`flex space-x-2 mb-2`}>
           <Input
             type="text"
-            placeholder={isListening ? "Listening..." : "Ask about diabetes care guidelines..."}
+            placeholder={isListening ? "Listening..." : (isMobile ? "Ask AI..." : "Ask about diabetes care guidelines...")}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -281,7 +302,7 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
             disabled={chatMutation.isPending || !recognition}
             variant={isListening ? "default" : "outline"}
             size="sm"
-            className={isListening ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+            className={`button-interactive ${isListening ? "bg-red-500 hover:bg-red-600 text-white" : ""}`}
             title={isListening ? "Stop listening" : "Start voice input"}
           >
             {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -291,7 +312,7 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
           <Button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || chatMutation.isPending}
-            className="bg-medical-blue hover:bg-medical-blue/90"
+            className="bg-medical-blue hover:bg-medical-blue/90 button-interactive"
             size="sm"
           >
             <Send className="w-4 h-4" />
@@ -299,10 +320,10 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
         </div>
         
         {/* TTS Controls and Info */}
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-500 flex items-center">
+        <div className={`flex items-center justify-between ${isMobile ? 'flex-col space-y-2' : ''}`}>
+          <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-500 flex items-center`}>
             <Shield className="w-3 h-3 medical-blue mr-1" />
-            Responses based on NICE, NHS & CQC guidelines
+            {isMobile ? 'NICE/NHS Guidelines' : 'Responses based on NICE, NHS & CQC guidelines'}
           </p>
           
           <div className="flex items-center space-x-2">
@@ -311,7 +332,7 @@ export default function AITutorChat({ courseId, currentModule }: AITutorChatProp
               onClick={toggleTTS}
               variant="ghost"
               size="sm"
-              className="h-6 px-2"
+              className="h-6 px-2 button-interactive"
               title={isTTSEnabled ? "Disable text-to-speech" : "Enable text-to-speech"}
             >
               {isTTSEnabled ? (
