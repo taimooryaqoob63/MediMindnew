@@ -6,7 +6,7 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // Users - Replit Auth compatible
@@ -44,30 +44,49 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
+    try {
+      const userWithDefaults = {
+        ...userData,
+        email: userData.email ?? null,
+        firstName: userData.firstName ?? null,
+        lastName: userData.lastName ?? null,
+        profileImageUrl: userData.profileImageUrl ?? null,
+        role: userData.role || "care_worker",
+        updatedAt: new Date(),
+      };
+
+      const [user] = await db
+        .insert(users)
+        .values(userWithDefaults)
+        .onConflictDoUpdate({
+          target: users.id,
+          set: {
+            ...userWithDefaults,
+            updatedAt: new Date(),
+          },
+        })
+        .returning();
+      return user;
+    } catch (error) {
+      console.error("Error upserting user:", error);
+      throw new Error("Failed to create or update user");
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { 
+    const userWithDefaults = { 
       ...insertUser, 
       id,
+      email: insertUser.email ?? null,
+      firstName: insertUser.firstName ?? null,
+      lastName: insertUser.lastName ?? null,
+      profileImageUrl: insertUser.profileImageUrl ?? null,
       role: insertUser.role || "care_worker",
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    const [createdUser] = await db.insert(users).values(user).returning();
+    const [createdUser] = await db.insert(users).values(userWithDefaults).returning();
     return createdUser;
   }
 
@@ -103,15 +122,18 @@ export class DatabaseStorage implements IStorage {
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
     return await db.select().from(userProgress)
-      .where(eq(userProgress.userId, userId))
-      .where(eq(userProgress.courseId, courseId));
+      .where(and(eq(userProgress.userId, userId), eq(userProgress.courseId, courseId)));
   }
 
   async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
     const existing = await db.select().from(userProgress)
-      .where(eq(userProgress.userId, insertProgress.userId))
-      .where(eq(userProgress.courseId, insertProgress.courseId))
-      .where(eq(userProgress.moduleId, insertProgress.moduleId || ""));
+      .where(
+        and(
+          eq(userProgress.userId, insertProgress.userId),
+          eq(userProgress.courseId, insertProgress.courseId),
+          eq(userProgress.moduleId, insertProgress.moduleId || "")
+        )
+      );
     
     if (existing.length > 0) {
       const [updated] = await db
@@ -128,8 +150,7 @@ export class DatabaseStorage implements IStorage {
 
   async getChatMessages(userId: string, courseId: string): Promise<ChatMessage[]> {
     return await db.select().from(chatMessages)
-      .where(eq(chatMessages.userId, userId))
-      .where(eq(chatMessages.courseId, courseId))
+      .where(and(eq(chatMessages.userId, userId), eq(chatMessages.courseId, courseId)))
       .orderBy(chatMessages.timestamp);
   }
 
@@ -164,9 +185,13 @@ export class MemStorage implements IStorage {
     // Create sample user
     const sampleUser: User = {
       id: "user-1",
-      username: "jane.doe",
-      name: "Jane Doe",
-      role: "care_worker"
+      email: "jane.doe@example.com",
+      firstName: "Jane",
+      lastName: "Doe",
+      profileImageUrl: null,
+      role: "care_worker",
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(sampleUser.id, sampleUser);
 
@@ -325,7 +350,26 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    return Array.from(this.users.values()).find(user => user.email === username);
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    if (!userData.id) {
+      throw new Error("User ID is required for upsert operation");
+    }
+    const existingUser = this.users.get(userData.id);
+    const userWithDefaults: User = {
+      id: userData.id,
+      email: userData.email ?? null,
+      firstName: userData.firstName ?? null,
+      lastName: userData.lastName ?? null,
+      profileImageUrl: userData.profileImageUrl ?? null,
+      role: userData.role || "care_worker",
+      createdAt: existingUser?.createdAt || new Date(),
+      updatedAt: new Date()
+    };
+    this.users.set(userData.id, userWithDefaults);
+    return userWithDefaults;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -333,7 +377,13 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id,
-      role: insertUser.role || "care_worker"
+      email: insertUser.email ?? null,
+      firstName: insertUser.firstName ?? null,
+      lastName: insertUser.lastName ?? null,
+      profileImageUrl: insertUser.profileImageUrl ?? null,
+      role: insertUser.role || "care_worker",
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(id, user);
     return user;
