@@ -122,7 +122,7 @@ export default function VideoSection({ module, onProgressUpdate }: VideoSectionP
             <TabsContent value="overview" className="p-6">
               <div className="prose max-w-none">
                 <h3 className="text-lg font-semibold mb-4">Learning Objectives</h3>
-{module.content && typeof module.content === 'object' && 'learningObjectives' in module.content && Array.isArray((module.content as any).learningObjectives) && (
+{module.content && typeof module.content === 'object' && 'learningObjectives' in module.content && Array.isArray((module.content as any).learningObjectives) ? (
                   <ul className="space-y-2 mb-6">
                     {(module.content as any).learningObjectives.map((objective: string, index: number) => (
                       <li key={index} className="flex items-start">
@@ -133,9 +133,9 @@ export default function VideoSection({ module, onProgressUpdate }: VideoSectionP
                       </li>
                     ))}
                   </ul>
-                )}
+                ) : null}
 
-{module.content && typeof module.content === 'object' && 'keyTakeaways' in module.content && Array.isArray((module.content as any).keyTakeaways) && (
+{module.content && typeof module.content === 'object' && 'keyTakeaways' in module.content && Array.isArray((module.content as any).keyTakeaways) ? (
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Key Takeaways</h3>
                     <div className="space-y-4">
@@ -154,7 +154,7 @@ export default function VideoSection({ module, onProgressUpdate }: VideoSectionP
                       ))}
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
             </TabsContent>
 
