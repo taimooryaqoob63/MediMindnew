@@ -306,8 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       res.json({ 
-        message: chatMessage,
-        suggestedQuestions: aiResponse.suggestedQuestions 
+        message: chatMessage
       });
     } catch (error) {
       console.error('Chat error:', error);
