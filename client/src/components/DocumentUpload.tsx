@@ -14,21 +14,39 @@ interface Document {
 export default function DocumentUpload() {
   const [isUploading, setIsUploading] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (file.type !== 'application/pdf') {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a PDF file",
-        variant: "destructive",
-      });
-      return;
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
     }
+  };
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type === 'application/pdf') {
+        uploadFile(file);
+      } else {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF file",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const uploadFile = async (file: File) => {
     setIsUploading(true);
     const formData = new FormData();
     formData.append('document', file);
@@ -59,9 +77,25 @@ export default function DocumentUpload() {
       });
     } finally {
       setIsUploading(false);
-      // Reset the input
-      event.target.value = '';
     }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await uploadFile(file);
+    // Reset the input
+    event.target.value = '';
   };
 
   const loadDocuments = async () => {
@@ -111,7 +145,19 @@ export default function DocumentUpload() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center w-full">
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+            <label 
+              className={`
+                flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors
+                ${dragActive 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+                }
+              `}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 {isUploading ? (
                   <>
@@ -120,9 +166,11 @@ export default function DocumentUpload() {
                   </>
                 ) : (
                   <>
-                    <FileText className="w-8 h-8 mb-4 text-gray-500" />
+                    <FileText className={`w-8 h-8 mb-4 ${dragActive ? 'text-blue-500' : 'text-gray-500'}`} />
                     <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold">Click to upload</span> your PDF guidelines
+                      <span className="font-semibold">
+                        {dragActive ? 'Drop your PDF here' : 'Drag & drop or click to upload'}
+                      </span> your PDF guidelines
                     </p>
                     <p className="text-xs text-gray-500">PDF files only (MAX 50MB)</p>
                   </>
