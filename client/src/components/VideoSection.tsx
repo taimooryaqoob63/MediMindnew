@@ -14,6 +14,14 @@ export default function VideoSection({ module, onProgressUpdate }: VideoSectionP
   const [videoProgress, setVideoProgress] = useState(35);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Helper function to safely access module content
+  const getModuleContent = () => {
+    if (!module?.content || typeof module.content !== 'object' || module.content === null) {
+      return null;
+    }
+    return module.content as Record<string, any>;
+  };
+
   if (!module) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-100">
@@ -122,39 +130,51 @@ export default function VideoSection({ module, onProgressUpdate }: VideoSectionP
             <TabsContent value="overview" className="p-6">
               <div className="prose max-w-none">
                 <h3 className="text-lg font-semibold mb-4">Learning Objectives</h3>
-{module.content && typeof module.content === 'object' && 'learningObjectives' in module.content && Array.isArray(module.content.learningObjectives) && (
-                  <ul className="space-y-2 mb-6">
-                    {module.content.learningObjectives.map((objective: string, index: number) => (
-                      <li key={index} className="flex items-start">
-                        <div className="w-5 h-5 rounded-full bg-success-green flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
-                          <div className="w-2 h-2 bg-white rounded-full" />
-                        </div>
-                        <span className="text-sm">{objective}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-{module.content && typeof module.content === 'object' && 'keyTakeaways' in module.content && Array.isArray(module.content.keyTakeaways) && (
-                  <>
-                    <h3 className="text-lg font-semibold mb-4">Key Takeaways</h3>
-                    <div className="space-y-4">
-                      {module.content.keyTakeaways.map((takeaway: any, index: number) => (
-                        <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <div className="flex items-start">
-                            <div className="w-6 h-6 rounded-full bg-medical-blue flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                {(() => {
+                  const content = getModuleContent();
+                  if (content && 'learningObjectives' in content && Array.isArray(content.learningObjectives)) {
+                    return (
+                      <ul className="space-y-2 mb-6">
+                        {content.learningObjectives.map((objective: string, index: number) => (
+                          <li key={index} className="flex items-start">
+                            <div className="w-5 h-5 rounded-full bg-success-green flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
                               <div className="w-2 h-2 bg-white rounded-full" />
                             </div>
-                            <div>
-                              <h4 className="font-medium text-blue-900 mb-2">{takeaway.title}</h4>
-                              <p className="text-blue-800 text-sm">{takeaway.description}</p>
+                            <span className="text-sm">{objective}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    );
+                  }
+                  return null;
+                })()}
+
+                {(() => {
+                  const content = getModuleContent();
+                  if (content && 'keyTakeaways' in content && Array.isArray(content.keyTakeaways)) {
+                    return (
+                      <>
+                        <h3 className="text-lg font-semibold mb-4">Key Takeaways</h3>
+                        <div className="space-y-4">
+                          {content.keyTakeaways.map((takeaway: any, index: number) => (
+                            <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                              <div className="flex items-start">
+                                <div className="w-6 h-6 rounded-full bg-medical-blue flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                                  <div className="w-2 h-2 bg-white rounded-full" />
+                                </div>
+                                <div>
+                                  <h4 className="font-medium text-blue-900 mb-2">{takeaway.title}</h4>
+                                  <p className="text-blue-800 text-sm">{takeaway.description}</p>
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </>
-                )}
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </TabsContent>
 
