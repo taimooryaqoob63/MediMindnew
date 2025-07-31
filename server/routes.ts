@@ -139,57 +139,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Upload video file - Protected route
-  app.post("/api/videos/upload", isAuthenticated, async (req: any, res) => {
-    try {
-      const multer = require('multer');
-      const { Client } = require('@replit/object-storage');
-      
-      const upload = multer({ storage: multer.memoryStorage() });
-      
-      upload.single('video')(req, res, async (err: any) => {
-        if (err) {
-          return res.status(400).json({ message: "Error uploading file" });
-        }
-        
-        if (!req.file) {
-          return res.status(400).json({ message: "No video file provided" });
-        }
-        
-        const client = new Client();
-        const fileName = `videos/${Date.now()}-${req.file.originalname}`;
-        
-        await client.uploadFromBytes(fileName, req.file.buffer, {
-          contentType: req.file.mimetype
-        });
-        
-        const videoUrl = `/api/videos/${fileName}`;
-        res.json({ videoUrl, fileName });
-      });
-    } catch (error) {
-      console.error('Video upload error:', error);
-      res.status(500).json({ message: "Failed to upload video" });
-    }
-  });
-
-  // Serve video files
-  app.get("/api/videos/*", async (req, res) => {
-    try {
-      const { Client } = require('@replit/object-storage');
-      const client = new Client();
-      const fileName = req.params[0];
-      
-      const fileBuffer = await client.downloadAsBytes(fileName);
-      
-      res.setHeader('Content-Type', 'video/mp4');
-      res.setHeader('Accept-Ranges', 'bytes');
-      res.send(fileBuffer);
-    } catch (error) {
-      console.error('Video serve error:', error);
-      res.status(404).json({ message: "Video not found" });
-    }
-  });
-
   // Get resources
   app.get("/api/resources", async (req, res) => {
     try {

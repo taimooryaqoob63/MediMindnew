@@ -470,7 +470,7 @@ async function initializeSampleData() {
         courseId: course.id,
         title: "Understanding Diabetes",
         description: "Learn about Type 1 and Type 2 diabetes, their causes, and key symptoms to watch for in care home residents.",
-        videoUrl: "/api/videos/videos/understanding-diabetes.mp4",
+        videoUrl: "https://example.com/video1",
         duration: "12:45",
         content: {
           learningObjectives: [
@@ -496,7 +496,7 @@ async function initializeSampleData() {
         courseId: course.id,
         title: "Blood Glucose Monitoring",
         description: "Master the techniques and best practices for accurate blood glucose testing.",
-        videoUrl: "/api/videos/videos/blood-glucose-monitoring.mp4",
+        videoUrl: "https://example.com/video2",
         duration: "15:30",
         content: {
           learningObjectives: [
@@ -512,7 +512,7 @@ async function initializeSampleData() {
         courseId: course.id,
         title: "Insulin Administration",
         description: "Safe and effective insulin administration techniques and protocols.",
-        videoUrl: "/api/videos/videos/insulin-administration.mp4",
+        videoUrl: "https://example.com/video3",
         duration: "18:20",
         content: {
           learningObjectives: [
