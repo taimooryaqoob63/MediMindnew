@@ -29,9 +29,6 @@ export default function Landing() {
               <Button variant="outline" asChild>
                 <a href="/api/login">Log In</a>
               </Button>
-              <Button asChild>
-                <a href="/api/login">Sign Up</a>
-              </Button>
             </div>
           </div>
         </div>
@@ -145,6 +142,50 @@ export default function Landing() {
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sign Up Section */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8">
+            Ready to Get Started?
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-12">
+            Choose the option that best fits your needs
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+            <Card className="p-8 border-2 hover:border-[hsl(202,71%,44%)] transition-colors">
+              <CardHeader className="text-center pb-4">
+                <Users className="w-12 h-12 text-[hsl(202,71%,44%)] mx-auto mb-4" />
+                <CardTitle className="text-xl mb-2">Individual Healthcare Professional</CardTitle>
+                <CardDescription className="text-gray-600">
+                  Perfect for individual healthcare workers looking to enhance their skills
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <Button size="lg" className="w-full bg-[hsl(202,71%,44%)] hover:bg-[hsl(202,71%,38%)]" asChild>
+                  <a href="/api/login">Sign Up as Individual</a>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="p-8 border-2 hover:border-[hsl(202,71%,44%)] transition-colors">
+              <CardHeader className="text-center pb-4">
+                <Shield className="w-12 h-12 text-[hsl(202,71%,44%)] mx-auto mb-4" />
+                <CardTitle className="text-xl mb-2">Healthcare Organization</CardTitle>
+                <CardDescription className="text-gray-600">
+                  Ideal for hospitals, clinics, and healthcare organizations
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <Button size="lg" variant="outline" className="w-full border-[hsl(202,71%,44%)] text-[hsl(202,71%,44%)] hover:bg-[hsl(202,71%,44%)] hover:text-white" asChild>
+                  <a href="/api/login">Sign Up as Organization</a>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
