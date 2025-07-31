@@ -1,14 +1,17 @@
 import { 
   type User, type Course, type Module, type UserProgress, type ChatMessage, type Resource,
   type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress, 
-  type InsertChatMessage, type InsertResource 
+  type InsertChatMessage, type InsertResource, type UpsertUser,
+  users, courses, modules, userProgress, chatMessages, resources
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  // Users
+  // Users - Replit Auth compatible
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
   createUser(user: InsertUser): Promise<User>;
 
   // Courses
@@ -32,6 +35,117 @@ export interface IStorage {
   // Resources
   getResources(): Promise<Resource[]>;
   createResource(resource: InsertResource): Promise<Resource>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const id = randomUUID();
+    const user: User = { 
+      ...insertUser, 
+      id,
+      role: insertUser.role || "care_worker",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    const [createdUser] = await db.insert(users).values(user).returning();
+    return createdUser;
+  }
+
+  async getCourses(): Promise<Course[]> {
+    return await db.select().from(courses);
+  }
+
+  async getCourse(id: string): Promise<Course | undefined> {
+    const [course] = await db.select().from(courses).where(eq(courses.id, id));
+    return course || undefined;
+  }
+
+  async createCourse(insertCourse: InsertCourse): Promise<Course> {
+    const [course] = await db.insert(courses).values(insertCourse).returning();
+    return course;
+  }
+
+  async getModulesByCourse(courseId: string): Promise<Module[]> {
+    return await db.select().from(modules)
+      .where(eq(modules.courseId, courseId))
+      .orderBy(modules.orderIndex);
+  }
+
+  async getModule(id: string): Promise<Module | undefined> {
+    const [module] = await db.select().from(modules).where(eq(modules.id, id));
+    return module || undefined;
+  }
+
+  async createModule(insertModule: InsertModule): Promise<Module> {
+    const [module] = await db.insert(modules).values(insertModule).returning();
+    return module;
+  }
+
+  async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
+    return await db.select().from(userProgress)
+      .where(eq(userProgress.userId, userId))
+      .where(eq(userProgress.courseId, courseId));
+  }
+
+  async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
+    const existing = await db.select().from(userProgress)
+      .where(eq(userProgress.userId, insertProgress.userId))
+      .where(eq(userProgress.courseId, insertProgress.courseId))
+      .where(eq(userProgress.moduleId, insertProgress.moduleId || ""));
+    
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(userProgress)
+        .set(insertProgress)
+        .where(eq(userProgress.id, existing[0].id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(userProgress).values(insertProgress).returning();
+      return created;
+    }
+  }
+
+  async getChatMessages(userId: string, courseId: string): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages)
+      .where(eq(chatMessages.userId, userId))
+      .where(eq(chatMessages.courseId, courseId))
+      .orderBy(chatMessages.timestamp);
+  }
+
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const [message] = await db.insert(chatMessages).values(insertMessage).returning();
+    return message;
+  }
+
+  async getResources(): Promise<Resource[]> {
+    return await db.select().from(resources);
+  }
+
+  async createResource(insertResource: InsertResource): Promise<Resource> {
+    const [resource] = await db.insert(resources).values(insertResource).returning();
+    return resource;
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -322,4 +436,116 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Use DatabaseStorage for production with Replit Auth
+export const storage = new DatabaseStorage();
+
+// Initialize sample data in database
+async function initializeSampleData() {
+  try {
+    // Check if data already exists
+    const existingCourses = await storage.getCourses();
+    if (existingCourses.length > 0) {
+      return; // Data already initialized
+    }
+
+    // Create diabetes course
+    const course = await storage.createCourse({
+      title: "Diabetes Management Training",
+      description: "Comprehensive training on diabetes care for healthcare workers",
+      category: "diabetes"
+    });
+
+    // Create modules
+    const moduleData = [
+      {
+        courseId: course.id,
+        title: "Understanding Diabetes",
+        description: "Learn about Type 1 and Type 2 diabetes, their causes, and key symptoms to watch for in care home residents.",
+        videoUrl: "https://example.com/video1",
+        duration: "12:45",
+        content: {
+          learningObjectives: [
+            "Identify the key differences between Type 1 and Type 2 diabetes",
+            "Recognize early warning signs and symptoms in residents",
+            "Understand risk factors and prevention strategies",
+            "Apply NICE guidelines in daily care practices"
+          ],
+          keyTakeaways: [
+            {
+              title: "Type 1 vs Type 2 Diabetes",
+              description: "Type 1 is an autoimmune condition typically diagnosed in childhood, while Type 2 develops gradually and is often linked to lifestyle factors."
+            },
+            {
+              title: "Warning Signs to Monitor",
+              description: "Watch for increased thirst, frequent urination, unexplained weight loss, fatigue, and slow-healing wounds."
+            }
+          ]
+        },
+        orderIndex: 1
+      },
+      {
+        courseId: course.id,
+        title: "Blood Glucose Monitoring",
+        description: "Master the techniques and best practices for accurate blood glucose testing.",
+        videoUrl: "https://example.com/video2",
+        duration: "15:30",
+        content: {
+          learningObjectives: [
+            "Demonstrate proper blood glucose testing technique",
+            "Interpret blood glucose readings accurately",
+            "Maintain testing equipment properly",
+            "Document results according to care plans"
+          ]
+        },
+        orderIndex: 2
+      },
+      {
+        courseId: course.id,
+        title: "Insulin Administration",
+        description: "Safe and effective insulin administration techniques and protocols.",
+        videoUrl: "https://example.com/video3",
+        duration: "18:20",
+        content: {
+          learningObjectives: [
+            "Prepare insulin injections safely",
+            "Demonstrate proper injection techniques",
+            "Understand different insulin types and timing",
+            "Manage insulin storage requirements"
+          ]
+        },
+        orderIndex: 3
+      }
+    ];
+
+    for (const moduleInfo of moduleData) {
+      await storage.createModule(moduleInfo);
+    }
+
+    // Create resources
+    const resourceData = [
+      {
+        title: "NICE Guidelines",
+        type: "pdf",
+        url: "https://example.com/nice-guidelines.pdf",
+        category: "NICE"
+      },
+      {
+        title: "NHS Best Practices",
+        type: "pdf",
+        url: "https://example.com/nhs-practices.pdf",
+        category: "NHS"
+      }
+    ];
+
+    for (const resourceInfo of resourceData) {
+      await storage.createResource(resourceInfo);
+    }
+
+    console.log("Sample data initialized successfully");
+  } catch (error) {
+    console.log("Sample data may already exist or database not ready:", error);
+  }
+}
+
+// Initialize data when module loads
+initializeSampleData();

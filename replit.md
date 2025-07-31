@@ -38,12 +38,21 @@ The project is optimized for Replit development with:
 ### Backend Services
 - **API Layer**: RESTful Express.js server with structured route handling
 - **AI Integration**: OpenAI GPT-4o integration for intelligent tutoring responses
-- **Data Storage**: Currently implemented with in-memory storage (MemStorage) with interface for database migration
-- **Session Management**: Basic user session handling for MVP functionality
+- **Data Storage**: PostgreSQL database with Drizzle ORM for persistent data storage
+- **Session Management**: PostgreSQL-backed session storage for Replit Auth
+
+### Authentication System
+The application now uses Replit Authentication for secure user management:
+- **Replit Auth Integration**: OpenID Connect-based authentication system
+- **Session Management**: Secure PostgreSQL-based session storage
+- **User Profiles**: Automatic user creation and management via Replit Auth claims
+- **Protected Routes**: Authentication required for training features and progress tracking
+- **Landing Page**: Public landing page for unauthenticated visitors
 
 ### Database Schema
 The application uses a well-structured PostgreSQL schema with the following entities:
-- **Users**: Healthcare worker profiles with role-based access
+- **Sessions**: Secure session storage for Replit Auth (required)
+- **Users**: Healthcare worker profiles with Replit Auth integration
 - **Courses**: Training course definitions and metadata
 - **Modules**: Individual learning modules within courses
 - **User Progress**: Tracking completion and progress through modules

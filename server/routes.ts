@@ -3,22 +3,25 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { getAITutorResponse } from "./services/openai";
 import { insertChatMessageSchema } from "@shared/schema";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get current user (simplified for MVP)
-  app.get("/api/user", async (req, res) => {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser("user-1"); // Default user for MVP
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
-      res.status(500).json({ message: "Failed to get user" });
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
-  // Get courses
+  // Public routes (no auth required)
   app.get("/api/courses", async (req, res) => {
     try {
       const courses = await storage.getCourses();
@@ -27,6 +30,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get courses" });
     }
   });
+
+
 
   // Get course by ID
   app.get("/api/courses/:id", async (req, res) => {
@@ -64,22 +69,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user progress for a course
-  app.get("/api/progress/:courseId", async (req, res) => {
+  // Get user progress for a course - Protected route
+  app.get("/api/progress/:courseId", isAuthenticated, async (req: any, res) => {
     try {
-      const progress = await storage.getUserProgress("user-1", req.params.courseId);
+      const userId = req.user.claims.sub;
+      const progress = await storage.getUserProgress(userId, req.params.courseId);
       res.json(progress);
     } catch (error) {
       res.status(500).json({ message: "Failed to get progress" });
     }
   });
 
-  // Update user progress
-  app.post("/api/progress", async (req, res) => {
+  // Update user progress - Protected route
+  app.post("/api/progress", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const progressData = {
         ...req.body,
-        userId: "user-1", // Default user for MVP
+        userId,
         lastAccessed: new Date().toISOString()
       };
       const progress = await storage.updateUserProgress(progressData);
@@ -89,20 +96,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get chat messages
-  app.get("/api/chat/:courseId", async (req, res) => {
+  // Get chat messages - Protected route
+  app.get("/api/chat/:courseId", isAuthenticated, async (req: any, res) => {
     try {
-      const messages = await storage.getChatMessages("user-1", req.params.courseId);
+      const userId = req.user.claims.sub;
+      const messages = await storage.getChatMessages(userId, req.params.courseId);
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: "Failed to get chat messages" });
     }
   });
 
-  // Send chat message and get AI response
-  app.post("/api/chat", async (req, res) => {
+  // Send chat message and get AI response - Protected route
+  app.post("/api/chat", isAuthenticated, async (req: any, res) => {
     try {
       const { message, courseId, context } = req.body;
+      const userId = req.user.claims.sub;
       
       if (!message || !courseId) {
         return res.status(400).json({ message: "Message and courseId are required" });
@@ -113,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Save chat message
       const chatMessage = await storage.createChatMessage({
-        userId: "user-1",
+        userId,
         courseId,
         message,
         response: aiResponse.response,

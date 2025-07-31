@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { isUnauthorizedError } from "@/lib/authUtils";
 import AppHeader from "@/components/AppHeader";
 import Sidebar from "@/components/Sidebar";
 import VideoSection from "@/components/VideoSection";
@@ -8,12 +10,27 @@ import QuickAccessToolbar from "@/components/QuickAccessToolbar";
 import type { Course, Module, User, UserProgress } from "@shared/schema";
 
 export default function TrainingPage() {
-  const [selectedCourseId, setSelectedCourseId] = useState<string>("course-1");
-  const [selectedModuleId, setSelectedModuleId] = useState<string>("module-1");
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const { data: user } = useQuery<User>({
-    queryKey: ["/api/user"],
+  const { data: user, error: userError } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
   });
+
+  // Handle unauthorized access
+  useEffect(() => {
+    if (userError && isUnauthorizedError(userError as Error)) {
+      toast({
+        title: "Unauthorized",
+        description: "You are logged out. Logging in again...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+    }
+  }, [userError, toast]);
 
   const { data: courses = [] } = useQuery<Course[]>({
     queryKey: ["/api/courses"],
@@ -21,15 +38,31 @@ export default function TrainingPage() {
 
   const { data: modules = [] } = useQuery<Module[]>({
     queryKey: ["/api/courses", selectedCourseId, "modules"],
+    enabled: !!selectedCourseId,
   });
 
   const { data: currentModule } = useQuery<Module>({
     queryKey: ["/api/modules", selectedModuleId],
+    enabled: !!selectedModuleId,
   });
 
   const { data: progress = [] } = useQuery<UserProgress[]>({
     queryKey: ["/api/progress", selectedCourseId],
+    enabled: !!selectedCourseId,
   });
+
+  // Auto-select first course and module when available
+  useEffect(() => {
+    if (courses.length > 0 && !selectedCourseId) {
+      setSelectedCourseId(courses[0].id);
+    }
+  }, [courses, selectedCourseId]);
+
+  useEffect(() => {
+    if (modules.length > 0 && !selectedModuleId) {
+      setSelectedModuleId(modules[0].id);
+    }
+  }, [modules, selectedModuleId]);
 
   const selectedCourse = courses.find(c => c.id === selectedCourseId);
 

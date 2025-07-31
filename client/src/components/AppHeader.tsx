@@ -14,8 +14,24 @@ export default function AppHeader({ user }: AppHeaderProps) {
     hour12: false
   });
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const getInitials = (user: User) => {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    } else if (user.email) {
+      return user.email[0].toUpperCase();
+    }
+    return 'U';
+  };
+
+  const getUserDisplayName = (user: User) => {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    } else if (user.firstName) {
+      return user.firstName;
+    } else if (user.email) {
+      return user.email.split('@')[0];
+    }
+    return 'User';
   };
 
   return (
@@ -39,10 +55,14 @@ export default function AppHeader({ user }: AppHeaderProps) {
                 Home
               </Button>
               <Button variant="ghost" className="text-gray-600 hover:text-medical-blue">
-                About Us
+                Training
               </Button>
-              <Button variant="outline" className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white">
-                Login
+              <Button 
+                variant="outline" 
+                className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white"
+                onClick={() => window.location.href = '/api/logout'}
+              >
+                Logout
               </Button>
             </nav>
             
@@ -57,11 +77,11 @@ export default function AppHeader({ user }: AppHeaderProps) {
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-medical-blue rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-medium">
-                    {user ? getInitials(user.name) : 'U'}
+                    {user ? getInitials(user) : 'U'}
                   </span>
                 </div>
                 <span className="hidden md:block text-sm font-medium">
-                  {user?.name || 'User'}
+                  {user ? getUserDisplayName(user) : 'User'}
                 </span>
               </div>
             </div>
