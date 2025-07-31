@@ -177,7 +177,7 @@ export default function Landing() {
                 <Shield className="w-12 h-12 text-[hsl(202,71%,44%)] mx-auto mb-4" />
                 <CardTitle className="text-xl mb-2">Healthcare Organization</CardTitle>
                 <CardDescription className="text-gray-600">
-                  Ideal for hospitals, clinics, and healthcare organizations
+                  Ideal for Nursing / Care Homes
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-4">
