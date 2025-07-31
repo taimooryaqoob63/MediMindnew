@@ -27,7 +27,7 @@ export default function Landing() {
             </div>
             <div className="flex space-x-3">
               <Button variant="outline" asChild>
-                <a href="/api/login">Sign In</a>
+                <a href="/api/login">Log In</a>
               </Button>
             </div>
           </div>
@@ -38,7 +38,7 @@ export default function Landing() {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-            Elevate your professional development with our cutting-edge platform. You'll get interactive courses, comprehensive diabetes care training, and an AI tutor rigorously trained on NICE, NHS, and CQC guidelines. This ensures your learning is always accurate and aligned with the highest standards. Benefit from the combined power of expert educators and intelligent AI supervision, delivering the best possible professional growth for healthcare workers.
+            Elevate your professional development with our cutting-edge platform. You'll get interactive courses, comprehensive training, and an AI tutor rigorously trained on NICE, NHS, and CQC guidelines. This ensures your learning is always accurate and aligned with the highest standards. Benefit from the combined power of expert educators and intelligent AI supervision, delivering the best possible professional growth for healthcare workers.
           </p>
           
         </div>
@@ -60,10 +60,9 @@ export default function Landing() {
             <Card>
               <CardHeader>
                 <BookOpen className="w-10 h-10 text-[hsl(202,71%,44%)] mb-2" />
-                <CardTitle>Interactive Video Training</CardTitle>
+                <CardTitle>Interactive Training</CardTitle>
                 <CardDescription>
-                  Comprehensive video modules covering insulin administration, 
-                  blood glucose monitoring, and diabetes management protocols.
+                  Comprehensive interactive modules 
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -105,8 +104,8 @@ export default function Landing() {
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">NICE Guidelines Compliance</h3>
-                    <p className="text-gray-600 dark:text-gray-400">Training content directly aligned with current NICE diabetes guidelines.</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">Guidelines Compliance</h3>
+                    <p className="text-gray-600 dark:text-gray-400">Training content directly aligned with current guidelines.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -120,7 +119,7 @@ export default function Landing() {
                   <CheckCircle className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0" />
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-gray-100">Expert Support</h3>
-                    <p className="text-gray-600 dark:text-gray-400">AI tutor provides instant, expert-level guidance based on evidence-based practices.</p>
+                    <p className="text-gray-600 dark:text-gray-400">AI tutor rigorously trained on NICE, NHS, and CQC guidelines provides instant, expert-level guidance based on evidence-based practices.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -134,13 +133,12 @@ export default function Landing() {
             </div>
             <div className="lg:text-center">
               <div className="bg-[hsl(202,71%,44%)] dark:bg-[hsl(202,71%,44%)] rounded-2xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-4">Ready to Improve Care Quality?</h3>
+                <h3 className="text-2xl font-bold mb-4">Ready to Improve Care Quality ?</h3>
                 <p className="text-blue-100 mb-6">
-                  Join healthcare professionals already using MediMind AI to deliver 
-                  better diabetes care with confidence.
+                  Join healthcare professionals already using MediMind AI 
                 </p>
                 <Button size="lg" className="bg-white text-[hsl(202,71%,44%)] hover:bg-gray-100" asChild>
-                  <a href="/api/login">Start Your Training Journey</a>
+                  <a href="/api/login">Start Your  Journey</a>
                 </Button>
               </div>
             </div>
@@ -164,9 +162,9 @@ export default function Landing() {
             <Card className="p-8 text-center">
               <CardHeader>
                 <Users className="w-12 h-12 text-[hsl(202,71%,44%)] mx-auto mb-4" />
-                <CardTitle className="text-2xl mb-2">Individual Healthcare Worker</CardTitle>
+                <CardTitle className="text-2xl mb-2">Individual </CardTitle>
                 <CardDescription className="text-lg">
-                  Perfect for individual care workers looking to enhance their diabetes care skills
+                  Perfect for individuals looking to enhance their diabetes care skills
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
@@ -197,9 +195,9 @@ export default function Landing() {
             <Card className="p-8 text-center border-2 border-[hsl(202,71%,44%)]">
               <CardHeader>
                 <Shield className="w-12 h-12 text-[hsl(202,71%,44%)] mx-auto mb-4" />
-                <CardTitle className="text-2xl mb-2">Company/Care Home</CardTitle>
+                <CardTitle className="text-2xl mb-2">Nursing / Care Home</CardTitle>
                 <CardDescription className="text-lg">
-                  Comprehensive training solution for care homes and healthcare organizations
+                  Comprehensive training solution for organizations
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
