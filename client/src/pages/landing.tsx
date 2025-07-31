@@ -184,7 +184,7 @@ export default function Landing() {
                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Shield className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready to Transform Care Quality?</h3>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-4">Ready to Transform Care Quality ?</h3>
                   <p className="text-blue-100 mb-8 text-lg leading-relaxed">
                     Join thousands of healthcare professionals already advancing their skills with MediMind AI
                   </p>
@@ -327,7 +327,7 @@ export default function Landing() {
               </div>
             </div>
             <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Empowering healthcare professionals with evidence-based diabetes care training through cutting-edge AI technology.
+              Empowering healthcare professionals with evidence-based training through cutting-edge AI technology.
             </p>
             <div className="border-t border-gray-700 pt-8">
               <p className="text-sm text-gray-400">
