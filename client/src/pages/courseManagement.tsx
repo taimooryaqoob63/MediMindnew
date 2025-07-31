@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import type { Course, Module } from "@shared/schema";
 import VideoUpload from "@/components/VideoUpload";
+import ModuleEditDialog from "@/components/ModuleEditDialog";
 import AppHeader from "@/components/AppHeader";
 
 interface CourseManagementProps {
@@ -188,9 +189,12 @@ export default function CourseManagement({ user }: CourseManagementProps) {
                                 `}>
                                   {module.videoUrl ? 'Video Ready' : 'No Video'}
                                 </div>
-                                <Button variant="ghost" size="sm">
-                                  <Edit className="w-4 h-4" />
-                                </Button>
+                                <ModuleEditDialog 
+                                  module={module}
+                                  onUpdate={(updatedModule) => {
+                                    // Module list will update automatically via query invalidation
+                                  }}
+                                />
                               </div>
                             </div>
                           </div>

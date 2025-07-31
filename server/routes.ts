@@ -21,7 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await fs.mkdir(uploadDir, { recursive: true });
         cb(null, uploadDir);
       } catch (error) {
-        cb(error, uploadDir);
+        cb(error as Error, uploadDir);
       }
     },
     filename: (req, file, cb) => {
@@ -181,6 +181,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating module:", error);
       res.status(500).json({ message: "Failed to create module" });
+    }
+  });
+
+  // Update module - Protected route
+  app.patch("/api/modules/:id", isAuthenticated, async (req, res) => {
+    try {
+      const module = await storage.updateModule(req.params.id, req.body);
+      if (!module) {
+        return res.status(404).json({ message: "Module not found" });
+      }
+      res.json(module);
+    } catch (error) {
+      console.error("Error updating module:", error);
+      res.status(500).json({ message: "Failed to update module" });
     }
   });
 
