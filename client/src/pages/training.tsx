@@ -8,7 +8,6 @@ import Sidebar from "@/components/Sidebar";
 import VideoSection from "@/components/VideoSection";
 import AITutorChat from "@/components/AITutorChat";
 import QuickAccessToolbar from "@/components/QuickAccessToolbar";
-import DocumentUpload from "@/components/DocumentUpload";
 
 import type { Course, Module, User, UserProgress } from "@shared/schema";
 
@@ -17,7 +16,6 @@ export default function TrainingPage() {
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isDocumentUploadOpen, setIsDocumentUploadOpen] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -171,37 +169,9 @@ export default function TrainingPage() {
       <QuickAccessToolbar
         onChatToggle={() => setIsChatOpen(!isChatOpen)}
         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        onDocumentUpload={() => setIsDocumentUploadOpen(true)}
         isMobile={isMobile}
         isChatOpen={isChatOpen}
       />
-
-      {/* Document Upload Modal */}
-      {isDocumentUploadOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-text-dark">Upload Guidelines</h2>
-              <button
-                onClick={() => setIsDocumentUploadOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <DocumentUpload 
-              onUploadComplete={() => {
-                toast({
-                  title: "Document processed",
-                  description: "Your guideline document has been added to the AI tutor's knowledge base.",
-                });
-              }}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

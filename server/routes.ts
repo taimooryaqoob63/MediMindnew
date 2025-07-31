@@ -64,7 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const videoUrl = `/uploads/videos/${req.file.filename}`;
-
+      
       res.json({
         message: 'Video uploaded successfully',
         videoUrl,
@@ -255,14 +255,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { message, courseId, context } = req.body;
       const userId = req.user.claims.sub;
-
+      
       if (!message || !courseId) {
         return res.status(400).json({ message: "Message and courseId are required" });
       }
 
       // Get AI response
       const aiResponse = await getAITutorResponse(message, context);
-
+      
       // Save chat message
       const chatMessage = await storage.createChatMessage({
         userId,

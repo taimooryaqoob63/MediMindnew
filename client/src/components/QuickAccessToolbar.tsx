@@ -1,11 +1,10 @@
-import { BookOpen, Calculator, Clock, HelpCircle, MessageCircle, Menu, Upload } from "lucide-react";
+import { BookOpen, Calculator, Clock, HelpCircle, MessageCircle, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface QuickAccessToolbarProps {
   onChatToggle?: () => void;
   onSidebarToggle?: () => void;
-  onDocumentUpload?: () => void;
   isMobile?: boolean;
   isChatOpen?: boolean;
 }
@@ -13,7 +12,6 @@ interface QuickAccessToolbarProps {
 export default function QuickAccessToolbar({ 
   onChatToggle, 
   onSidebarToggle, 
-  onDocumentUpload,
   isMobile,
   isChatOpen 
 }: QuickAccessToolbarProps) {
@@ -75,7 +73,7 @@ export default function QuickAccessToolbar({
           </TooltipContent>
         </Tooltip>
       )}
-
+      
       {/* Mobile Menu FAB */}
       {isMobile && onSidebarToggle && (
         <Tooltip>
@@ -93,7 +91,7 @@ export default function QuickAccessToolbar({
           </TooltipContent>
         </Tooltip>
       )}
-
+      
       {/* Quick Access Tools */}
       {quickActions.map((action, index) => (
         <Tooltip key={index}>
