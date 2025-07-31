@@ -15,10 +15,13 @@ if (!process.env.REPLIT_DOMAINS) {
 const getOidcConfig = memoize(
   async () => {
     try {
-      return await client.discovery(
+      console.log("Discovering OIDC config with REPL_ID:", process.env.REPL_ID);
+      const config = await client.discovery(
         new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
         process.env.REPL_ID!
       );
+      console.log("OIDC Config discovered successfully");
+      return config;
     } catch (error) {
       console.error("OIDC Config Error:", error);
       throw error;
@@ -77,7 +80,14 @@ export async function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  const config = await getOidcConfig();
+  let config;
+  try {
+    config = await getOidcConfig();
+    console.log("OIDC Config loaded successfully");
+  } catch (error) {
+    console.error("Failed to load OIDC config:", error);
+    throw error;
+  }
 
   const verify: VerifyFunction = async (
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
@@ -101,6 +111,7 @@ export async function setupAuth(app: Express) {
       verify,
     );
     passport.use(strategy);
+    console.log(`Registered auth strategy for domain: ${domain}`);
   }
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
@@ -120,9 +131,26 @@ export async function setupAuth(app: Express) {
     // Use the first domain from REPLIT_DOMAINS instead of req.hostname for local dev
     const domain = process.env.REPLIT_DOMAINS!.split(",")[0];
     console.log("Callback for domain:", domain, "hostname:", req.hostname);
-    passport.authenticate(`replitauth:${domain}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
+    console.log("Callback query params:", req.query);
+    
+    passport.authenticate(`replitauth:${domain}`, (err, user, info) => {
+      if (err) {
+        console.error("Authentication error:", err);
+        return res.redirect("/api/login?error=auth_failed");
+      }
+      if (!user) {
+        console.error("Authentication failed - no user:", info);
+        return res.redirect("/api/login?error=no_user");
+      }
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          console.error("Login error:", err);
+          return res.redirect("/api/login?error=login_failed");
+        }
+        console.log("Authentication successful, redirecting to /");
+        return res.redirect("/");
+      });
     })(req, res, next);
   });
 
