@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Users, Shield, BookOpen, Play, GraduationCap } from "lucide-react";
+import { CheckCircle, Users, Shield, BookOpen, GraduationCap } from "lucide-react";
 import logoPath from "@assets/logo (1)_1753961810037.png";
 
 export default function Landing() {
