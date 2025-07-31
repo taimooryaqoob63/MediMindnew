@@ -2,12 +2,108 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { getAITutorResponse } from "./services/openai";
-import { insertChatMessageSchema } from "@shared/schema";
+import { insertChatMessageSchema, insertModuleSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import multer from "multer";
+import path from "path";
+import fs from "fs/promises";
+import express from "express";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+
+  // Configure multer for video uploads
+  const storage_config = multer.diskStorage({
+    destination: async (req, file, cb) => {
+      const uploadDir = './uploads/videos';
+      try {
+        await fs.mkdir(uploadDir, { recursive: true });
+        cb(null, uploadDir);
+      } catch (error) {
+        cb(error, uploadDir);
+      }
+    },
+    filename: (req, file, cb) => {
+      // Create unique filename with timestamp
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+
+  const upload = multer({
+    storage: storage_config,
+    limits: {
+      fileSize: 500 * 1024 * 1024, // 500MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      // Allow only video files
+      if (file.mimetype.startsWith('video/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only video files are allowed!'));
+      }
+    }
+  });
+
+  // Serve uploaded videos statically
+  app.use('/uploads', async (req, res, next) => {
+    // Add basic security check
+    if (req.path.includes('..') || req.path.includes('~')) {
+      return res.status(400).json({ message: 'Invalid path' });
+    }
+    next();
+  });
+  app.use('/uploads', express.static('./uploads'));
+
+  // Video upload route - Protected
+  app.post('/api/upload/video', isAuthenticated, upload.single('video'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No video file uploaded' });
+      }
+
+      const videoUrl = `/uploads/videos/${req.file.filename}`;
+      
+      res.json({
+        message: 'Video uploaded successfully',
+        videoUrl,
+        originalName: req.file.originalname,
+        filename: req.file.filename,
+        size: req.file.size
+      });
+    } catch (error) {
+      console.error('Video upload error:', error);
+      res.status(500).json({ message: 'Failed to upload video' });
+    }
+  });
+
+  // Create or update module with video - Protected
+  app.post('/api/modules', isAuthenticated, async (req: any, res) => {
+    try {
+      const moduleData = insertModuleSchema.parse(req.body);
+      const module = await storage.createModule(moduleData);
+      res.json(module);
+    } catch (error) {
+      console.error('Module creation error:', error);
+      res.status(500).json({ message: 'Failed to create module' });
+    }
+  });
+
+  // Update module - Protected
+  app.put('/api/modules/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const moduleData = req.body;
+      const module = await storage.updateModule(req.params.id, moduleData);
+      if (!module) {
+        return res.status(404).json({ message: 'Module not found' });
+      }
+      res.json(module);
+    } catch (error) {
+      console.error('Module update error:', error);
+      res.status(500).json({ message: 'Failed to update module' });
+    }
+  });
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -66,6 +162,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(module);
     } catch (error) {
       res.status(500).json({ message: "Failed to get module" });
+    }
+  });
+
+  // Create module - Protected route
+  app.post("/api/modules", isAuthenticated, async (req, res) => {
+    try {
+      const validation = insertModuleSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid module data", 
+          errors: validation.error.issues 
+        });
+      }
+
+      const module = await storage.createModule(validation.data);
+      res.status(201).json(module);
+    } catch (error) {
+      console.error("Error creating module:", error);
+      res.status(500).json({ message: "Failed to create module" });
     }
   });
 

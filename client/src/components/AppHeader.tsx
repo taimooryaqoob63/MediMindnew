@@ -1,5 +1,6 @@
 import { Clock, Bell, Menu, MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link, useLocation } from "wouter";
 import type { User } from "@shared/schema";
 import logoPath from "@assets/logo (1)_1753961810037.png";
 
@@ -11,6 +12,7 @@ interface AppHeaderProps {
 }
 
 export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobile }: AppHeaderProps) {
+  const [location] = useLocation();
   const currentTime = new Date().toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
@@ -68,12 +70,26 @@ export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobil
           
           <div className="flex items-center space-x-6">
             <nav className="hidden md:flex items-center space-x-6">
-              <Button variant="ghost" className="text-gray-600 hover:text-medical-blue button-interactive">
-                Home
-              </Button>
-              <Button variant="ghost" className="text-gray-600 hover:text-medical-blue button-interactive">
-                Courses
-              </Button>
+              <Link href="/training">
+                <Button 
+                  variant="ghost" 
+                  className={`text-gray-600 hover:text-medical-blue button-interactive ${
+                    location === '/training' || location === '/' ? 'text-medical-blue' : ''
+                  }`}
+                >
+                  Training
+                </Button>
+              </Link>
+              <Link href="/manage">
+                <Button 
+                  variant="ghost" 
+                  className={`text-gray-600 hover:text-medical-blue button-interactive ${
+                    location === '/manage' ? 'text-medical-blue' : ''
+                  }`}
+                >
+                  Manage Courses
+                </Button>
+              </Link>
               <Button 
                 variant="outline" 
                 className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white button-interactive"

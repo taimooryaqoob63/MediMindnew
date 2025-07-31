@@ -23,6 +23,7 @@ export interface IStorage {
   getModulesByCourse(courseId: string): Promise<Module[]>;
   getModule(id: string): Promise<Module | undefined>;
   createModule(module: InsertModule): Promise<Module>;
+  updateModule(id: string, updates: Partial<InsertModule>): Promise<Module | undefined>;
 
   // User Progress
   getUserProgress(userId: string, courseId: string): Promise<UserProgress[]>;
@@ -108,6 +109,15 @@ export class DatabaseStorage implements IStorage {
   async createModule(insertModule: InsertModule): Promise<Module> {
     const [module] = await db.insert(modules).values(insertModule).returning();
     return module;
+  }
+
+  async updateModule(id: string, updates: Partial<InsertModule>): Promise<Module | undefined> {
+    const [module] = await db
+      .update(modules)
+      .set(updates)
+      .where(eq(modules.id, id))
+      .returning();
+    return module || undefined;
   }
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
@@ -388,6 +398,16 @@ export class MemStorage implements IStorage {
     };
     this.modules.set(id, module);
     return module;
+  }
+
+  async updateModule(id: string, updates: Partial<InsertModule>): Promise<Module | undefined> {
+    const existing = this.modules.get(id);
+    if (!existing) {
+      return undefined;
+    }
+    const updated = { ...existing, ...updates };
+    this.modules.set(id, updated);
+    return updated;
   }
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
