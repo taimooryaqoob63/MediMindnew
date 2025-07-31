@@ -41,7 +41,7 @@ export default function Landing() {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-            Elevate your professional development with our cutting-edge platform. You'll get interactive courses, comprehensive diabetes care training, and an AI tutor rigorously trained on NICE, NHS, and CQC guidelines. This ensures your learning is always accurate and aligned with the highest standards. Benefit from the combined power of expert educators and intelligent AI supervision, delivering the best possible professional growth for healthcare workers.
+            Elevate your professional development with our cutting-edge platform. You will get interactive courses, comprehensive care training, and an AI tutor rigorously trained on NICE, NHS, and CQC guidelines. This ensures your learning is always accurate and aligned with the highest standards. Benefit from the combined power of expert educators and intelligent AI supervision, delivering the best possible professional growth for healthcare workers.
           </p>
           
         </div>
