@@ -27,10 +27,10 @@ export default function Landing() {
             </div>
             <div className="flex space-x-3">
               <Button variant="outline" asChild>
-                <a href="/api/login">Sign In</a>
+                <a href="/api/login">Log In</a>
               </Button>
               <Button asChild>
-                <a href="/api/login">Get Started</a>
+                <a href="/api/login">Sign Up</a>
               </Button>
             </div>
           </div>
