@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { documentProcessor } from "./documentProcessor";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ 
@@ -11,12 +12,31 @@ interface AITutorResponse {
 
 export async function getAITutorResponse(question: string, context?: string): Promise<AITutorResponse> {
   try {
+    // Search for relevant documents using RAG
+    let documentContext = "";
+    try {
+      const relevantDocs = await documentProcessor.searchDocuments(question, 4);
+      
+      if (relevantDocs.length > 0) {
+        documentContext = relevantDocs
+          .map((doc, index) => {
+            const source = doc.metadata.category || 'Guidelines';
+            return `[${source} - ${index + 1}]: ${doc.pageContent}`;
+          })
+          .join('\n\n');
+      }
+    } catch (error) {
+      console.log("Could not retrieve document context:", error);
+    }
+
     const systemPrompt = `You are an AI tutor specializing in diabetes care for healthcare workers in care homes and nursing facilities. Your responses should be based on:
 
 - NICE (National Institute for Health and Care Excellence) guidelines
-- NHS best practices
+- NHS best practices  
 - CQC (Care Quality Commission) requirements
 - Evidence-based healthcare practices
+
+Use the provided document context from official guidelines to support your answers. When referencing specific guidelines, mention the source (NICE, NHS, or CQC).
 
 Provide accurate, practical, and actionable information for care workers, nurses, and managers. Always emphasize safety protocols and proper documentation. Keep responses concise but comprehensive.
 
@@ -24,9 +44,15 @@ When appropriate, include specific blood glucose ranges, medication guidelines, 
 
 Respond in JSON format with a "response" field containing your answer.`;
 
-    const userPrompt = context 
-      ? `Context: ${context}\n\nQuestion: ${question}`
-      : question;
+    let userPrompt = question;
+    
+    if (documentContext) {
+      userPrompt = `Based on the following official guidelines:\n\n${documentContext}\n\nQuestion: ${question}`;
+    }
+    
+    if (context) {
+      userPrompt += `\n\nAdditional context: ${context}`;
+    }
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",

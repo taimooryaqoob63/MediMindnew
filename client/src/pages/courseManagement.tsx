@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import type { Course, Module } from "@shared/schema";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import VideoUpload from "@/components/VideoUpload";
+import DocumentUpload from "@/components/DocumentUpload";
 import ModuleEditDialog from "@/components/ModuleEditDialog";
 import ModuleDeleteDialog from "@/components/ModuleDeleteDialog";
 import AppHeader from "@/components/AppHeader";
@@ -52,7 +54,7 @@ export default function CourseManagement({ user }: CourseManagementProps) {
   return (
     <div className="min-h-screen bg-light">
       <AppHeader user={user} />
-      
+
       <div className="pt-16 p-6 max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-text-dark mb-2">Course Management</h1>
@@ -100,114 +102,126 @@ export default function CourseManagement({ user }: CourseManagementProps) {
                       <CardTitle className="text-xl">{selectedCourse.title}</CardTitle>
                       <p className="text-gray-600 mt-1">{selectedCourse.description}</p>
                     </div>
-                    <Button
-                      onClick={() => setShowUpload(true)}
-                      className="bg-medical-blue hover:bg-medical-blue/90"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Video
-                    </Button>
+                    
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {modules.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Video className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-600 mb-2">No modules yet</h3>
-                      <p className="text-gray-500 mb-6">Upload your first video to get started with this course.</p>
-                      <Button
-                        onClick={() => setShowUpload(true)}
-                        className="bg-medical-blue hover:bg-medical-blue/90"
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload First Video
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {modules
-                        .sort((a, b) => a.orderIndex - b.orderIndex)
-                        .map((module) => (
-                          <div
-                            key={module.id}
-                            className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                <Tabs defaultValue="modules" className="space-y-4">
+                  <TabsList>
+                    <TabsTrigger value="modules">Modules</TabsTrigger>
+                    <TabsTrigger value="upload">Upload Videos</TabsTrigger>
+                    <TabsTrigger value="documents">Upload Guidelines</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="modules">
+                      {modules.length === 0 ? (
+                        <div className="text-center py-12">
+                          <Video className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                          <h3 className="text-lg font-medium text-gray-600 mb-2">No modules yet</h3>
+                          <p className="text-gray-500 mb-6">Upload your first video to get started with this course.</p>
+                          <Button
+                            onClick={() => setShowUpload(true)}
+                            className="bg-medical-blue hover:bg-medical-blue/90"
                           >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-3 mb-2">
-                                  <div className="w-12 h-8 bg-gray-900 rounded flex items-center justify-center">
-                                    {module.videoUrl ? (
-                                      <Video className="w-4 h-4 text-white" />
-                                    ) : (
-                                      <Upload className="w-4 h-4 text-gray-400" />
-                                    )}
-                                  </div>
-                                  <div>
-                                    <h3 className="font-medium text-text-dark">{module.title}</h3>
-                                    <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                      <div className="flex items-center">
-                                        <Clock className="w-3 h-3 mr-1" />
-                                        {module.duration}
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload First Video
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {modules
+                            .sort((a, b) => a.orderIndex - b.orderIndex)
+                            .map((module) => (
+                              <div
+                                key={module.id}
+                                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-3 mb-2">
+                                      <div className="w-12 h-8 bg-gray-900 rounded flex items-center justify-center">
+                                        {module.videoUrl ? (
+                                          <Video className="w-4 h-4 text-white" />
+                                        ) : (
+                                          <Upload className="w-4 h-4 text-gray-400" />
+                                        )}
                                       </div>
-                                      <div className="flex items-center">
-                                        <FileText className="w-3 h-3 mr-1" />
-                                        Module {module.orderIndex}
+                                      <div>
+                                        <h3 className="font-medium text-text-dark">{module.title}</h3>
+                                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                          <div className="flex items-center">
+                                            <Clock className="w-3 h-3 mr-1" />
+                                            {module.duration}
+                                          </div>
+                                          <div className="flex items-center">
+                                            <FileText className="w-3 h-3 mr-1" />
+                                            Module {module.orderIndex}
+                                          </div>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                </div>
-                                <p className="text-gray-600 text-sm mb-3">{module.description}</p>
-                                
-                                {/* Learning Objectives Preview */}
-                                {module.content && 
-                                 typeof module.content === 'object' && 
-                                 'learningObjectives' in module.content &&
-                                 Array.isArray((module.content as any).learningObjectives) && (
-                                  <div className="flex flex-wrap gap-1">
-                                    {((module.content as any).learningObjectives as string[])
-                                      .slice(0, 3)
-                                      .map((objective, index) => (
-                                        <Badge key={index} variant="outline" className="text-xs">
-                                          {objective.length > 30 ? objective.substring(0, 30) + "..." : objective}
-                                        </Badge>
-                                      ))}
-                                    {((module.content as any).learningObjectives as string[]).length > 3 && (
-                                      <Badge variant="outline" className="text-xs">
-                                        +{((module.content as any).learningObjectives as string[]).length - 3} more
-                                      </Badge>
+                                    <p className="text-gray-600 text-sm mb-3">{module.description}</p>
+
+                                    {/* Learning Objectives Preview */}
+                                    {module.content && 
+                                     typeof module.content === 'object' && 
+                                     'learningObjectives' in module.content &&
+                                     Array.isArray((module.content as any).learningObjectives) && (
+                                      <div className="flex flex-wrap gap-1">
+                                        {((module.content as any).learningObjectives as string[])
+                                          .slice(0, 3)
+                                          .map((objective, index) => (
+                                            <Badge key={index} variant="outline" className="text-xs">
+                                              {objective.length > 30 ? objective.substring(0, 30) + "..." : objective}
+                                            </Badge>
+                                          ))}
+                                        {((module.content as any).learningObjectives as string[]).length > 3 && (
+                                          <Badge variant="outline" className="text-xs">
+                                            +{((module.content as any).learningObjectives as string[]).length - 3} more
+                                          </Badge>
+                                        )}
+                                      </div>
                                     )}
                                   </div>
-                                )}
-                              </div>
-                              
-                              <div className="flex items-center space-x-2 ml-4">
-                                <div className={`
-                                  px-2 py-1 rounded-full text-xs font-medium
-                                  ${module.videoUrl 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-yellow-100 text-yellow-800'
-                                  }
-                                `}>
-                                  {module.videoUrl ? 'Video Ready' : 'No Video'}
+
+                                  <div className="flex items-center space-x-2 ml-4">
+                                    <div className={`
+                                      px-2 py-1 rounded-full text-xs font-medium
+                                      ${module.videoUrl 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : 'bg-yellow-100 text-yellow-800'
+                                      }
+                                    `}>
+                                      {module.videoUrl ? 'Video Ready' : 'No Video'}
+                                    </div>
+                                    <ModuleEditDialog 
+                                      module={module}
+                                      onUpdate={(updatedModule) => {
+                                        // Module list will update automatically via query invalidation
+                                      }}
+                                    />
+                                    <ModuleDeleteDialog 
+                                      module={module}
+                                      onDelete={() => {
+                                        // Module list will update automatically via query invalidation
+                                      }}
+                                    />
+                                  </div>
                                 </div>
-                                <ModuleEditDialog 
-                                  module={module}
-                                  onUpdate={(updatedModule) => {
-                                    // Module list will update automatically via query invalidation
-                                  }}
-                                />
-                                <ModuleDeleteDialog 
-                                  module={module}
-                                  onDelete={() => {
-                                    // Module list will update automatically via query invalidation
-                                  }}
-                                />
                               </div>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
+                            ))}
+                        </div>
+                      )}
+                    </TabsContent>
+
+                  <TabsContent value="upload">
+                    <VideoUpload />
+                  </TabsContent>
+
+                  <TabsContent value="documents">
+                    <DocumentUpload />
+                  </TabsContent>
+                </Tabs>
                 </CardContent>
               </Card>
             ) : (

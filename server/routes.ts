@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { getAITutorResponse } from "./services/openai";
 import { insertChatMessageSchema, insertModuleSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { documentProcessor } from "./services/documentProcessor";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
@@ -14,7 +15,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
 
   // Configure multer for video uploads
-  const storage_config = multer.diskStorage({
+  const videoStorage = multer.diskStorage({
     destination: async (req, file, cb) => {
       const uploadDir = './uploads/videos';
       try {
@@ -31,8 +32,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const upload = multer({
-    storage: storage_config,
+  const uploadVideo = multer({
+    storage: videoStorage,
     limits: {
       fileSize: 500 * 1024 * 1024, // 500MB limit
     },
@@ -42,6 +43,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cb(null, true);
       } else {
         cb(new Error('Only video files are allowed!'));
+      }
+    }
+  });
+
+  // Configure multer for PDF document uploads
+  const documentStorage = multer.diskStorage({
+    destination: async (req, file, cb) => {
+      const uploadDir = './documents';
+      try {
+        await fs.mkdir(uploadDir, { recursive: true });
+        cb(null, uploadDir);
+      } catch (error) {
+        cb(error as Error, uploadDir);
+      }
+    },
+    filename: (req, file, cb) => {
+      // Keep original filename for documents
+      cb(null, file.originalname);
+    }
+  });
+
+  const uploadDocument = multer({
+    storage: documentStorage,
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB limit for PDFs
+    },
+    fileFilter: (req, file, cb) => {
+      // Allow only PDF files
+      if (file.mimetype === 'application/pdf') {
+        cb(null, true);
+      } else {
+        cb(new Error('Only PDF files are allowed!'));
       }
     }
   });
@@ -57,7 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/uploads', express.static('./uploads'));
 
   // Video upload route - Protected
-  app.post('/api/upload/video', isAuthenticated, upload.single('video'), async (req: any, res) => {
+  app.post('/api/upload/video', isAuthenticated, uploadVideo.single('video'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: 'No video file uploaded' });
@@ -291,6 +324,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get resources" });
     }
   });
+
+  // PDF document upload route - Protected
+  app.post('/api/upload/document', isAuthenticated, uploadDocument.single('document'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No PDF file uploaded' });
+      }
+
+      const filePath = req.file.path;
+      
+      // Process the document and add to vector store
+      try {
+        await documentProcessor.addDocument(filePath);
+        
+        res.json({
+          message: 'Document uploaded and processed successfully',
+          filename: req.file.filename,
+          originalName: req.file.originalname,
+          size: req.file.size
+        });
+      } catch (processError) {
+        console.error('Document processing error:', processError);
+        res.status(500).json({ message: 'Document uploaded but failed to process for search' });
+      }
+    } catch (error) {
+      console.error('Document upload error:', error);
+      res.status(500).json({ message: 'Failed to upload document' });
+    }
+  });
+
+  // List uploaded documents - Protected
+  app.get('/api/documents', isAuthenticated, async (req, res) => {
+    try {
+      const documentsDir = './documents';
+      await fs.mkdir(documentsDir, { recursive: true });
+      
+      const files = await fs.readdir(documentsDir);
+      const pdfFiles = files.filter(file => file.toLowerCase().endsWith('.pdf'));
+      
+      const documents = await Promise.all(
+        pdfFiles.map(async (filename) => {
+          const filePath = path.join(documentsDir, filename);
+          const stats = await fs.stat(filePath);
+          
+          let category = 'General';
+          const lower = filename.toLowerCase();
+          if (lower.includes('nice')) category = 'NICE';
+          else if (lower.includes('nhs')) category = 'NHS';
+          else if (lower.includes('cqc')) category = 'CQC';
+          
+          return {
+            filename,
+            category,
+            size: stats.size,
+            uploadedAt: stats.ctime
+          };
+        })
+      );
+      
+      res.json(documents);
+    } catch (error) {
+      console.error('Error listing documents:', error);
+      res.status(500).json({ message: 'Failed to list documents' });
+    }
+  });
+
+  // Initialize document processor on startup
+  documentProcessor.initializeVectorStore().catch(console.error);
 
   const httpServer = createServer(app);
   return httpServer;
