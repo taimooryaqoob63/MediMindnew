@@ -198,6 +198,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete module - Protected route
+  app.delete("/api/modules/:id", isAuthenticated, async (req, res) => {
+    try {
+      const success = await storage.deleteModule(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Module not found" });
+      }
+      res.json({ message: "Module deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting module:", error);
+      res.status(500).json({ message: "Failed to delete module" });
+    }
+  });
+
   // Get user progress for a course - Protected route
   app.get("/api/progress/:courseId", isAuthenticated, async (req: any, res) => {
     try {

@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Course, Module } from "@shared/schema";
 import VideoUpload from "@/components/VideoUpload";
 import ModuleEditDialog from "@/components/ModuleEditDialog";
+import ModuleDeleteDialog from "@/components/ModuleDeleteDialog";
 import AppHeader from "@/components/AppHeader";
 
 interface CourseManagementProps {
@@ -192,6 +193,12 @@ export default function CourseManagement({ user }: CourseManagementProps) {
                                 <ModuleEditDialog 
                                   module={module}
                                   onUpdate={(updatedModule) => {
+                                    // Module list will update automatically via query invalidation
+                                  }}
+                                />
+                                <ModuleDeleteDialog 
+                                  module={module}
+                                  onDelete={() => {
                                     // Module list will update automatically via query invalidation
                                   }}
                                 />

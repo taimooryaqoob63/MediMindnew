@@ -1,19 +1,96 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Play, Volume2, Maximize, Bookmark, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Module } from "@shared/schema";
 
 interface VideoSectionProps {
   module?: Module;
   onProgressUpdate: (moduleId: string, progress: number) => void;
   isMobile?: boolean;
+  userId?: string;
+  courseId?: string;
 }
 
-export default function VideoSection({ module, onProgressUpdate, isMobile }: VideoSectionProps) {
-  const [videoProgress, setVideoProgress] = useState(35);
+export default function VideoSection({ module, onProgressUpdate, isMobile, userId, courseId }: VideoSectionProps) {
+  const [videoProgress, setVideoProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Progress tracking mutation
+  const updateProgressMutation = useMutation({
+    mutationFn: async (progressData: { progress: number; completed: boolean }) => {
+      if (!module || !userId || !courseId) return;
+      
+      const payload = {
+        courseId,
+        moduleId: module.id,
+        progress: progressData.progress,
+        completed: progressData.completed,
+        lastAccessed: new Date().toISOString()
+      };
+      
+      const response = await apiRequest("POST", "/api/progress", payload);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/progress", courseId] });
+    },
+    onError: (error) => {
+      console.error("Failed to update progress:", error);
+    }
+  });
+
+  // Video event handlers
+  const handleTimeUpdate = () => {
+    if (!videoRef.current || !module) return;
+    
+    const video = videoRef.current;
+    const currentProgress = Math.round((video.currentTime / video.duration) * 100);
+    
+    if (currentProgress !== videoProgress) {
+      setVideoProgress(currentProgress);
+      onProgressUpdate(module.id, currentProgress);
+      
+      // Update progress every 5% or when video completes
+      if (currentProgress % 5 === 0 || currentProgress >= 95) {
+        updateProgressMutation.mutate({
+          progress: currentProgress,
+          completed: currentProgress >= 95
+        });
+      }
+    }
+  };
+
+  const handleVideoEnded = () => {
+    if (!module) return;
+    
+    setVideoProgress(100);
+    onProgressUpdate(module.id, 100);
+    updateProgressMutation.mutate({
+      progress: 100,
+      completed: true
+    });
+    
+    toast({
+      title: "Module Completed!",
+      description: `You've finished "${module.title}". Great work!`,
+    });
+  };
+
+  const handlePlay = () => {
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
 
   // Helper function to safely access module content
   const getModuleContent = () => {
@@ -69,9 +146,14 @@ export default function VideoSection({ module, onProgressUpdate, isMobile }: Vid
             {module.videoUrl && module.videoUrl.startsWith('/uploads') ? (
               // Local uploaded video
               <video
+                ref={videoRef}
                 className="w-full h-full object-cover"
                 controls
                 poster="/api/placeholder-image"
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleVideoEnded}
+                onPlay={handlePlay}
+                onPause={handlePause}
                 onLoadedMetadata={(e) => {
                   const video = e.target as HTMLVideoElement;
                   const duration = Math.floor(video.duration);

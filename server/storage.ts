@@ -24,6 +24,7 @@ export interface IStorage {
   getModule(id: string): Promise<Module | undefined>;
   createModule(module: InsertModule): Promise<Module>;
   updateModule(id: string, updates: Partial<InsertModule>): Promise<Module | undefined>;
+  deleteModule(id: string): Promise<boolean>;
 
   // User Progress
   getUserProgress(userId: string, courseId: string): Promise<UserProgress[]>;
@@ -118,6 +119,11 @@ export class DatabaseStorage implements IStorage {
       .where(eq(modules.id, id))
       .returning();
     return module || undefined;
+  }
+
+  async deleteModule(id: string): Promise<boolean> {
+    const result = await db.delete(modules).where(eq(modules.id, id));
+    return result.rowCount > 0;
   }
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
@@ -408,6 +414,10 @@ export class MemStorage implements IStorage {
     const updated = { ...existing, ...updates };
     this.modules.set(id, updated);
     return updated;
+  }
+
+  async deleteModule(id: string): Promise<boolean> {
+    return this.modules.delete(id);
   }
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
