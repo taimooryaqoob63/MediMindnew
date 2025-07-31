@@ -40,4 +40,9 @@ export function setupTestAuth(app: Express) {
       headers: req.headers
     });
   });
+
+  // Debug route to serve our OAuth debug page
+  app.get("/debug-oauth", (req, res) => {
+    res.sendFile("debug_oauth.html", { root: "." });
+  });
 }

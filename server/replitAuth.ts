@@ -101,6 +101,9 @@ export async function setupAuth(app: Express) {
 
   for (const domain of process.env
     .REPLIT_DOMAINS!.split(",")) {
+    console.log(`Setting up strategy for domain: ${domain}`);
+    console.log(`Callback URL will be: https://${domain}/api/callback`);
+    
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
