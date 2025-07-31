@@ -99,7 +99,7 @@ export default function Landing() {
                 <CardTitle className="text-xl font-bold mb-3">AI-Powered Tutor</CardTitle>
                 <CardDescription className="text-gray-600 dark:text-gray-400 leading-relaxed">
                   Get instant answers to your questions with our AI tutor trained on 
-                  NICE guidelines, NHS best practices, and CQC standards.
+                  NICE guidelines, NHS best practices, and CQC guidelines.
                 </CardDescription>
               </CardHeader>
             </Card>

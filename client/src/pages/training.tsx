@@ -6,7 +6,7 @@ import AppHeader from "@/components/AppHeader";
 import Sidebar from "@/components/Sidebar";
 import VideoSection from "@/components/VideoSection";
 import AITutorChat from "@/components/AITutorChat";
-import QuickAccessToolbar from "@/components/QuickAccessToolbar";
+
 import type { Course, Module, User, UserProgress } from "@shared/schema";
 
 export default function TrainingPage() {
@@ -99,8 +99,6 @@ export default function TrainingPage() {
           />
         </main>
       </div>
-      
-      <QuickAccessToolbar />
     </div>
   );
 }
