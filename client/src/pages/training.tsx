@@ -123,7 +123,8 @@ export default function TrainingPage() {
           ${isMobile ? 'flex-col' : ''}
         `}>
           <div className={`
-            ${isMobile ? 'flex-1' : 'flex-1'}
+            ${isMobile ? 'flex-1 overflow-y-auto' : 'flex-1 overflow-y-auto'}
+            scrollbar-thin chat-scroll
           `}>
             <VideoSection 
               module={currentModule}

@@ -113,9 +113,9 @@ export default function VideoSection({ module, onProgressUpdate, isMobile }: Vid
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <Tabs defaultValue="overview" className="w-full">
-            <div className="border-b border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">
+          <Tabs defaultValue="overview" className="w-full flex flex-col flex-1">
+            <div className="border-b border-gray-200 flex-shrink-0">
               <TabsList className="h-auto p-0 bg-transparent">
                 <TabsTrigger 
                   value="overview" 
@@ -144,7 +144,7 @@ export default function VideoSection({ module, onProgressUpdate, isMobile }: Vid
               </TabsList>
             </div>
 
-            <TabsContent value="overview" className="p-6">
+            <TabsContent value="overview" className="p-6 overflow-y-auto flex-1 scrollbar-thin chat-scroll max-h-96">
               <div className="prose max-w-none">
                 <h3 className="text-lg font-semibold mb-4">Learning Objectives</h3>
                 {(() => {
@@ -195,19 +195,19 @@ export default function VideoSection({ module, onProgressUpdate, isMobile }: Vid
               </div>
             </TabsContent>
 
-            <TabsContent value="transcript" className="p-6">
+            <TabsContent value="transcript" className="p-6 overflow-y-auto flex-1 scrollbar-thin chat-scroll max-h-96">
               <div className="text-sm text-gray-600">
                 <p>Video transcript will be available here once the video is processed.</p>
               </div>
             </TabsContent>
 
-            <TabsContent value="notes" className="p-6">
+            <TabsContent value="notes" className="p-6 overflow-y-auto flex-1 scrollbar-thin chat-scroll max-h-96">
               <div className="text-sm text-gray-600">
                 <p>Your personal notes for this module will appear here.</p>
               </div>
             </TabsContent>
 
-            <TabsContent value="downloads" className="p-6">
+            <TabsContent value="downloads" className="p-6 overflow-y-auto flex-1 scrollbar-thin chat-scroll max-h-96">
               <div className="text-sm text-gray-600">
                 <p>Downloadable resources for this module will be listed here.</p>
               </div>
