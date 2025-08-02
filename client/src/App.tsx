@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import TrainingPage from "@/pages/training";
 import DocumentsPage from "@/pages/documents";
 import LandingPage from "@/pages/landing";
+import AppHeader from "@/components/AppHeader";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
