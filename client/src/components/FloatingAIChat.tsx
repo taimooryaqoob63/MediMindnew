@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Bot, User, Volume2, VolumeX, Mic, MicOff } from "lucide-react";
+import { Send, Bot, User, Volume2, VolumeX, Mic, MicOff, HelpCircle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ChatMessage {

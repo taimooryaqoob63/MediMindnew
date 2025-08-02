@@ -10,7 +10,7 @@ import { FloatingAIChat } from "@/components/FloatingAIChat";
 import QuickAccessToolbar from "@/components/QuickAccessToolbar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Hand, X } from "lucide-react";
+import { HelpCircle, X } from "lucide-react";
 
 import type { Course, Module, User, UserProgress } from "@shared/schema";
 
@@ -88,7 +88,7 @@ export default function TrainingPage() {
         isMobile={isMobile}
       />
       
-      <div className="flex h-screen pt-16 relative">
+      <div className="flex h-[calc(100vh-4rem)] relative">
         {/* Mobile Sidebar Overlay */}
         {isMobile && isSidebarOpen && (
           <div 
@@ -100,10 +100,10 @@ export default function TrainingPage() {
         {/* Sidebar */}
         <div className={`
           ${isMobile 
-            ? `fixed top-16 left-0 h-full z-50 transform transition-transform duration-300 ${
+            ? `fixed top-16 left-0 h-[calc(100vh-4rem)] z-50 transform transition-transform duration-300 ${
                 isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
               }`
-            : 'relative'
+            : 'relative h-full'
           }
         `}>
           <Sidebar 
@@ -121,8 +121,8 @@ export default function TrainingPage() {
         </div>
         
         {/* Main Content */}
-        <main className="flex-1 overflow-hidden pb-96">
-          <div className="h-full overflow-y-auto scrollbar-thin chat-scroll">
+        <main className="flex-1 h-full overflow-hidden">
+          <div className="h-full overflow-y-auto">
             <VideoSection 
               module={currentModule}
               onProgressUpdate={(moduleId, progressValue) => {
@@ -135,26 +135,33 @@ export default function TrainingPage() {
         
         {/* Chat Section - Conditionally rendered */}
         {isChatOpen && (
-          <div className={`fixed bottom-0 right-0 z-40 shadow-xl border-l border-t border-gray-200 bg-white rounded-tl-lg transition-all duration-300 ease-in-out ${
+          <div className={`fixed bottom-0 right-0 z-40 shadow-2xl border border-gray-300 bg-white rounded-tl-xl rounded-tr-xl transition-all duration-300 ease-in-out transform ${
+            isChatOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+          } ${
             isMobile 
               ? 'w-full h-80 max-h-80' 
               : 'w-96 h-96 max-h-96'
           }`}>
-            <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50 rounded-tl-lg">
-              <div className="flex items-center space-x-2">
-                <Hand className="w-4 h-4 text-medical-blue" />
-                <h3 className="font-medium text-gray-900">AI Assistant</h3>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50 rounded-tl-xl rounded-tr-xl">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <HelpCircle className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">AI Assistant</h3>
+                  <p className="text-xs text-gray-600">Ask me anything about diabetes care</p>
+                </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsChatOpen(false)}
-                className="p-1 h-6 w-6 hover:bg-gray-200 rounded"
+                className="p-2 h-8 w-8 hover:bg-red-100 hover:text-red-600 rounded-full transition-colors"
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            <div className="h-full pb-12 overflow-hidden">
+            <div className="h-full pb-16 overflow-hidden">
               <FloatingAIChat 
                 courseId={selectedCourseId || ""}
                 context={currentModule ? `Current module: ${currentModule.title}` : ""}
@@ -165,28 +172,30 @@ export default function TrainingPage() {
       </div>
       
       {/* Floating Chat Toggle Button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            onClick={() => setIsChatOpen(!isChatOpen)}
-            className={`fixed top-20 right-4 z-50 w-12 h-12 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-110 ${
-              isChatOpen 
-                ? 'bg-red-500 hover:bg-red-600 text-white' 
-                : 'bg-medical-blue hover:bg-medical-blue/90 text-white'
-            }`}
-            size="sm"
-          >
-            {isChatOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Hand className="w-5 h-5" />
-            )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="left">
-          <p>{isChatOpen ? 'Close AI Assistant' : 'Open AI Assistant'}</p>
-        </TooltipContent>
-      </Tooltip>
+      <div className="fixed top-20 right-4 z-50">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={() => setIsChatOpen(!isChatOpen)}
+              className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${
+                isChatOpen 
+                  ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
+                  : 'bg-green-500 hover:bg-green-600 text-white shadow-green-200'
+              }`}
+              size="sm"
+            >
+              {isChatOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <HelpCircle className="w-6 h-6" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="left" className="bg-gray-800 text-white">
+            <p>{isChatOpen ? 'Close AI Assistant' : 'Ask AI Assistant'}</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
       
       {/* Quick Access Toolbar */}
       <QuickAccessToolbar
