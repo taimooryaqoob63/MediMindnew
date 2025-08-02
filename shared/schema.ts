@@ -71,6 +71,31 @@ export const resources = pgTable("resources", {
   category: text("category").notNull(), // NICE, NHS, CQC
 });
 
+// RAG Document storage
+export const documents = pgTable("documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fileName: text("file_name").notNull(),
+  originalName: text("original_name").notNull(),
+  filePath: text("file_path").notNull(),
+  fileSize: integer("file_size"),
+  mimeType: text("mime_type"),
+  uploadedBy: varchar("uploaded_by").references(() => users.id).notNull(),
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+  processed: boolean("processed").default(false),
+  chunkCount: integer("chunk_count").default(0),
+});
+
+// RAG Document chunks with embeddings
+export const documentChunks = pgTable("document_chunks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  documentId: varchar("document_id").references(() => documents.id).notNull(),
+  content: text("content").notNull(),
+  chunkIndex: integer("chunk_index").notNull(),
+  embedding: text("embedding"), // Stored as JSON string of number array
+  metadata: json("metadata"), // Additional metadata like page numbers, etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertCourseSchema = createInsertSchema(courses).omit({ id: true });
@@ -78,6 +103,8 @@ export const insertModuleSchema = createInsertSchema(modules).omit({ id: true })
 export const insertUserProgressSchema = createInsertSchema(userProgress).omit({ id: true });
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({ id: true });
 export const insertResourceSchema = createInsertSchema(resources).omit({ id: true });
+export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, uploadedAt: true });
+export const insertDocumentChunkSchema = createInsertSchema(documentChunks).omit({ id: true, createdAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -86,6 +113,8 @@ export type Module = typeof modules.$inferSelect;
 export type UserProgress = typeof userProgress.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type Resource = typeof resources.$inferSelect;
+export type Document = typeof documents.$inferSelect;
+export type DocumentChunk = typeof documentChunks.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = typeof users.$inferInsert;
@@ -94,3 +123,5 @@ export type InsertModule = z.infer<typeof insertModuleSchema>;
 export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertResource = z.infer<typeof insertResourceSchema>;
+export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type InsertDocumentChunk = z.infer<typeof insertDocumentChunkSchema>;

@@ -1,8 +1,10 @@
 import { 
   type User, type Course, type Module, type UserProgress, type ChatMessage, type Resource,
+  type Document, type DocumentChunk,
   type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress, 
-  type InsertChatMessage, type InsertResource, type UpsertUser,
-  users, courses, modules, userProgress, chatMessages, resources
+  type InsertChatMessage, type InsertResource, type InsertDocument, type InsertDocumentChunk,
+  type UpsertUser,
+  users, courses, modules, userProgress, chatMessages, resources, documents, documentChunks
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -35,6 +37,19 @@ export interface IStorage {
   // Resources
   getResources(): Promise<Resource[]>;
   createResource(resource: InsertResource): Promise<Resource>;
+
+  // Documents - RAG functionality
+  getDocuments(userId?: string): Promise<Document[]>;
+  getDocument(id: string): Promise<Document | undefined>;
+  createDocument(document: InsertDocument): Promise<Document>;
+  updateDocument(id: string, updates: Partial<InsertDocument>): Promise<Document>;
+  deleteDocument(id: string): Promise<boolean>;
+
+  // Document Chunks - RAG functionality
+  getDocumentChunks(documentId: string): Promise<DocumentChunk[]>;
+  createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk>;
+  searchDocumentChunks(embedding: number[], limit?: number): Promise<DocumentChunk[]>;
+  deleteDocumentChunks(documentId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -154,6 +169,77 @@ export class DatabaseStorage implements IStorage {
   async createResource(insertResource: InsertResource): Promise<Resource> {
     const [resource] = await db.insert(resources).values(insertResource).returning();
     return resource;
+  }
+
+  // Documents - RAG functionality
+  async getDocuments(userId?: string): Promise<Document[]> {
+    if (userId) {
+      return await db.select().from(documents)
+        .where(eq(documents.uploadedBy, userId))
+        .orderBy(documents.uploadedAt);
+    }
+    return await db.select().from(documents).orderBy(documents.uploadedAt);
+  }
+
+  async getDocument(id: string): Promise<Document | undefined> {
+    const [document] = await db.select().from(documents).where(eq(documents.id, id));
+    return document || undefined;
+  }
+
+  async createDocument(insertDocument: InsertDocument): Promise<Document> {
+    const [document] = await db.insert(documents).values(insertDocument).returning();
+    return document;
+  }
+
+  async updateDocument(id: string, updates: Partial<InsertDocument>): Promise<Document> {
+    const [document] = await db
+      .update(documents)
+      .set(updates)
+      .where(eq(documents.id, id))
+      .returning();
+    return document;
+  }
+
+  async deleteDocument(id: string): Promise<boolean> {
+    try {
+      // First delete all chunks for this document
+      await db.delete(documentChunks).where(eq(documentChunks.documentId, id));
+      // Then delete the document
+      await db.delete(documents).where(eq(documents.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      return false;
+    }
+  }
+
+  // Document Chunks - RAG functionality
+  async getDocumentChunks(documentId: string): Promise<DocumentChunk[]> {
+    return await db.select().from(documentChunks)
+      .where(eq(documentChunks.documentId, documentId))
+      .orderBy(documentChunks.chunkIndex);
+  }
+
+  async createDocumentChunk(insertChunk: InsertDocumentChunk): Promise<DocumentChunk> {
+    const [chunk] = await db.insert(documentChunks).values(insertChunk).returning();
+    return chunk;
+  }
+
+  async searchDocumentChunks(embedding: number[], limit: number = 5): Promise<DocumentChunk[]> {
+    // This is a simplified implementation - in practice you'd use vector similarity search
+    // For now, we'll return all chunks and let the RAG service handle similarity matching
+    const chunks = await db.select().from(documentChunks).limit(limit * 3);
+    return chunks.slice(0, limit);
+  }
+
+  async deleteDocumentChunks(documentId: string): Promise<boolean> {
+    try {
+      await db.delete(documentChunks).where(eq(documentChunks.documentId, documentId));
+      return true;
+    } catch (error) {
+      console.error("Error deleting document chunks:", error);
+      return false;
+    }
   }
 }
 

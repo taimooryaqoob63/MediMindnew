@@ -6,7 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import AppHeader from "@/components/AppHeader";
 import Sidebar from "@/components/Sidebar";
 import VideoSection from "@/components/VideoSection";
-import AITutorChat from "@/components/AITutorChat";
+import { EnhancedAITutorChat } from "@/components/EnhancedAITutorChat";
 import QuickAccessToolbar from "@/components/QuickAccessToolbar";
 
 import type { Course, Module, User, UserProgress } from "@shared/schema";
@@ -144,13 +144,12 @@ export default function TrainingPage() {
               : 'w-96'
             }
           `}>
-            <AITutorChat 
-              courseId={selectedCourseId || ""}
-              currentModule={currentModule}
-              isMobile={isMobile}
-              isOpen={isChatOpen}
-              onClose={() => setIsChatOpen(false)}
-            />
+            <div className="h-full p-4">
+              <EnhancedAITutorChat 
+                courseId={selectedCourseId || ""}
+                context={currentModule ? `Current module: ${currentModule.title}` : ""}
+              />
+            </div>
           </div>
         </main>
         

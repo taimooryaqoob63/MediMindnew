@@ -4,6 +4,30 @@ import { storage } from "./storage";
 import { getAITutorResponse } from "./services/openai";
 import { insertChatMessageSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { ragService } from "./ragService";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+// Configure multer for file uploads
+const uploadsDir = path.join(process.cwd(), "uploaded_documents");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const upload = multer({
+  dest: uploadsDir,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed"));
+    }
+  },
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -107,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Send chat message and get AI response - Protected route
+  // Send chat message and get AI response with RAG - Protected route
   app.post("/api/chat", isAuthenticated, async (req: any, res) => {
     try {
       const { message, courseId, context } = req.body;
@@ -117,25 +141,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Message and courseId are required" });
       }
 
-      // Get AI response
-      const aiResponse = await getAITutorResponse(message, context);
+      // Use RAG service for enhanced responses
+      const ragResponse = await ragService.generateRAGResponse({
+        question: message,
+        context: context || "",
+        topK: 5
+      });
       
-      // Save chat message
+      // Save chat message with RAG response
       const chatMessage = await storage.createChatMessage({
         userId,
         courseId,
         message,
-        response: aiResponse.response,
+        response: ragResponse.answer,
         timestamp: new Date().toISOString()
       });
 
       res.json({ 
         message: chatMessage,
-        suggestedQuestions: aiResponse.suggestedQuestions 
+        sources: ragResponse.sources,
+        // Keep backward compatibility for suggested questions
+        suggestedQuestions: [
+          "Can you explain more about the NICE guidelines mentioned?",
+          "What are the best practices for blood glucose monitoring?",
+          "How should I handle a hypoglycemic episode?",
+          "What dietary recommendations should I provide?"
+        ]
       });
     } catch (error) {
-      console.error('Chat error:', error);
-      res.status(500).json({ message: "Failed to process chat message" });
+      console.error('RAG Chat error:', error);
+      // Fallback to basic AI response if RAG fails
+      try {
+        const aiResponse = await getAITutorResponse(req.body.message, req.body.context);
+        const chatMessage = await storage.createChatMessage({
+          userId: req.user.claims.sub,
+          courseId: req.body.courseId,
+          message: req.body.message,
+          response: aiResponse.response,
+          timestamp: new Date().toISOString()
+        });
+        res.json({ 
+          message: chatMessage,
+          sources: [],
+          suggestedQuestions: [
+            "Can you explain more about the NICE guidelines mentioned?",
+            "What are the best practices for blood glucose monitoring?",
+            "How should I handle a hypoglycemic episode?",
+            "What dietary recommendations should I provide?"
+          ]
+        });
+      } catch (fallbackError) {
+        console.error('Fallback chat error:', fallbackError);
+        res.status(500).json({ message: "Failed to process chat message" });
+      }
     }
   });
 
@@ -146,6 +204,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(resources);
     } catch (error) {
       res.status(500).json({ message: "Failed to get resources" });
+    }
+  });
+
+  // RAG Document Management Routes
+
+  // Upload PDF document - Protected route
+  app.post("/api/documents/upload", isAuthenticated, upload.single("pdf"), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ message: "No PDF file provided" });
+      }
+
+      if (file.mimetype !== "application/pdf") {
+        // Clean up uploaded file
+        fs.unlinkSync(file.path);
+        return res.status(400).json({ message: "Only PDF files are allowed" });
+      }
+
+      // Process the PDF document with RAG service
+      const document = await ragService.processPDFDocument(
+        file.path,
+        file.filename,
+        file.originalname,
+        userId
+      );
+
+      res.json({
+        message: "Document uploaded and processed successfully",
+        document: {
+          id: document.id,
+          originalName: document.originalName,
+          fileSize: document.fileSize,
+          chunkCount: document.chunkCount,
+          processed: document.processed,
+          uploadedAt: document.uploadedAt
+        }
+      });
+    } catch (error) {
+      console.error("Document upload error:", error);
+      // Clean up file if processing failed
+      if (req.file) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (cleanupError) {
+          console.error("Failed to cleanup uploaded file:", cleanupError);
+        }
+      }
+      res.status(500).json({ message: "Failed to upload and process document" });
+    }
+  });
+
+  // Get user's uploaded documents - Protected route
+  app.get("/api/documents", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const documents = await ragService.getStoredDocuments(userId);
+      
+      // Return sanitized document info
+      const documentList = documents.map(doc => ({
+        id: doc.id,
+        originalName: doc.originalName,
+        fileSize: doc.fileSize,
+        chunkCount: doc.chunkCount,
+        processed: doc.processed,
+        uploadedAt: doc.uploadedAt
+      }));
+
+      res.json(documentList);
+    } catch (error) {
+      console.error("Get documents error:", error);
+      res.status(500).json({ message: "Failed to get documents" });
+    }
+  });
+
+  // Delete document - Protected route
+  app.delete("/api/documents/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const documentId = req.params.id;
+
+      // Verify user owns the document
+      const document = await storage.getDocument(documentId);
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      if (document.uploadedBy !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Delete document and its chunks
+      const success = await ragService.deleteDocument(documentId);
+      
+      if (success) {
+        // Clean up the physical file
+        try {
+          if (fs.existsSync(document.filePath)) {
+            fs.unlinkSync(document.filePath);
+          }
+        } catch (fileError) {
+          console.error("Failed to delete physical file:", fileError);
+          // Don't fail the request if file cleanup fails
+        }
+        
+        res.json({ message: "Document deleted successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to delete document" });
+      }
+    } catch (error) {
+      console.error("Delete document error:", error);
+      res.status(500).json({ message: "Failed to delete document" });
+    }
+  });
+
+  // Get document processing status - Protected route
+  app.get("/api/documents/:id/status", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const documentId = req.params.id;
+
+      const document = await storage.getDocument(documentId);
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      if (document.uploadedBy !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      res.json({
+        id: document.id,
+        originalName: document.originalName,
+        processed: document.processed,
+        chunkCount: document.chunkCount,
+        uploadedAt: document.uploadedAt
+      });
+    } catch (error) {
+      console.error("Get document status error:", error);
+      res.status(500).json({ message: "Failed to get document status" });
     }
   });
 
