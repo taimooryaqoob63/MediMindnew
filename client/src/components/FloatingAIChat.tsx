@@ -17,18 +17,6 @@ interface ChatMessage {
   timestamp: string;
 }
 
-interface Source {
-  fileName: string;
-  pageNumber?: number;
-  content: string;
-  relevanceScore: number;
-}
-
-interface ChatResponse {
-  message: ChatMessage;
-  sources?: Source[];
-}
-
 interface FloatingAIChatProps {
   courseId: string;
   context?: string;
@@ -42,7 +30,6 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
   const [recognition, setRecognition] = useState<any>(null);
   const [speechRecognitionSupported, setSpeechRecognitionSupported] = useState(false);
   const [speechSynthesisSupported, setSpeechSynthesisSupported] = useState(false);
-  const [messageSources, setMessageSources] = useState<Record<string, Source[]>>({});
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -105,15 +92,9 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
         throw new Error(error.message || "Failed to send message");
       }
       
-      return response.json() as Promise<ChatResponse>;
+      return response.json();
     },
-    onSuccess: (data) => {
-      if (data.sources && data.sources.length > 0) {
-        setMessageSources(prev => ({
-          ...prev,
-          [data.message.id]: data.sources!
-        }));
-      }
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/chat/${courseId}`] });
       setInput("");
     },
@@ -256,22 +237,6 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
                       </div>
                       <div className="bg-gray-50 rounded-lg p-2">
                         <p className="text-sm break-words leading-relaxed">{msg.response}</p>
-                        
-                        {/* Document Sources */}
-                        {messageSources[msg.id] && messageSources[msg.id].length > 0 && (
-                          <div className="mt-2 pt-2 border-t border-gray-200">
-                            <p className="text-xs font-medium text-gray-600 mb-1">Sources:</p>
-                            <div className="space-y-1">
-                              {messageSources[msg.id].map((source, sourceIndex) => (
-                                <div key={sourceIndex} className="text-xs text-gray-500 bg-gray-100 rounded p-1">
-                                  <span className="font-medium">{source.fileName}</span>
-                                  {source.pageNumber && <span> (Page {source.pageNumber})</span>}
-                                  <p className="truncate mt-1 text-gray-600">"{source.content}"</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>

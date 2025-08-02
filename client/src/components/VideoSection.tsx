@@ -144,20 +144,20 @@ export default function VideoSection({ module, onProgressUpdate, isMobile }: Vid
               </TabsList>
             </div>
 
-            <TabsContent value="overview" className={`${isMobile ? 'p-4' : 'p-6'} overflow-y-auto flex-1 scrollbar-thin chat-scroll ${isMobile ? 'max-h-[60vh]' : 'max-h-96'}`}>
-              <div className="prose max-w-none w-full">
-                <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold mb-4`}>Learning Objectives</h3>
+            <TabsContent value="overview" className="p-6 overflow-y-auto flex-1 scrollbar-thin chat-scroll max-h-96">
+              <div className="prose max-w-none">
+                <h3 className="text-lg font-semibold mb-4">Learning Objectives</h3>
                 {(() => {
                   const content = getModuleContent();
                   if (content && 'learningObjectives' in content && Array.isArray(content.learningObjectives)) {
                     return (
-                      <ul className="space-y-2 mb-6 w-full">
+                      <ul className="space-y-2 mb-6">
                         {content.learningObjectives.map((objective: string, index: number) => (
-                          <li key={index} className="flex items-start w-full">
+                          <li key={index} className="flex items-start">
                             <div className="w-5 h-5 rounded-full bg-success-green flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
                               <div className="w-2 h-2 bg-white rounded-full" />
                             </div>
-                            <span className={`${isMobile ? 'text-xs' : 'text-sm'} flex-1`}>{objective}</span>
+                            <span className="text-sm">{objective}</span>
                           </li>
                         ))}
                       </ul>

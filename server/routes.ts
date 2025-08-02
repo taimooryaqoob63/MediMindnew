@@ -157,10 +157,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timestamp: new Date().toISOString()
       });
 
-      // Return response with document sources
+      // Return clean tutor response without technical sources
       res.json({ 
-        message: chatMessage,
-        sources: ragResponse.sources
+        message: chatMessage
       });
     } catch (error) {
       console.error('RAG Chat error:', error);
