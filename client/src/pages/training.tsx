@@ -118,14 +118,8 @@ export default function TrainingPage() {
         </div>
         
         {/* Main Content */}
-        <main className={`
-          flex-1 flex overflow-hidden
-          ${isMobile ? 'flex-col' : ''}
-        `}>
-          <div className={`
-            ${isMobile ? 'flex-1 overflow-y-auto' : 'flex-1 overflow-y-auto'}
-            scrollbar-thin chat-scroll
-          `}>
+        <main className="flex-1 overflow-hidden pb-96">
+          <div className="h-full overflow-y-auto scrollbar-thin chat-scroll">
             <VideoSection 
               module={currentModule}
               onProgressUpdate={(moduleId, progressValue) => {
@@ -134,40 +128,20 @@ export default function TrainingPage() {
               isMobile={isMobile}
             />
           </div>
-          
-          {/* Chat Section */}
-          <div className={`
-            ${isMobile 
-              ? `fixed bottom-0 left-0 right-0 z-40 transform transition-transform duration-300 ${
-                  isChatOpen ? 'translate-y-0' : 'translate-y-full'
-                }`
-              : 'w-96'
-            }
-          `}>
-            <div className="h-full p-4">
-              <EnhancedAITutorChat 
-                courseId={selectedCourseId || ""}
-                context={currentModule ? `Current module: ${currentModule.title}` : ""}
-              />
-            </div>
-          </div>
         </main>
         
-        {/* Mobile Chat Overlay */}
-        {isMobile && isChatOpen && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
-            onClick={() => setIsChatOpen(false)}
-          />
-        )}
+        {/* Chat Section - Always at bottom */}
+        <EnhancedAITutorChat 
+          courseId={selectedCourseId || ""}
+          context={currentModule ? `Current module: ${currentModule.title}` : ""}
+        />
       </div>
       
       {/* Quick Access Toolbar */}
       <QuickAccessToolbar
-        onChatToggle={() => setIsChatOpen(!isChatOpen)}
         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         isMobile={isMobile}
-        isChatOpen={isChatOpen}
+        isChatOpen={false}
       />
     </div>
   );

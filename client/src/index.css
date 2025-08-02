@@ -169,6 +169,26 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
+  
+  /* Chat positioning styles */
+  .chat-fixed-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chat-resize-handle {
+    cursor: row-resize;
+    transition: background-color 0.2s ease;
+  }
+  
+  .chat-resize-handle:hover {
+    background-color: rgb(59 130 246);
+  }
 }
 
 @keyframes fadeIn {

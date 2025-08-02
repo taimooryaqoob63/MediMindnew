@@ -17,28 +17,6 @@ export default function QuickAccessToolbar({
 }: QuickAccessToolbarProps) {
   return (
     <div className="fixed bottom-6 right-6 flex flex-col space-y-3 z-30">
-      {/* Mobile Chat FAB */}
-      {isMobile && onChatToggle && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="lg"
-              onClick={onChatToggle}
-              className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 interactive-hover ${
-                isChatOpen 
-                  ? 'bg-red-500 hover:bg-red-600' 
-                  : 'bg-medical-blue hover:bg-medical-blue/90'
-              } text-white p-0`}
-            >
-              <MessageCircle className="w-6 h-6" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p>{isChatOpen ? "Close AI Chat" : "Open AI Chat"}</p>
-          </TooltipContent>
-        </Tooltip>
-      )}
-
       {/* Mobile Menu FAB */}
       {isMobile && onSidebarToggle && (
         <Tooltip>
