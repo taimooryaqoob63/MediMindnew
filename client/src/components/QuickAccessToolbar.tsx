@@ -22,9 +22,10 @@ export default function QuickAccessToolbar({
         <TooltipTrigger asChild>
           <Button
             size="lg"
-            className="w-16 h-16 rounded-full bg-yellow-400 hover:bg-yellow-500 shadow-xl interactive-hover text-gray-800 p-0 border-2 border-yellow-300"
+            className="w-16 h-16 rounded-full bg-yellow-400 hover:bg-yellow-500 shadow-2xl text-gray-800 p-0 border-4 border-yellow-300 transition-all duration-200 hover:scale-105"
+            variant="ghost"
           >
-            <Hand className="w-8 h-8" />
+            <Hand className="w-10 h-10 stroke-2" />
           </Button>
         </TooltipTrigger>
         <TooltipContent side="left">
