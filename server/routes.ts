@@ -157,16 +157,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timestamp: new Date().toISOString()
       });
 
+      // Return clean tutor response without technical sources
       res.json({ 
-        message: chatMessage,
-        sources: ragResponse.sources,
-        // Keep backward compatibility for suggested questions
-        suggestedQuestions: [
-          "Can you explain more about the NICE guidelines mentioned?",
-          "What are the best practices for blood glucose monitoring?",
-          "How should I handle a hypoglycemic episode?",
-          "What dietary recommendations should I provide?"
-        ]
+        message: chatMessage
       });
     } catch (error) {
       console.error('RAG Chat error:', error);
@@ -181,14 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timestamp: new Date().toISOString()
         });
         res.json({ 
-          message: chatMessage,
-          sources: [],
-          suggestedQuestions: [
-            "Can you explain more about the NICE guidelines mentioned?",
-            "What are the best practices for blood glucose monitoring?",
-            "How should I handle a hypoglycemic episode?",
-            "What dietary recommendations should I provide?"
-          ]
+          message: chatMessage
         });
       } catch (fallbackError) {
         console.error('Fallback chat error:', fallbackError);
