@@ -253,33 +253,8 @@ export function EnhancedAITutorChat({ courseId, context }: EnhancedAITutorChatPr
   }
 
   return (
-    <div className="chat-fixed-bottom bg-white dark:bg-gray-900 border-t">
-      {/* Resize Handle */}
-      <div 
-        className="h-1 bg-gray-300 chat-resize-handle"
-        onMouseDown={(e) => {
-          setIsResizing(true);
-          const startY = e.clientY;
-          const startHeight = chatHeight;
-          
-          const handleMouseMove = (e: MouseEvent) => {
-            const newHeight = startHeight + (startY - e.clientY);
-            handleResize(newHeight);
-          };
-          
-          const handleMouseUp = () => {
-            setIsResizing(false);
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-          };
-          
-          document.addEventListener('mousemove', handleMouseMove);
-          document.addEventListener('mouseup', handleMouseUp);
-        }}
-      />
-      
-      <div style={{ height: `${chatHeight}px` }} className="flex flex-col">
-        {/* Chat Header */}
+    <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
+      {/* Chat Header */}
         <div className="flex items-center justify-between p-3 border-b bg-gray-50 dark:bg-gray-800">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-blue-600" />
