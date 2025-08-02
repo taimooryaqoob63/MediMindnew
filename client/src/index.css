@@ -366,4 +366,54 @@
   .mobile-padding {
     padding: 1rem !important;
   }
+  
+  /* Ensure proper layout on mobile */
+  .mobile-training-layout {
+    flex-direction: column !important;
+  }
+  
+  .mobile-video-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  .mobile-tabs-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+  }
+}
+
+/* Improved responsive video container */
+.responsive-video-container {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16/9;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 769px) {
+  .desktop-chat-sidebar {
+    position: fixed;
+    top: 4rem;
+    right: 0;
+    bottom: 0;
+    width: 24rem;
+    z-index: 40;
+  }
+}
+
+/* Training page specific responsive styles */
+.training-main-content {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .training-main-content {
+    padding: 0;
+    margin: 0;
+  }
 }

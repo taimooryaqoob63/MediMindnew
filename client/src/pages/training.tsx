@@ -88,7 +88,7 @@ export default function TrainingPage() {
         isMobile={isMobile}
       />
       
-      <div className="flex h-screen pt-16 relative">
+      <div className="flex min-h-screen bg-light">
         {/* Mobile Sidebar Overlay */}
         {isMobile && isSidebarOpen && (
           <div 
@@ -100,10 +100,10 @@ export default function TrainingPage() {
         {/* Sidebar */}
         <div className={`
           ${isMobile 
-            ? `fixed top-16 left-0 h-full z-50 transform transition-transform duration-300 ${
+            ? `fixed top-16 left-0 h-[calc(100vh-4rem)] z-50 transform transition-transform duration-300 ${
                 isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
               }`
-            : 'relative'
+            : 'relative flex-shrink-0'
           }
         `}>
           <Sidebar 
@@ -121,24 +121,26 @@ export default function TrainingPage() {
         </div>
         
         {/* Main Content */}
-        <main className="flex-1 overflow-hidden pb-96">
-          <div className="h-full overflow-y-auto scrollbar-thin chat-scroll">
-            <VideoSection 
-              module={currentModule}
-              onProgressUpdate={(moduleId, progressValue) => {
-                // Will implement progress tracking
-              }}
-              isMobile={isMobile}
-            />
+        <main className={`flex-1 min-h-[calc(100vh-4rem)] ${isMobile ? 'w-full' : 'overflow-hidden'} ${isChatOpen && !isMobile ? 'mr-96' : ''}`}>
+          <div className="h-full w-full pt-16 overflow-y-auto scrollbar-thin chat-scroll">
+            <div className="w-full max-w-none">
+              <VideoSection 
+                module={currentModule}
+                onProgressUpdate={(moduleId, progressValue) => {
+                  // Will implement progress tracking
+                }}
+                isMobile={isMobile}
+              />
+            </div>
           </div>
         </main>
         
         {/* Chat Section - Conditionally rendered */}
         {isChatOpen && (
-          <div className={`fixed bottom-0 right-0 z-40 shadow-xl border-l border-t border-gray-200 bg-white rounded-tl-lg transition-all duration-300 ease-in-out ${
+          <div className={`fixed z-40 shadow-xl border-l border-t border-gray-200 bg-white rounded-tl-lg transition-all duration-300 ease-in-out ${
             isMobile 
-              ? 'w-full h-80 max-h-80' 
-              : 'w-96 h-96 max-h-96'
+              ? 'bottom-0 left-0 right-0 h-[50vh] max-h-[50vh]' 
+              : 'top-16 right-0 bottom-0 w-96 max-w-96'
           }`}>
             <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50 rounded-tl-lg">
               <div className="flex items-center space-x-2">
@@ -154,7 +156,7 @@ export default function TrainingPage() {
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            <div className="h-full pb-12 overflow-hidden">
+            <div className={`${isMobile ? 'h-[calc(50vh-3rem)]' : 'h-[calc(100vh-7rem)]'} overflow-hidden`}>
               <FloatingAIChat 
                 courseId={selectedCourseId || ""}
                 context={currentModule ? `Current module: ${currentModule.title}` : ""}
