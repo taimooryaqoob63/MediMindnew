@@ -87,7 +87,7 @@ export default function TrainingPage() {
         onChatToggle={() => setIsChatOpen(!isChatOpen)}
         isMobile={isMobile}
       />
-      
+
       <div className="flex min-h-screen bg-light">
         {/* Mobile Sidebar Overlay */}
         {isMobile && isSidebarOpen && (
@@ -96,7 +96,7 @@ export default function TrainingPage() {
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
-        
+
         {/* Sidebar */}
         <div className={`
           ${isMobile 
@@ -119,9 +119,11 @@ export default function TrainingPage() {
             isMobile={isMobile}
           />
         </div>
-        
+
         {/* Main Content */}
-        <main className={`flex-1 min-h-[calc(100vh-4rem)] ${isMobile ? 'w-full' : 'overflow-hidden'} ${isChatOpen && !isMobile ? 'mr-96' : ''}`}>
+        <main className={`transition-all duration-300 ease-in-out ${
+          isChatOpen ? 'pb-[400px]' : 'pb-0'
+        }`}>
           <div className="h-full w-full pt-16 overflow-y-auto scrollbar-thin chat-scroll">
             <div className="w-full max-w-none">
               <VideoSection 
@@ -134,13 +136,13 @@ export default function TrainingPage() {
             </div>
           </div>
         </main>
-        
+
         {/* Chat Section - Conditionally rendered */}
         {isChatOpen && (
           <div className={`fixed z-40 shadow-xl border-l border-t border-gray-200 bg-white rounded-tl-lg transition-all duration-300 ease-in-out ${
             isMobile 
               ? 'bottom-0 left-0 right-0 h-[50vh] max-h-[50vh]' 
-              : 'top-16 right-0 bottom-0 w-96 max-w-96'
+              : 'bottom-0 left-0 right-0 w-full max-h-[400px]'
           }`}>
             <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50 rounded-tl-lg">
               <div className="flex items-center space-x-2">
@@ -156,7 +158,7 @@ export default function TrainingPage() {
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            <div className={`${isMobile ? 'h-[calc(50vh-3rem)]' : 'h-[calc(100vh-7rem)]'} overflow-hidden`}>
+            <div className={`${isMobile ? 'h-[calc(50vh-3rem)]' : 'h-[calc(400px-3rem)]'} overflow-hidden`}>
               <FloatingAIChat 
                 courseId={selectedCourseId || ""}
                 context={currentModule ? `Current module: ${currentModule.title}` : ""}
@@ -165,31 +167,17 @@ export default function TrainingPage() {
           </div>
         )}
       </div>
-      
-      {/* Floating Chat Toggle Button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
+
+      {/* Chat Toggle Button */}
+        {!isChatOpen && (
           <Button
-            onClick={() => setIsChatOpen(!isChatOpen)}
-            className={`fixed top-20 right-4 z-50 w-12 h-12 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-110 ${
-              isChatOpen 
-                ? 'bg-red-500 hover:bg-red-600 text-white' 
-                : 'bg-medical-blue hover:bg-medical-blue/90 text-white'
-            }`}
-            size="sm"
+            onClick={() => setIsChatOpen(true)}
+            className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-medical-blue hover:bg-medical-blue/90 shadow-lg transition-all duration-300 ease-in-out hover:scale-105"
           >
-            {isChatOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Hand className="w-5 h-5" />
-            )}
+            <Hand className="w-8 h-8 text-yellow-500" />
           </Button>
-        </TooltipTrigger>
-        <TooltipContent side="left">
-          <p>{isChatOpen ? 'Close AI Assistant' : 'Open AI Assistant'}</p>
-        </TooltipContent>
-      </Tooltip>
-      
+        )}
+
       {/* Quick Access Toolbar */}
       <QuickAccessToolbar
         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}

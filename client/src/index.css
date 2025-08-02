@@ -189,6 +189,19 @@
   .chat-resize-handle:hover {
     background-color: rgb(59 130 246);
   }
+
+  /* Bottom chat specific styles */
+  .bottom-chat-container {
+    max-height: 50vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bottom-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+  }
 }
 
 @keyframes fadeIn {
