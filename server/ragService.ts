@@ -216,7 +216,7 @@ export class RAGService {
         const response = await this.llm.invoke(this.createFallbackPrompt(question, context));
         
         return {
-          answer: response,
+          answer: response.content || response.toString(),
           sources: [],
         };
       }
@@ -241,7 +241,7 @@ export class RAGService {
       }));
 
       return {
-        answer,
+        answer: answer.content || answer.toString(),
         sources,
       };
 
