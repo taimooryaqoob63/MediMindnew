@@ -14,21 +14,12 @@ interface AITutorChatProps {
   onClose?: () => void;
 }
 
-interface DocumentReference {
-  source: string;
-  category: string;
-  filename: string;
-  snippet: string;
-}
-
 interface ChatResponse {
   message: ChatMessage;
-  references?: DocumentReference[];
 }
 
 export default function AITutorChat({ courseId, currentModule, isMobile, isOpen, onClose }: AITutorChatProps) {
   const [inputMessage, setInputMessage] = useState("");
-  const [chatReferences, setChatReferences] = useState<Map<string, DocumentReference[]>>(new Map());
   
   // TTS and STT state
   const [isListening, setIsListening] = useState(false);
@@ -91,11 +82,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       setInputMessage("");
-      
-      // Store references for this message
-      if (data.references && data.references.length > 0) {
-        setChatReferences(prev => new Map(prev.set(data.message.id, data.references)));
-      }
       
       // Read the AI response aloud if TTS is enabled
       if (isTTSEnabled && synthesis && data.message.response) {
@@ -284,30 +270,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <div className="bg-gray-100 hover:bg-gray-50 rounded-lg p-3 transition-all duration-200 hover:shadow-md">
                   <p className="text-sm text-text-dark whitespace-pre-wrap select-text">{msg.response}</p>
                 </div>
-                
-                {/* References Section */}
-                {chatReferences.get(msg.id) && (
-                  <div className="mt-2 space-y-1">
-                    <p className="text-xs font-medium text-gray-600">References:</p>
-                    {chatReferences.get(msg.id)!.map((ref, index) => (
-                      <div key={index} className="text-xs bg-blue-50 border border-blue-200 rounded p-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 text-xs font-medium rounded ${
-                            ref.category === 'NICE' ? 'bg-blue-100 text-blue-800' :
-                            ref.category === 'NHS' ? 'bg-green-100 text-green-800' :
-                            ref.category === 'CQC' ? 'bg-purple-100 text-purple-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {ref.category}
-                          </span>
-                          <span className="text-gray-600 truncate">{ref.filename}</span>
-                        </div>
-                        <p className="text-gray-700 mt-1 italic">{ref.snippet}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
                 <p className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   {formatTimestamp(msg.timestamp)}
                 </p>

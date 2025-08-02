@@ -1,96 +1,19 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Play, Volume2, Maximize, Bookmark, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
 import type { Module } from "@shared/schema";
 
 interface VideoSectionProps {
   module?: Module;
   onProgressUpdate: (moduleId: string, progress: number) => void;
   isMobile?: boolean;
-  userId?: string;
-  courseId?: string;
 }
 
-export default function VideoSection({ module, onProgressUpdate, isMobile, userId, courseId }: VideoSectionProps) {
-  const [videoProgress, setVideoProgress] = useState(0);
+export default function VideoSection({ module, onProgressUpdate, isMobile }: VideoSectionProps) {
+  const [videoProgress, setVideoProgress] = useState(35);
   const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  // Progress tracking mutation
-  const updateProgressMutation = useMutation({
-    mutationFn: async (progressData: { progress: number; completed: boolean }) => {
-      if (!module || !userId || !courseId) return;
-      
-      const payload = {
-        courseId,
-        moduleId: module.id,
-        progress: progressData.progress,
-        completed: progressData.completed,
-        lastAccessed: new Date().toISOString()
-      };
-      
-      const response = await apiRequest("POST", "/api/progress", payload);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/progress", courseId] });
-    },
-    onError: (error) => {
-      console.error("Failed to update progress:", error);
-    }
-  });
-
-  // Video event handlers
-  const handleTimeUpdate = () => {
-    if (!videoRef.current || !module) return;
-    
-    const video = videoRef.current;
-    const currentProgress = Math.round((video.currentTime / video.duration) * 100);
-    
-    if (currentProgress !== videoProgress) {
-      setVideoProgress(currentProgress);
-      onProgressUpdate(module.id, currentProgress);
-      
-      // Update progress every 5% or when video completes
-      if (currentProgress % 5 === 0 || currentProgress >= 95) {
-        updateProgressMutation.mutate({
-          progress: currentProgress,
-          completed: currentProgress >= 95
-        });
-      }
-    }
-  };
-
-  const handleVideoEnded = () => {
-    if (!module) return;
-    
-    setVideoProgress(100);
-    onProgressUpdate(module.id, 100);
-    updateProgressMutation.mutate({
-      progress: 100,
-      completed: true
-    });
-    
-    toast({
-      title: "Module Completed!",
-      description: `You've finished "${module.title}". Great work!`,
-    });
-  };
-
-  const handlePlay = () => {
-    setIsPlaying(true);
-  };
-
-  const handlePause = () => {
-    setIsPlaying(false);
-  };
 
   // Helper function to safely access module content
   const getModuleContent = () => {
@@ -142,51 +65,51 @@ export default function VideoSection({ module, onProgressUpdate, isMobile, userI
 
       <div className={`flex-1 ${isMobile ? 'p-4' : 'p-6'}`}>
         <div className="bg-black rounded-lg overflow-hidden shadow-lg mb-6 card-hover">
-          <div className="relative aspect-video bg-gray-900">
-            {module.videoUrl && module.videoUrl.startsWith('/uploads') ? (
-              // Local uploaded video
-              <video
-                ref={videoRef}
-                className="w-full h-full object-cover"
-                controls
-                poster="/api/placeholder-image"
-                onTimeUpdate={handleTimeUpdate}
-                onEnded={handleVideoEnded}
-                onPlay={handlePlay}
-                onPause={handlePause}
-                onLoadedMetadata={(e) => {
-                  const video = e.target as HTMLVideoElement;
-                  const duration = Math.floor(video.duration);
-                  const minutes = Math.floor(duration / 60);
-                  const seconds = duration % 60;
-                  // Update duration if not set
-                }}
+          <div className="relative aspect-video bg-gray-900 flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+            
+            <div className="text-center text-white z-10">
+              <div 
+                className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-all duration-300 interactive-hover"
+                onClick={handlePlayPause}
               >
-                <source src={module.videoUrl} type="video/mp4" />
-                <source src={module.videoUrl} type="video/webm" />
-                <source src={module.videoUrl} type="video/ogg" />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              // Placeholder for external videos or no video
-              <div className="flex items-center justify-center h-full">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                <div className="text-center text-white z-10">
-                  <div 
-                    className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-all duration-300 interactive-hover"
-                    onClick={handlePlayPause}
-                  >
-                    <Play className="w-8 h-8 ml-1" />
-                  </div>
-                  <p className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>{module.title}</p>
-                  <p className="text-sm opacity-80">Duration: {module.duration}</p>
-                  {!module.videoUrl && (
-                    <p className="text-xs opacity-60 mt-2">Video not yet uploaded</p>
-                  )}
-                </div>
+                <Play className="w-8 h-8 ml-1" />
               </div>
-            )}
+              <p className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>{module.title}</p>
+              <p className="text-sm opacity-80">Duration: {module.duration}</p>
+            </div>
 
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+              <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePlayPause}
+                  className="text-white hover:text-medical-blue button-interactive"
+                >
+                  <Play className="w-5 h-5" />
+                </Button>
+                <div className="flex-1">
+                  <Progress 
+                    value={videoProgress} 
+                    className="h-2 bg-white/20 cursor-pointer" 
+                  />
+                </div>
+                <span className={`text-white ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                  04:25 / {module.duration}
+                </span>
+                {!isMobile && (
+                  <>
+                    <Button variant="ghost" size="sm" className="text-white hover:text-medical-blue button-interactive">
+                      <Volume2 className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-white hover:text-medical-blue button-interactive">
+                      <Maximize className="w-4 h-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

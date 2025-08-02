@@ -7,12 +7,6 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import TrainingPage from "@/pages/training";
 import LandingPage from "@/pages/landing";
-import CourseManagement from "@/pages/courseManagement";
-
-function CourseManagementWrapper() {
-  const { user } = useAuth();
-  return <CourseManagement user={user} />;
-}
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -33,7 +27,6 @@ function Router() {
         <>
           <Route path="/" component={TrainingPage} />
           <Route path="/training" component={TrainingPage} />
-          <Route path="/manage" component={CourseManagementWrapper} />
         </>
       )}
       <Route component={NotFound} />

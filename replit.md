@@ -8,7 +8,6 @@ MediMind AI is a comprehensive diabetes care training platform designed for heal
 
 Preferred communication style: Simple, everyday language.
 Branding: Use consistent MediMind AI logo (healthcare hands/heart design) across all pages.
-UI: Clean interface without floating action buttons - removed QuickAccessToolbar component.
 
 ## System Architecture
 
@@ -61,14 +60,11 @@ The application uses a well-structured PostgreSQL schema with the following enti
 - **Chat Messages**: AI tutor conversation history
 - **Resources**: Educational resources and reference materials
 
-### AI Tutor System (RAG Implementation - Currently Stubbed)
+### AI Tutor System
 - **Specialized Context**: AI responses tailored for diabetes care in healthcare settings
 - **Compliance Focus**: Responses emphasize NICE guidelines, NHS practices, and CQC requirements
 - **Interactive Learning**: Suggested follow-up questions to encourage deeper engagement
 - **Safety-First Approach**: Consistent emphasis on safety protocols and professional consultation
-- **Document Retrieval**: Currently using stubbed document processor due to LangChain dependency conflicts
-- **RAG Architecture**: Well-designed RAG pipeline exists but needs vector search implementation
-- **Reference System**: Frontend displays document references and citations when available
 
 ## Data Flow
 
