@@ -3,6 +3,7 @@ import { Bookmark, Award, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import VideoPlayer from "./VideoPlayer";
+import ModuleVideoPlayer from "./ModuleVideoPlayer";
 import { VideoManager } from "./VideoManager";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -112,22 +113,13 @@ export default function VideoSection({ module, courseId, isMobile }: VideoSectio
 
       <div className={`flex-1 ${isMobile ? 'p-4' : 'p-6'}`}>
         <div className="mb-6">
-          {module.videoUrl ? (
-            <VideoPlayer
-              videoUrl={module.videoUrl}
-              title={module.title}
-              duration={module.duration || "0:00"}
-              onProgressUpdate={handleProgressUpdate}
-              onComplete={handleVideoComplete}
-              isMobile={isMobile}
-            />
-          ) : (
-            <div className="bg-gray-100 aspect-video rounded-lg flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <p>Video not available for this module</p>
-              </div>
-            </div>
-          )}
+          <ModuleVideoPlayer 
+            module={module}
+            courseId={courseId}
+            onProgressUpdate={handleProgressUpdate}
+            onComplete={handleVideoComplete}
+            isMobile={isMobile}
+          />
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">
