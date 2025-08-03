@@ -171,38 +171,26 @@ export class ObjectStorageService {
   }
 
   normalizeObjectEntityPath(rawPath: string): string {
-    // If it's already a normalized /objects/ path, return as is
-    if (rawPath.startsWith("/objects/")) {
+    if (!rawPath.startsWith("https://storage.googleapis.com/")) {
       return rawPath;
     }
-
-    // If it's a Google Storage URL, extract the path
-    if (rawPath.startsWith("https://storage.googleapis.com/")) {
-      const url = new URL(rawPath);
-      rawPath = url.pathname;
-    }
   
-    // Handle bucket/object path format
+    // Extract the path from the URL by removing query parameters and domain
+    const url = new URL(rawPath);
+    const rawObjectPath = url.pathname;
+  
     let objectEntityDir = this.getPrivateObjectDir();
     if (!objectEntityDir.endsWith("/")) {
       objectEntityDir = `${objectEntityDir}/`;
     }
   
-    // If the path starts with the private object directory, extract the entity ID
-    if (rawPath.startsWith(objectEntityDir)) {
-      const entityId = rawPath.slice(objectEntityDir.length);
-      return `/objects/${entityId}`;
-    }
-    
-    // If it's just a bucket path like /bucket/uploads/uuid, convert it
-    const pathParts = rawPath.split("/");
-    if (pathParts.length >= 4 && pathParts[2] === "uploads") {
-      const entityId = pathParts.slice(2).join("/");
-      return `/objects/${entityId}`;
+    if (!rawObjectPath.startsWith(objectEntityDir)) {
+      return rawObjectPath;
     }
 
-    // Default case - assume it's already properly formatted
-    return rawPath;
+    // Extract the entity ID from the path
+    const entityId = rawObjectPath.slice(objectEntityDir.length);
+    return `/objects/${entityId}`;
   }
 }
 

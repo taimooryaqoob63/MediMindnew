@@ -1,10 +1,10 @@
 import { 
   type User, type Course, type Module, type UserProgress, type ChatMessage, type Resource,
-  type Document, type DocumentChunk, type UploadedVideo,
+  type Document, type DocumentChunk,
   type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress, 
   type InsertChatMessage, type InsertResource, type InsertDocument, type InsertDocumentChunk,
-  type InsertUploadedVideo, type UpsertUser,
-  users, courses, modules, userProgress, chatMessages, resources, documents, documentChunks, uploadedVideos
+  type UpsertUser,
+  users, courses, modules, userProgress, chatMessages, resources, documents, documentChunks
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -50,13 +50,6 @@ export interface IStorage {
   createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk>;
   searchDocumentChunks(embedding: number[], limit?: number): Promise<DocumentChunk[]>;
   deleteDocumentChunks(documentId: string): Promise<boolean>;
-
-  // Uploaded Videos
-  getUploadedVideos(userId?: string): Promise<UploadedVideo[]>;
-  getUploadedVideo(id: string): Promise<UploadedVideo | undefined>;
-  createUploadedVideo(video: InsertUploadedVideo): Promise<UploadedVideo>;
-  updateUploadedVideo(id: string, updates: Partial<InsertUploadedVideo>): Promise<UploadedVideo>;
-  deleteUploadedVideo(id: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -245,45 +238,6 @@ export class DatabaseStorage implements IStorage {
       return true;
     } catch (error) {
       console.error("Error deleting document chunks:", error);
-      return false;
-    }
-  }
-
-  // Uploaded Videos
-  async getUploadedVideos(userId?: string): Promise<UploadedVideo[]> {
-    if (userId) {
-      return await db.select().from(uploadedVideos)
-        .where(eq(uploadedVideos.userId, userId))
-        .orderBy(uploadedVideos.uploadedAt);
-    }
-    return await db.select().from(uploadedVideos).orderBy(uploadedVideos.uploadedAt);
-  }
-
-  async getUploadedVideo(id: string): Promise<UploadedVideo | undefined> {
-    const [video] = await db.select().from(uploadedVideos).where(eq(uploadedVideos.id, id));
-    return video || undefined;
-  }
-
-  async createUploadedVideo(insertVideo: InsertUploadedVideo): Promise<UploadedVideo> {
-    const [video] = await db.insert(uploadedVideos).values(insertVideo).returning();
-    return video;
-  }
-
-  async updateUploadedVideo(id: string, updates: Partial<InsertUploadedVideo>): Promise<UploadedVideo> {
-    const [video] = await db
-      .update(uploadedVideos)
-      .set(updates)
-      .where(eq(uploadedVideos.id, id))
-      .returning();
-    return video;
-  }
-
-  async deleteUploadedVideo(id: string): Promise<boolean> {
-    try {
-      await db.delete(uploadedVideos).where(eq(uploadedVideos.id, id));
-      return true;
-    } catch (error) {
-      console.error("Error deleting uploaded video:", error);
       return false;
     }
   }
