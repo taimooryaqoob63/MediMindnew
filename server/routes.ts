@@ -339,6 +339,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Video management routes - Protected
+  
+  // Get videos for a module
+  app.get("/api/modules/:moduleId/videos", async (req, res) => {
+    try {
+      const videos = await storage.getVideosByModule(req.params.moduleId);
+      res.json(videos);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get videos" });
+    }
+  });
+
+  // Create video for module - Protected route
+  app.post("/api/modules/:moduleId/videos", isAuthenticated, async (req: any, res) => {
+    try {
+      const { title, description, videoUrl, duration, fileSize, orderIndex } = req.body;
+      
+      if (!title || !videoUrl || orderIndex === undefined) {
+        return res.status(400).json({ message: "Title, video URL, and order index are required" });
+      }
+
+      const video = await storage.createVideo({
+        moduleId: req.params.moduleId,
+        title,
+        description: description || null,
+        videoUrl,
+        duration: duration || null,
+        fileSize: fileSize || null,
+        orderIndex
+      });
+
+      res.json(video);
+    } catch (error) {
+      console.error("Error creating video:", error);
+      res.status(500).json({ message: "Failed to create video" });
+    }
+  });
+
+  // Update video - Protected route
+  app.patch("/api/videos/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const video = await storage.updateVideo(req.params.id, req.body);
+      res.json(video);
+    } catch (error) {
+      console.error("Error updating video:", error);
+      res.status(500).json({ message: "Failed to update video" });
+    }
+  });
+
+  // Delete video - Protected route
+  app.delete("/api/videos/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const success = await storage.deleteVideo(req.params.id);
+      if (success) {
+        res.json({ message: "Video deleted successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to delete video" });
+      }
+    } catch (error) {
+      console.error("Error deleting video:", error);
+      res.status(500).json({ message: "Failed to delete video" });
+    }
+  });
+
+  // Course management routes - Protected
+
+  // Create course - Protected route
+  app.post("/api/courses", isAuthenticated, async (req: any, res) => {
+    try {
+      const course = await storage.createCourse(req.body);
+      res.json(course);
+    } catch (error) {
+      console.error("Error creating course:", error);
+      res.status(500).json({ message: "Failed to create course" });
+    }
+  });
+
+  // Create module - Protected route
+  app.post("/api/courses/:courseId/modules", isAuthenticated, async (req: any, res) => {
+    try {
+      const moduleData = {
+        ...req.body,
+        courseId: req.params.courseId
+      };
+      const module = await storage.createModule(moduleData);
+      res.json(module);
+    } catch (error) {
+      console.error("Error creating module:", error);
+      res.status(500).json({ message: "Failed to create module" });
+    }
+  });
+
+  // Update module - Protected route
+  app.patch("/api/modules/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const module = await storage.updateModule(req.params.id, req.body);
+      res.json(module);
+    } catch (error) {
+      console.error("Error updating module:", error);
+      res.status(500).json({ message: "Failed to update module" });
+    }
+  });
+
+  // Delete module - Protected route
+  app.delete("/api/modules/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const success = await storage.deleteModule(req.params.id);
+      if (success) {
+        res.json({ message: "Module deleted successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to delete module" });
+      }
+    } catch (error) {
+      console.error("Error deleting module:", error);
+      res.status(500).json({ message: "Failed to delete module" });
+    }
+  });
+
+  // Object storage upload URL endpoint - Protected route
+  app.post("/api/objects/upload", isAuthenticated, async (req: any, res) => {
+    try {
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ message: "Failed to get upload URL" });
+    }
+  });
+
+  // Serve uploaded objects - Protected route
+  app.get("/objects/*", isAuthenticated, async (req: any, res) => {
+    try {
+      const { ObjectStorageService, ObjectNotFoundError } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = `/${req.params[0]}`;
+      const file = await objectStorageService.getObjectEntityFile(`/objects${objectPath}`);
+      await objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      if (error instanceof ObjectNotFoundError) {
+        res.status(404).json({ message: "Object not found" });
+      } else {
+        console.error("Error serving object:", error);
+        res.status(500).json({ message: "Failed to serve object" });
+      }
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -42,6 +42,20 @@ export const modules = pgTable("modules", {
   duration: text("duration"),
   content: json("content"), // Learning objectives, key takeaways, etc.
   orderIndex: integer("order_index").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Videos table for managing individual videos within modules
+export const videos = pgTable("videos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  moduleId: varchar("module_id").references(() => modules.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  videoUrl: text("video_url").notNull(),
+  duration: text("duration"),
+  fileSize: integer("file_size"),
+  orderIndex: integer("order_index").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const userProgress = pgTable("user_progress", {
@@ -105,7 +119,8 @@ export const documentChunks = pgTable("document_chunks", {
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertCourseSchema = createInsertSchema(courses).omit({ id: true });
-export const insertModuleSchema = createInsertSchema(modules).omit({ id: true });
+export const insertModuleSchema = createInsertSchema(modules).omit({ id: true, createdAt: true });
+export const insertVideoSchema = createInsertSchema(videos).omit({ id: true, createdAt: true });
 export const insertUserProgressSchema = createInsertSchema(userProgress).omit({ id: true });
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({ id: true });
 export const insertResourceSchema = createInsertSchema(resources).omit({ id: true });
@@ -116,6 +131,7 @@ export const insertDocumentChunkSchema = createInsertSchema(documentChunks).omit
 export type User = typeof users.$inferSelect;
 export type Course = typeof courses.$inferSelect;
 export type Module = typeof modules.$inferSelect;
+export type Video = typeof videos.$inferSelect;
 export type UserProgress = typeof userProgress.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type Resource = typeof resources.$inferSelect;
@@ -126,6 +142,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = typeof users.$inferInsert;
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type InsertModule = z.infer<typeof insertModuleSchema>;
+export type InsertVideo = z.infer<typeof insertVideoSchema>;
 export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertResource = z.infer<typeof insertResourceSchema>;

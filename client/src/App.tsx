@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import TrainingPage from "@/pages/training";
 import DocumentsPage from "@/pages/documents";
 import LandingPage from "@/pages/landing";
+import ManagePage from "@/pages/manage";
 import AppHeader from "@/components/AppHeader";
 
 function Router() {
@@ -30,6 +31,7 @@ function Router() {
           <Route path="/" component={TrainingPage} />
           <Route path="/training" component={TrainingPage} />
           <Route path="/documents" component={DocumentsPage} />
+          <Route path="/manage" component={ManagePage} />
         </>
       )}
       <Route component={NotFound} />

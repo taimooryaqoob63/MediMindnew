@@ -1,10 +1,10 @@
 import { 
-  type User, type Course, type Module, type UserProgress, type ChatMessage, type Resource,
+  type User, type Course, type Module, type Video, type UserProgress, type ChatMessage, type Resource,
   type Document, type DocumentChunk,
-  type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress, 
+  type InsertUser, type InsertCourse, type InsertModule, type InsertVideo, type InsertUserProgress, 
   type InsertChatMessage, type InsertResource, type InsertDocument, type InsertDocumentChunk,
   type UpsertUser,
-  users, courses, modules, userProgress, chatMessages, resources, documents, documentChunks
+  users, courses, modules, videos, userProgress, chatMessages, resources, documents, documentChunks
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -25,6 +25,15 @@ export interface IStorage {
   getModulesByCourse(courseId: string): Promise<Module[]>;
   getModule(id: string): Promise<Module | undefined>;
   createModule(module: InsertModule): Promise<Module>;
+  updateModule(id: string, updates: Partial<InsertModule>): Promise<Module>;
+  deleteModule(id: string): Promise<boolean>;
+
+  // Videos
+  getVideosByModule(moduleId: string): Promise<Video[]>;
+  getVideo(id: string): Promise<Video | undefined>;
+  createVideo(video: InsertVideo): Promise<Video>;
+  updateVideo(id: string, updates: Partial<InsertVideo>): Promise<Video>;
+  deleteVideo(id: string): Promise<boolean>;
 
   // User Progress
   getUserProgress(userId: string, courseId: string): Promise<UserProgress[]>;
@@ -50,6 +59,12 @@ export interface IStorage {
   createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk>;
   searchDocumentChunks(embedding: number[], limit?: number): Promise<DocumentChunk[]>;
   deleteDocumentChunks(documentId: string): Promise<boolean>;
+
+  // Video management
+  getVideosByModule(moduleId: string): Promise<Video[]>;
+  createVideo(video: InsertVideo): Promise<Video>;
+  updateVideo(id: string, updates: Partial<InsertVideo>): Promise<Video>;
+  deleteVideo(id: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -123,6 +138,64 @@ export class DatabaseStorage implements IStorage {
   async createModule(insertModule: InsertModule): Promise<Module> {
     const [module] = await db.insert(modules).values(insertModule).returning();
     return module;
+  }
+
+  async updateModule(id: string, updates: Partial<InsertModule>): Promise<Module> {
+    const [module] = await db
+      .update(modules)
+      .set(updates)
+      .where(eq(modules.id, id))
+      .returning();
+    return module;
+  }
+
+  async deleteModule(id: string): Promise<boolean> {
+    try {
+      // First delete all videos for this module
+      await db.delete(videos).where(eq(videos.moduleId, id));
+      // Then delete the module
+      await db.delete(modules).where(eq(modules.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting module:", error);
+      return false;
+    }
+  }
+
+  // Video methods
+  async getVideosByModule(moduleId: string): Promise<Video[]> {
+    return await db.select().from(videos)
+      .where(eq(videos.moduleId, moduleId))
+      .orderBy(videos.orderIndex);
+  }
+
+  async getVideo(id: string): Promise<Video | undefined> {
+    const [video] = await db.select().from(videos).where(eq(videos.id, id));
+    return video || undefined;
+  }
+
+  async createVideo(insertVideo: InsertVideo): Promise<Video> {
+    const [video] = await db.insert(videos).values(insertVideo).returning();
+    return video;
+  }
+
+  async updateVideo(id: string, updates: Partial<InsertVideo>): Promise<Video> {
+    const [video] = await db
+      .update(videos)
+      .set(updates)
+      .where(eq(videos.id, id))
+      .returning();
+    return video;
+  }
+
+  async deleteVideo(id: string): Promise<boolean> {
+    try {
+      await db.delete(videos).where(eq(videos.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting video:", error);
+      return false;
+    }
   }
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
@@ -241,12 +314,49 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+
+  // Video management methods
+  async getVideosByModule(moduleId: string): Promise<Video[]> {
+    return await db.select().from(videos)
+      .where(eq(videos.moduleId, moduleId))
+      .orderBy(videos.orderIndex);
+  }
+
+  async createVideo(insertVideo: InsertVideo): Promise<Video> {
+    const [video] = await db.insert(videos).values(insertVideo).returning();
+    return video;
+  }
+
+  async getVideo(id: string): Promise<Video | undefined> {
+    const [video] = await db.select().from(videos).where(eq(videos.id, id));
+    return video || undefined;
+  }
+
+  async updateVideo(id: string, updates: Partial<InsertVideo>): Promise<Video> {
+    const [video] = await db
+      .update(videos)
+      .set(updates)
+      .where(eq(videos.id, id))
+      .returning();
+    return video;
+  }
+
+  async deleteVideo(id: string): Promise<boolean> {
+    try {
+      await db.delete(videos).where(eq(videos.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting video:", error);
+      return false;
+    }
+  }
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User> = new Map();
   private courses: Map<string, Course> = new Map();
   private modules: Map<string, Module> = new Map();
+  private videos: Map<string, Video> = new Map();
   private userProgress: Map<string, UserProgress> = new Map();
   private chatMessages: Map<string, ChatMessage> = new Map();
   private resources: Map<string, Resource> = new Map();
@@ -493,10 +603,66 @@ export class MemStorage implements IStorage {
       id,
       content: insertModule.content || null,
       duration: insertModule.duration || null,
-      videoUrl: insertModule.videoUrl || null
+      videoUrl: insertModule.videoUrl || null,
+      createdAt: new Date()
     };
     this.modules.set(id, module);
     return module;
+  }
+
+  async updateModule(id: string, updates: Partial<InsertModule>): Promise<Module> {
+    const existing = this.modules.get(id);
+    if (!existing) {
+      throw new Error("Module not found");
+    }
+    const updated = { ...existing, ...updates };
+    this.modules.set(id, updated);
+    return updated;
+  }
+
+  async deleteModule(id: string): Promise<boolean> {
+    this.modules.delete(id);
+    return true;
+  }
+
+  // Video methods for MemStorage
+  async getVideosByModule(moduleId: string): Promise<Video[]> {
+    return Array.from(this.videos.values())
+      .filter(video => video.moduleId === moduleId)
+      .sort((a, b) => a.orderIndex - b.orderIndex);
+  }
+
+  async getVideo(id: string): Promise<Video | undefined> {
+    return this.videos.get(id);
+  }
+
+  async createVideo(insertVideo: InsertVideo): Promise<Video> {
+    const id = randomUUID();
+    const video: Video = { 
+      ...insertVideo, 
+      id,
+      description: insertVideo.description || null,
+      duration: insertVideo.duration || null,
+      fileSize: insertVideo.fileSize || null,
+      createdAt: new Date()
+    };
+    this.videos.set(id, video);
+    return video;
+  }
+
+  async updateVideo(id: string, updates: Partial<InsertVideo>): Promise<Video> {
+    const existing = this.videos.get(id);
+    if (!existing) {
+      throw new Error("Video not found");
+    }
+    const updated = { ...existing, ...updates };
+    this.videos.set(id, updated);
+    return updated;
+  }
+
+  async deleteVideo(id: string): Promise<boolean> {
+    this.videos.delete(id);
+    return true;
   }
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
@@ -588,6 +754,42 @@ export class MemStorage implements IStorage {
 
   async deleteDocumentChunks(documentId: string): Promise<boolean> {
     return false; // MemStorage doesn't store document chunks
+  }
+
+  // Video management methods
+  async getVideosByModule(moduleId: string): Promise<Video[]> {
+    return Array.from(this.videos.values())
+      .filter(video => video.moduleId === moduleId)
+      .sort((a, b) => a.orderIndex - b.orderIndex);
+  }
+
+  async createVideo(insertVideo: InsertVideo): Promise<Video> {
+    const id = randomUUID();
+    const video: Video = { 
+      ...insertVideo, 
+      id,
+      createdAt: new Date()
+    };
+    this.videos.set(id, video);
+    return video;
+  }
+
+  async getVideo(id: string): Promise<Video | undefined> {
+    return this.videos.get(id);
+  }
+
+  async updateVideo(id: string, updates: Partial<InsertVideo>): Promise<Video> {
+    const video = this.videos.get(id);
+    if (!video) {
+      throw new Error("Video not found");
+    }
+    const updated = { ...video, ...updates };
+    this.videos.set(id, updated);
+    return updated;
+  }
+
+  async deleteVideo(id: string): Promise<boolean> {
+    return this.videos.delete(id);
   }
 }
 
