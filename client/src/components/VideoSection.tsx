@@ -1,19 +1,41 @@
 import { useState } from "react";
-import { Play, Volume2, Maximize, Bookmark, Award } from "lucide-react";
+import { Bookmark, Award, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+import VideoPlayer from "./VideoPlayer";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Module } from "@shared/schema";
 
 interface VideoSectionProps {
   module?: Module;
-  onProgressUpdate: (moduleId: string, progress: number) => void;
+  courseId?: string;
   isMobile?: boolean;
 }
 
-export default function VideoSection({ module, onProgressUpdate, isMobile }: VideoSectionProps) {
-  const [videoProgress, setVideoProgress] = useState(35);
-  const [isPlaying, setIsPlaying] = useState(false);
+export default function VideoSection({ module, courseId, isMobile }: VideoSectionProps) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Progress update mutation
+  const progressMutation = useMutation({
+    mutationFn: async (data: { courseId: string; moduleId: string; progress: number; completed?: boolean }) => {
+      return apiRequest("/api/progress", "POST", data);
+    },
+    onSuccess: () => {
+      // Invalidate progress cache to refresh sidebar
+      queryClient.invalidateQueries({ queryKey: ["/api/progress", courseId] });
+    },
+    onError: (error) => {
+      console.error("Failed to update progress:", error);
+      toast({
+        title: "Progress Update Failed",
+        description: "Unable to save your progress. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Helper function to safely access module content
   const getModuleContent = () => {
@@ -36,8 +58,32 @@ export default function VideoSection({ module, onProgressUpdate, isMobile }: Vid
     );
   }
 
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
+  const handleProgressUpdate = (progress: number) => {
+    if (module && courseId) {
+      progressMutation.mutate({
+        courseId,
+        moduleId: module.id,
+        progress: Math.round(progress),
+        completed: false
+      });
+    }
+  };
+
+  const handleVideoComplete = () => {
+    if (module && courseId) {
+      progressMutation.mutate({
+        courseId,
+        moduleId: module.id,
+        progress: 100,
+        completed: true
+      });
+
+      toast({
+        title: "Module Completed!",
+        description: `You've successfully completed "${module.title}"`,
+        variant: "default",
+      });
+    }
   };
 
   return (
@@ -64,53 +110,23 @@ export default function VideoSection({ module, onProgressUpdate, isMobile }: Vid
       </div>
 
       <div className={`flex-1 ${isMobile ? 'p-4' : 'p-6'}`}>
-        <div className="bg-black rounded-lg overflow-hidden shadow-lg mb-6 card-hover">
-          <div className="relative aspect-video bg-gray-900 flex items-center justify-center">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-            
-            <div className="text-center text-white z-10">
-              <div 
-                className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-all duration-300 interactive-hover"
-                onClick={handlePlayPause}
-              >
-                <Play className="w-8 h-8 ml-1" />
-              </div>
-              <p className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>{module.title}</p>
-              <p className="text-sm opacity-80">Duration: {module.duration}</p>
-            </div>
-
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-              <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handlePlayPause}
-                  className="text-white hover:text-medical-blue button-interactive"
-                >
-                  <Play className="w-5 h-5" />
-                </Button>
-                <div className="flex-1">
-                  <Progress 
-                    value={videoProgress} 
-                    className="h-2 bg-white/20 cursor-pointer" 
-                  />
-                </div>
-                <span className={`text-white ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                  04:25 / {module.duration}
-                </span>
-                {!isMobile && (
-                  <>
-                    <Button variant="ghost" size="sm" className="text-white hover:text-medical-blue button-interactive">
-                      <Volume2 className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-white hover:text-medical-blue button-interactive">
-                      <Maximize className="w-4 h-4" />
-                    </Button>
-                  </>
-                )}
+        <div className="mb-6">
+          {module.videoUrl ? (
+            <VideoPlayer
+              videoUrl={module.videoUrl}
+              title={module.title}
+              duration={module.duration || "0:00"}
+              onProgressUpdate={handleProgressUpdate}
+              onComplete={handleVideoComplete}
+              isMobile={isMobile}
+            />
+          ) : (
+            <div className="bg-gray-100 aspect-video rounded-lg flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <p>Video not available for this module</p>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">

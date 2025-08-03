@@ -212,9 +212,7 @@ export default function TrainingPage() {
           <div className="h-full overflow-y-auto">
             <VideoSection 
               module={currentModule}
-              onProgressUpdate={(moduleId, progressValue) => {
-                // Will implement progress tracking
-              }}
+              courseId={selectedCourseId || undefined}
               isMobile={isMobile}
             />
           </div>

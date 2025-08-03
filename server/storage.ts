@@ -8,7 +8,7 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // Users - Replit Auth compatible
@@ -127,15 +127,16 @@ export class DatabaseStorage implements IStorage {
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
     return await db.select().from(userProgress)
-      .where(eq(userProgress.userId, userId))
-      .where(eq(userProgress.courseId, courseId));
+      .where(and(eq(userProgress.userId, userId), eq(userProgress.courseId, courseId)));
   }
 
   async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
     const existing = await db.select().from(userProgress)
-      .where(eq(userProgress.userId, insertProgress.userId))
-      .where(eq(userProgress.courseId, insertProgress.courseId))
-      .where(eq(userProgress.moduleId, insertProgress.moduleId || ""));
+      .where(and(
+        eq(userProgress.userId, insertProgress.userId),
+        eq(userProgress.courseId, insertProgress.courseId),
+        eq(userProgress.moduleId, insertProgress.moduleId || "")
+      ));
     
     if (existing.length > 0) {
       const [updated] = await db
@@ -152,8 +153,7 @@ export class DatabaseStorage implements IStorage {
 
   async getChatMessages(userId: string, courseId: string): Promise<ChatMessage[]> {
     return await db.select().from(chatMessages)
-      .where(eq(chatMessages.userId, userId))
-      .where(eq(chatMessages.courseId, courseId))
+      .where(and(eq(chatMessages.userId, userId), eq(chatMessages.courseId, courseId)))
       .orderBy(chatMessages.timestamp);
   }
 
@@ -259,9 +259,13 @@ export class MemStorage implements IStorage {
     // Create sample user
     const sampleUser: User = {
       id: "user-1",
-      username: "jane.doe",
-      name: "Jane Doe",
-      role: "care_worker"
+      email: "jane.doe@example.com",
+      firstName: "Jane",
+      lastName: "Doe",
+      profileImageUrl: null,
+      role: "care_worker",
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(sampleUser.id, sampleUser);
 
@@ -281,7 +285,7 @@ export class MemStorage implements IStorage {
         courseId: "course-1",
         title: "Understanding Diabetes",
         description: "Learn about Type 1 and Type 2 diabetes, their causes, and key symptoms to watch for in care home residents.",
-        videoUrl: "https://example.com/video1",
+        videoUrl: "https://www.youtube.com/embed/qgtd5pW3Q0A", // NHS Diabetes Types Education
         duration: "12:45",
         content: {
           learningObjectives: [
@@ -308,7 +312,7 @@ export class MemStorage implements IStorage {
         courseId: "course-1",
         title: "Blood Glucose Monitoring",
         description: "Master the techniques and best practices for accurate blood glucose testing.",
-        videoUrl: "https://example.com/video2",
+        videoUrl: "https://www.youtube.com/embed/2uDhZkk2ZHE", // Blood Sugar Testing Technique
         duration: "15:30",
         content: {
           learningObjectives: [
@@ -325,7 +329,7 @@ export class MemStorage implements IStorage {
         courseId: "course-1",
         title: "Insulin Administration",
         description: "Safe and effective insulin administration techniques and protocols.",
-        videoUrl: "https://example.com/video3",
+        videoUrl: "https://www.youtube.com/embed/YiI9a7cpMyk", // Insulin Injection Technique
         duration: "18:20",
         content: {
           learningObjectives: [
@@ -342,7 +346,7 @@ export class MemStorage implements IStorage {
         courseId: "course-1",
         title: "Emergency Procedures",
         description: "Recognize and respond to diabetes-related emergencies.",
-        videoUrl: "https://example.com/video4",
+        videoUrl: "https://www.youtube.com/embed/bmXJV13zOH4", // Diabetes Emergency Response
         duration: "14:15",
         content: {
           learningObjectives: [
@@ -359,7 +363,7 @@ export class MemStorage implements IStorage {
         courseId: "course-1",
         title: "Documentation & Compliance",
         description: "Proper documentation and regulatory compliance for diabetes care.",
-        videoUrl: "https://example.com/video5",
+        videoUrl: "https://www.youtube.com/embed/WZaWbPpXMp8", // Healthcare Documentation Best Practices
         duration: "10:45",
         content: {
           learningObjectives: [
@@ -419,8 +423,25 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+  async upsertUser(user: UpsertUser): Promise<User> {
+    const existingUser = this.users.get(user.id);
+    if (existingUser) {
+      const updatedUser: User = {
+        ...existingUser,
+        ...user,
+        updatedAt: new Date()
+      };
+      this.users.set(user.id, updatedUser);
+      return updatedUser;
+    } else {
+      const newUser: User = {
+        ...user,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      this.users.set(user.id, newUser);
+      return newUser;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -428,7 +449,9 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id,
-      role: insertUser.role || "care_worker"
+      role: insertUser.role || "care_worker",
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(id, user);
     return user;
@@ -529,6 +552,43 @@ export class MemStorage implements IStorage {
     this.resources.set(id, resource);
     return resource;
   }
+
+  // Add missing methods for full IStorage implementation
+  async getDocuments(userId?: string): Promise<Document[]> {
+    return []; // MemStorage doesn't store documents
+  }
+
+  async getDocument(id: string): Promise<Document | undefined> {
+    return undefined; // MemStorage doesn't store documents
+  }
+
+  async createDocument(insertDocument: InsertDocument): Promise<Document> {
+    throw new Error("MemStorage doesn't support document storage");
+  }
+
+  async updateDocument(id: string, updates: Partial<InsertDocument>): Promise<Document> {
+    throw new Error("MemStorage doesn't support document storage");
+  }
+
+  async deleteDocument(id: string): Promise<boolean> {
+    return false; // MemStorage doesn't store documents
+  }
+
+  async getDocumentChunks(documentId: string): Promise<DocumentChunk[]> {
+    return []; // MemStorage doesn't store document chunks
+  }
+
+  async createDocumentChunk(insertChunk: InsertDocumentChunk): Promise<DocumentChunk> {
+    throw new Error("MemStorage doesn't support document chunk storage");
+  }
+
+  async searchDocumentChunks(embedding: number[], limit: number = 5): Promise<DocumentChunk[]> {
+    return []; // MemStorage doesn't support vector search
+  }
+
+  async deleteDocumentChunks(documentId: string): Promise<boolean> {
+    return false; // MemStorage doesn't store document chunks
+  }
 }
 
 // Use DatabaseStorage for production with Replit Auth
@@ -556,7 +616,7 @@ async function initializeSampleData() {
         courseId: course.id,
         title: "Understanding Diabetes",
         description: "Learn about Type 1 and Type 2 diabetes, their causes, and key symptoms to watch for in care home residents.",
-        videoUrl: "https://example.com/video1",
+        videoUrl: "https://www.youtube.com/embed/qgtd5pW3Q0A", // NHS Diabetes Types Education
         duration: "12:45",
         content: {
           learningObjectives: [
@@ -582,7 +642,7 @@ async function initializeSampleData() {
         courseId: course.id,
         title: "Blood Glucose Monitoring",
         description: "Master the techniques and best practices for accurate blood glucose testing.",
-        videoUrl: "https://example.com/video2",
+        videoUrl: "https://www.youtube.com/embed/2uDhZkk2ZHE", // Blood Sugar Testing Technique
         duration: "15:30",
         content: {
           learningObjectives: [
@@ -598,7 +658,7 @@ async function initializeSampleData() {
         courseId: course.id,
         title: "Insulin Administration",
         description: "Safe and effective insulin administration techniques and protocols.",
-        videoUrl: "https://example.com/video3",
+        videoUrl: "https://www.youtube.com/embed/YiI9a7cpMyk", // Insulin Injection Technique
         duration: "18:20",
         content: {
           learningObjectives: [
