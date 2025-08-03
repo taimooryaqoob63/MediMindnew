@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Bookmark, Award, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import VideoPlayer from "./VideoPlayer";
 import ModuleVideoPlayer from "./ModuleVideoPlayer";
 import { VideoManager } from "./VideoManager";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

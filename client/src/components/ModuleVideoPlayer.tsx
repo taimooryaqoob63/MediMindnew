@@ -26,16 +26,7 @@ export default function ModuleVideoPlayer({
 
   // Determine which video to show
   const getVideoToDisplay = () => {
-    // If module has a main videoUrl, use that
-    if (module.videoUrl) {
-      return {
-        videoUrl: module.videoUrl,
-        title: module.title,
-        duration: module.duration || "0:00"
-      };
-    }
-
-    // Otherwise, use the first video from the module's video collection
+    // Use the first video from the module's video collection
     if (moduleVideos.length > 0) {
       const sortedVideos = moduleVideos.sort((a, b) => a.orderIndex - b.orderIndex);
       const firstVideo = sortedVideos[0];
