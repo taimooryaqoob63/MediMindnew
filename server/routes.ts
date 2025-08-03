@@ -143,6 +143,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update video ACL policy after upload - Protected route
+  app.put("/api/videos/:videoId/url", isAuthenticated, async (req: any, res) => {
+    if (!req.body.videoUrl) {
+      return res.status(400).json({ error: "videoUrl is required" });
+    }
+
+    const userId = req.user.claims.sub;
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.videoUrl,
+        {
+          owner: userId,
+          visibility: "public", // Videos should be accessible to all authenticated users
+        },
+      );
+
+      // Update the video record with the normalized object path
+      await storage.updateVideo(req.params.videoId, { videoUrl: objectPath });
+
+      res.status(200).json({
+        objectPath: objectPath,
+      });
+    } catch (error) {
+      console.error("Error setting video URL:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Serve uploaded objects - Protected route
   app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;

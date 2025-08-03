@@ -20,7 +20,6 @@ interface ObjectUploaderProps {
   ) => void;
   buttonClassName?: string;
   children: ReactNode;
-  allowedFileTypes?: string[];
 }
 
 /**
@@ -50,7 +49,6 @@ interface ObjectUploaderProps {
  *   policies.
  * @param props.buttonClassName - Optional CSS class name for the button
  * @param props.children - Content to be rendered inside the button
- * @param props.allowedFileTypes - Array of allowed file types (e.g., ['video/*'])
  */
 export function ObjectUploader({
   maxNumberOfFiles = 1,
@@ -59,7 +57,6 @@ export function ObjectUploader({
   onComplete,
   buttonClassName,
   children,
-  allowedFileTypes = ['video/*'],
 }: ObjectUploaderProps) {
   const [showModal, setShowModal] = useState(false);
   const [uppy] = useState(() =>
@@ -67,7 +64,7 @@ export function ObjectUploader({
       restrictions: {
         maxNumberOfFiles,
         maxFileSize,
-        allowedFileTypes,
+        allowedFileTypes: ['video/*', '.mp4', '.webm', '.mov', '.avi'], // Restrict to video files
       },
       autoProceed: false,
     })

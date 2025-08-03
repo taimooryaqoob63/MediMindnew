@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import TrainingPage from "@/pages/training";
 import DocumentsPage from "@/pages/documents";
+import AdminPage from "@/pages/admin";
 import LandingPage from "@/pages/landing";
 import AppHeader from "@/components/AppHeader";
 
@@ -30,6 +31,7 @@ function Router() {
           <Route path="/" component={TrainingPage} />
           <Route path="/training" component={TrainingPage} />
           <Route path="/documents" component={DocumentsPage} />
+          <Route path="/admin" component={AdminPage} />
         </>
       )}
       <Route component={NotFound} />

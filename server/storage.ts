@@ -53,6 +53,7 @@ export interface IStorage {
   // Video operations
   getVideosByModule(moduleId: string): Promise<ModuleVideo[]>;
   createVideo(video: InsertModuleVideo): Promise<ModuleVideo>;
+  updateVideo(id: string, updates: Partial<InsertModuleVideo>): Promise<ModuleVideo>;
   deleteVideo(id: string): Promise<void>;
   
   // Progress operations
@@ -74,6 +75,7 @@ export interface IStorage {
   
   // Document operations
   getDocuments(): Promise<Document[]>;
+  getDocument(id: string): Promise<Document | undefined>;
   createDocument(document: InsertDocument): Promise<Document>;
   getDocumentChunks(documentId: string): Promise<DocumentChunk[]>;
   createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk>;
@@ -139,6 +141,15 @@ export class DatabaseStorage implements IStorage {
   async createVideo(video: InsertModuleVideo): Promise<ModuleVideo> {
     const [newVideo] = await db.insert(moduleVideos).values(video).returning();
     return newVideo;
+  }
+
+  async updateVideo(id: string, updates: Partial<InsertModuleVideo>): Promise<ModuleVideo> {
+    const [updatedVideo] = await db
+      .update(moduleVideos)
+      .set(updates)
+      .where(eq(moduleVideos.id, id))
+      .returning();
+    return updatedVideo;
   }
 
   async deleteVideo(id: string): Promise<void> {
@@ -216,6 +227,11 @@ export class DatabaseStorage implements IStorage {
   // Document operations
   async getDocuments(): Promise<Document[]> {
     return await db.select().from(documents);
+  }
+
+  async getDocument(id: string): Promise<Document | undefined> {
+    const [document] = await db.select().from(documents).where(eq(documents.id, id));
+    return document;
   }
 
   async createDocument(document: InsertDocument): Promise<Document> {
