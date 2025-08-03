@@ -1,69 +1,59 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Progress } from "@/components/ui/progress";
-import { Plus, Trash2, Upload, FileVideo, Clock, HardDrive } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { apiRequest } from "@/lib/queryClient";
-import { ObjectUploader } from "@/components/ObjectUploader";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { ObjectUploader } from './ObjectUploader';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { Trash2, Upload, Play, Clock } from 'lucide-react';
+import type { ModuleVideo, InsertModuleVideo } from '@shared/schema';
+import type { UploadResult } from '@uppy/core';
 
-import type { Video } from "@shared/schema";
-
-const videoSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  duration: z.string().optional(),
-});
-
-type VideoForm = z.infer<typeof videoSchema>;
+interface UploadResponse {
+  uploadURL: string;
+}
 
 interface VideoManagerProps {
   moduleId: string;
 }
 
 export function VideoManager({ moduleId }: VideoManagerProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [videoTitle, setVideoTitle] = useState('');
+  const [videoDescription, setVideoDescription] = useState('');
+  const [uploadedVideoUrl, setUploadedVideoUrl] = useState('');
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isCreateVideoOpen, setIsCreateVideoOpen] = useState(false);
-  const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string>("");
-  const [videoMetadata, setVideoMetadata] = useState<{ duration?: string; fileSize?: number }>({});
 
   // Fetch videos for this module
-  const { data: videos = [], isLoading } = useQuery<Video[]>({
-    queryKey: ["/api/modules", moduleId, "videos"],
+  const { data: videos = [], isLoading } = useQuery<ModuleVideo[]>({
+    queryKey: ['/api/modules', moduleId, 'videos'],
   });
 
   // Create video mutation
   const createVideoMutation = useMutation({
-    mutationFn: async (data: VideoForm & { videoUrl: string; fileSize?: number; orderIndex: number }) => {
-      return apiRequest(`/api/modules/${moduleId}/videos`, "POST", data);
+    mutationFn: async (video: InsertModuleVideo) => {
+      const response = await apiRequest('POST', `/api/modules/${moduleId}/videos`, video);
+      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/modules", moduleId, "videos"] });
-      setIsCreateVideoOpen(false);
-      setUploadedVideoUrl("");
-      setVideoMetadata({});
-      form.reset();
+      queryClient.invalidateQueries({ queryKey: ['/api/modules', moduleId, 'videos'] });
       toast({
-        title: "Video Added",
-        description: "Video has been successfully added to the module.",
+        title: 'Success',
+        description: 'Video added successfully',
       });
+      resetForm();
+      setIsDialogOpen(false);
     },
-    onError: () => {
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to add video. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: `Failed to add video: ${error.message}`,
+        variant: 'destructive',
       });
     },
   });
@@ -71,294 +61,236 @@ export function VideoManager({ moduleId }: VideoManagerProps) {
   // Delete video mutation
   const deleteVideoMutation = useMutation({
     mutationFn: async (videoId: string) => {
-      return apiRequest(`/api/videos/${videoId}`, "DELETE");
+      const response = await apiRequest('DELETE', `/api/videos/${videoId}`);
+      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/modules", moduleId, "videos"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/modules', moduleId, 'videos'] });
       toast({
-        title: "Video Deleted",
-        description: "Video has been successfully deleted.",
+        title: 'Success',
+        description: 'Video deleted successfully',
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to delete video. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: `Failed to delete video: ${error.message}`,
+        variant: 'destructive',
       });
     },
   });
 
-  const form = useForm<VideoForm>({
-    resolver: zodResolver(videoSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      duration: "",
-    },
-  });
-
-  const onSubmit = (data: VideoForm) => {
-    if (!uploadedVideoUrl) {
+  const handleGetUploadParameters = async () => {
+    try {
+      const response = await apiRequest('POST', '/api/objects/upload');
+      const data = await response.json() as UploadResponse;
+      if (!data?.uploadURL) {
+        throw new Error('No upload URL received from server');
+      }
+      return {
+        method: 'PUT' as const,
+        url: data.uploadURL,
+      };
+    } catch (error) {
+      console.error('Failed to get upload URL:', error);
       toast({
-        title: "Upload Required",
-        description: "Please upload a video file first.",
-        variant: "destructive",
+        title: 'Upload Error',
+        description: 'Failed to get upload URL. Please try again.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
+  const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadedFile = result.successful[0];
+      setUploadedVideoUrl(uploadedFile.uploadURL || '');
+      
+      // Extract video metadata if available
+      const file = uploadedFile.data as any;
+      if (file && file.type && file.type.startsWith('video/')) {
+        // Set a default title based on the filename
+        if (!videoTitle) {
+          setVideoTitle(file.name?.replace(/\.[^/.]+$/, '') || 'New Video');
+        }
+      }
+      
+      toast({
+        title: 'Upload Complete',
+        description: 'Video uploaded successfully. Please add title and save.',
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setVideoTitle('');
+    setVideoDescription('');
+    setUploadedVideoUrl('');
+    setVideoDuration(null);
+  };
+
+  const handleSave = () => {
+    if (!uploadedVideoUrl || !videoTitle.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please upload a video and provide a title',
+        variant: 'destructive',
       });
       return;
     }
 
-    createVideoMutation.mutate({
-      ...data,
+    const newVideo: InsertModuleVideo = {
+      moduleId,
+      title: videoTitle.trim(),
       videoUrl: uploadedVideoUrl,
-      fileSize: videoMetadata.fileSize,
-      duration: data.duration || videoMetadata.duration,
-      orderIndex: videos.length,
-    });
+      duration: videoDuration,
+      orderIndex: videos.length + 1,
+      description: videoDescription.trim() || undefined,
+    };
+
+    createVideoMutation.mutate(newVideo);
   };
 
-  const handleVideoUpload = (url: string, metadata: { duration?: string; fileSize?: number }) => {
-    setUploadedVideoUrl(url);
-    setVideoMetadata(metadata);
-    
-    // Auto-fill duration if available
-    if (metadata.duration && !form.getValues("duration")) {
-      form.setValue("duration", metadata.duration);
-    }
-  };
-
-  const formatFileSize = (bytes: number) => {
-    const mb = bytes / (1024 * 1024);
-    return `${mb.toFixed(1)} MB`;
-  };
-
-  const formatDuration = (duration: string) => {
-    if (!duration) return "Unknown";
-    
-    // If it's already in MM:SS format, return as is
-    if (duration.includes(":")) return duration;
-    
-    // If it's in seconds, convert to MM:SS
-    const seconds = parseInt(duration);
-    if (isNaN(seconds)) return duration;
-    
+  const formatDuration = (seconds: number | null) => {
+    if (!seconds) return 'Unknown';
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className="space-y-6">
-      {/* Add Video Button */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">Videos ({videos.length})</h3>
-          <p className="text-sm text-muted-foreground">
-            Manage video content for this training module
-          </p>
-        </div>
-        <Dialog open={isCreateVideoOpen} onOpenChange={setIsCreateVideoOpen}>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Module Videos</h3>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button className="bg-medical-blue hover:bg-medical-blue/90">
+              <Upload className="w-4 h-4 mr-2" />
               Add Video
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add New Video</DialogTitle>
-              <DialogDescription>
-                Upload a video file and provide details for this training module.
-              </DialogDescription>
+              <DialogTitle>Add Video to Module</DialogTitle>
             </DialogHeader>
-            
-            <div className="space-y-6">
-              {/* Video Upload Section */}
-              <div className="space-y-4">
-                <Label>Video File</Label>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Upload Video</Label>
                 <ObjectUploader
-                  onUploadComplete={handleVideoUpload}
-                  acceptedTypes={["video/mp4", "video/avi", "video/mov", "video/quicktime"]}
-                  maxSize={500 * 1024 * 1024} // 500MB
-                  description="Upload video files (MP4, AVI, MOV) up to 500MB"
-                />
-                {uploadedVideoUrl && (
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-                    <p className="text-sm text-green-800">
-                      ✓ Video uploaded successfully
-                      {videoMetadata.fileSize && (
-                        <span className="ml-2">
-                          ({formatFileSize(videoMetadata.fileSize)})
-                        </span>
-                      )}
-                    </p>
+                  maxNumberOfFiles={1}
+                  maxFileSize={104857600} // 100MB
+                  allowedFileTypes={['video/*']}
+                  onGetUploadParameters={handleGetUploadParameters}
+                  onComplete={handleUploadComplete}
+                  buttonClassName={uploadedVideoUrl ? 'bg-green-600 hover:bg-green-700' : ''}
+                >
+                  <div className="flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    <span>{uploadedVideoUrl ? 'Video Uploaded ✓' : 'Choose Video File'}</span>
                   </div>
+                </ObjectUploader>
+                {uploadedVideoUrl && (
+                  <p className="text-sm text-green-600">Video uploaded successfully</p>
                 )}
               </div>
 
-              {/* Video Details Form */}
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Video Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Introduction to Blood Glucose Testing" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Describe what this video covers..."
-                            className="h-20"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="duration"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Duration (Optional)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="e.g., 12:30 or auto-detected"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              <div className="space-y-2">
+                <Label htmlFor="video-title">Video Title *</Label>
+                <Input
+                  id="video-title"
+                  value={videoTitle}
+                  onChange={(e) => setVideoTitle(e.target.value)}
+                  placeholder="Enter video title"
+                />
+              </div>
 
-                  <div className="flex justify-end gap-2 pt-4">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => {
-                        setIsCreateVideoOpen(false);
-                        setUploadedVideoUrl("");
-                        setVideoMetadata({});
-                        form.reset();
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      disabled={createVideoMutation.isPending || !uploadedVideoUrl}
-                    >
-                      {createVideoMutation.isPending ? "Adding Video..." : "Add Video"}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
+              <div className="space-y-2">
+                <Label htmlFor="video-description">Description</Label>
+                <Textarea
+                  id="video-description"
+                  value={videoDescription}
+                  onChange={(e) => setVideoDescription(e.target.value)}
+                  placeholder="Enter video description (optional)"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="video-duration">Duration (seconds)</Label>
+                <Input
+                  id="video-duration"
+                  type="number"
+                  value={videoDuration || ''}
+                  onChange={(e) => setVideoDuration(e.target.value ? parseInt(e.target.value) : null)}
+                  placeholder="Enter duration in seconds (optional)"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    resetForm();
+                    setIsDialogOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSave}
+                  disabled={createVideoMutation.isPending || !uploadedVideoUrl || !videoTitle.trim()}
+                  className="bg-medical-blue hover:bg-medical-blue/90"
+                >
+                  {createVideoMutation.isPending ? 'Saving...' : 'Save Video'}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Videos List */}
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading videos...</p>
+        <div className="text-center py-4">Loading videos...</div>
       ) : videos.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileVideo className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No videos yet</h3>
-            <p className="text-sm text-muted-foreground text-center mb-4">
-              Upload your first video to get started with this module.
-            </p>
-            <Button onClick={() => setIsCreateVideoOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add First Video
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="text-center py-8 text-gray-500">
+          <Play className="w-12 h-12 mx-auto mb-2 opacity-50" />
+          <p>No videos added yet</p>
+          <p className="text-sm">Upload your first video to get started</p>
+        </div>
       ) : (
-        <div className="grid gap-4">
-          {videos
-            .sort((a, b) => a.orderIndex - b.orderIndex)
-            .map((video) => (
-              <Card key={video.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium mb-2">{video.title}</h4>
-                      {video.description && (
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {video.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        {video.duration && (
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatDuration(video.duration)}
-                          </div>
-                        )}
-                        {video.fileSize && (
-                          <div className="flex items-center gap-1">
-                            <HardDrive className="h-3 w-3" />
-                            {formatFileSize(video.fileSize)}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <span>Order: {video.orderIndex + 1}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Video</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete "{video.title}"? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteVideoMutation.mutate(video.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+        <div className="space-y-2">
+          {videos.map((video, index) => (
+            <div
+              key={video.id}
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 bg-medical-blue/10 rounded-full">
+                  <Play className="w-4 h-4 text-medical-blue" />
+                </div>
+                <div>
+                  <h4 className="font-medium">{video.title}</h4>
+                  {video.description && (
+                    <p className="text-sm text-gray-600">{video.description}</p>
+                  )}
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Clock className="w-3 h-3" />
+                    <span>{formatDuration(video.duration)}</span>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => deleteVideoMutation.mutate(video.id)}
+                disabled={deleteVideoMutation.isPending}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          ))}
         </div>
       )}
     </div>

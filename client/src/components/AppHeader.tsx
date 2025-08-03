@@ -1,4 +1,4 @@
-import { Clock, Bell, Menu, MessageCircle, X, FileText, Settings } from "lucide-react";
+import { Clock, Bell, Menu, MessageCircle, X, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { User } from "@shared/schema";
 import logoPath from "@assets/logo (1)_1753961810037.png";
@@ -82,14 +82,6 @@ export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobil
               >
                 <FileText className="h-4 w-4" />
                 Documents
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-gray-600 hover:text-medical-blue button-interactive flex items-center gap-2"
-                onClick={() => window.location.href = '/manage'}
-              >
-                <Settings className="h-4 w-4" />
-                Manage
               </Button>
               <Button 
                 variant="outline" 
