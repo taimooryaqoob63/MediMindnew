@@ -2,9 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { getAITutorResponse } from "./services/openai";
-import { insertChatMessageSchema } from "@shared/schema";
+import { insertChatMessageSchema, insertUploadedVideoSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ragService } from "./ragService";
+import { ObjectStorageService } from "./objectStorage";
+import { transcriptionService } from "./transcriptionService";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -336,6 +338,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get document status error:", error);
       res.status(500).json({ message: "Failed to get document status" });
+    }
+  });
+
+  // Video upload and transcription routes
+  const objectStorageService = new ObjectStorageService();
+
+  // Get upload URL for video
+  app.post("/api/videos/upload-url", isAuthenticated, async (req, res) => {
+    try {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ message: "Failed to get upload URL" });
+    }
+  });
+
+  // Create video record after upload
+  app.post("/api/videos", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const videoData = insertUploadedVideoSchema.parse({
+        ...req.body,
+        userId
+      });
+
+      const video = await storage.createUploadedVideo(videoData);
+      
+      // Start transcription in the background
+      if (video.objectPath) {
+        setImmediate(async () => {
+          try {
+            await storage.updateUploadedVideo(video.id, { 
+              transcriptionStatus: "processing" 
+            });
+
+            const objectFile = await objectStorageService.getObjectEntityFile(video.objectPath);
+            const segments = await transcriptionService.transcribeVideo(objectFile);
+            const transcriptText = transcriptionService.segmentsToText(segments);
+
+            await storage.updateUploadedVideo(video.id, {
+              transcript: segments,
+              transcriptText,
+              transcriptionStatus: "completed"
+            });
+
+            console.log(`Transcription completed for video: ${video.id}`);
+          } catch (error) {
+            console.error(`Transcription failed for video ${video.id}:`, error);
+            await storage.updateUploadedVideo(video.id, { 
+              transcriptionStatus: "failed" 
+            });
+          }
+        });
+      }
+
+      res.json(video);
+    } catch (error) {
+      console.error("Error creating video:", error);
+      res.status(500).json({ message: "Failed to create video record" });
+    }
+  });
+
+  // Get user's uploaded videos
+  app.get("/api/videos", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const videos = await storage.getUploadedVideos(userId);
+      res.json(videos);
+    } catch (error) {
+      console.error("Error getting videos:", error);
+      res.status(500).json({ message: "Failed to get videos" });
+    }
+  });
+
+  // Get specific video
+  app.get("/api/videos/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const video = await storage.getUploadedVideo(req.params.id);
+      
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+
+      // Check if user owns the video
+      if (video.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      res.json(video);
+    } catch (error) {
+      console.error("Error getting video:", error);
+      res.status(500).json({ message: "Failed to get video" });
+    }
+  });
+
+  // Delete video
+  app.delete("/api/videos/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const video = await storage.getUploadedVideo(req.params.id);
+      
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+
+      // Check if user owns the video
+      if (video.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      await storage.deleteUploadedVideo(req.params.id);
+      res.json({ message: "Video deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting video:", error);
+      res.status(500).json({ message: "Failed to delete video" });
+    }
+  });
+
+  // Serve uploaded videos
+  app.get("/videos/:objectPath(*)", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const objectPath = `/objects/${req.params.objectPath}`;
+      
+      // Find the video record to verify ownership
+      const videos = await storage.getUploadedVideos(userId);
+      const video = videos.find(v => v.objectPath === objectPath);
+      
+      if (!video) {
+        return res.status(404).json({ message: "Video not found" });
+      }
+
+      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving video:", error);
+      res.status(500).json({ message: "Failed to serve video" });
     }
   });
 

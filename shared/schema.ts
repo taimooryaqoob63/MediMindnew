@@ -41,6 +41,12 @@ export const modules = pgTable("modules", {
   videoUrl: text("video_url"),
   duration: text("duration"),
   content: json("content"), // Learning objectives, key takeaways, etc.
+  transcript: json("transcript").$type<Array<{
+    start: number;
+    end: number;
+    text: string;
+  }>>(), // Word-level transcript with timestamps
+  transcriptText: text("transcript_text"), // Full transcript text for search
   orderIndex: integer("order_index").notNull(),
 });
 
@@ -67,6 +73,24 @@ export const chatMessages = pgTable("chat_messages", {
     relevanceScore: number;
   }>>(),
   timestamp: text("timestamp").notNull(),
+});
+
+// New table for uploaded videos
+export const uploadedVideos = pgTable("uploaded_videos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  objectPath: text("object_path").notNull(), // Path in object storage
+  duration: text("duration"),
+  transcript: json("transcript").$type<Array<{
+    start: number;
+    end: number;
+    text: string;
+  }>>(), // Word-level transcript with timestamps
+  transcriptText: text("transcript_text"), // Full transcript text for search
+  transcriptionStatus: text("transcription_status").notNull().default("pending"), // pending, processing, completed, failed
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
 });
 
 export const resources = pgTable("resources", {
@@ -111,6 +135,7 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({ i
 export const insertResourceSchema = createInsertSchema(resources).omit({ id: true });
 export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, uploadedAt: true });
 export const insertDocumentChunkSchema = createInsertSchema(documentChunks).omit({ id: true, createdAt: true });
+export const insertUploadedVideoSchema = createInsertSchema(uploadedVideos).omit({ id: true, uploadedAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -119,6 +144,7 @@ export type Module = typeof modules.$inferSelect;
 export type UserProgress = typeof userProgress.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type Resource = typeof resources.$inferSelect;
+export type UploadedVideo = typeof uploadedVideos.$inferSelect;
 export type Document = typeof documents.$inferSelect;
 export type DocumentChunk = typeof documentChunks.$inferSelect;
 
@@ -131,3 +157,4 @@ export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertResource = z.infer<typeof insertResourceSchema>;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type InsertDocumentChunk = z.infer<typeof insertDocumentChunkSchema>;
+export type InsertUploadedVideo = z.infer<typeof insertUploadedVideoSchema>;
