@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX, X, ChevronDown, Pause, Play, Square, Settings, Copy, Check } from "lucide-react";
+import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX, X, ChevronDown, Pause, Play, Square, Settings, Copy, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -174,6 +174,29 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     },
   });
 
+  const clearChatMutation = useMutation({
+    mutationFn: async (courseId: string) => {
+      const response = await apiRequest("DELETE", `/api/chat/${courseId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
+      toast({
+        title: "Chat cleared",
+        description: "All previous messages have been removed",
+        duration: 3000,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to clear chat",
+        description: error.message,
+        variant: "destructive",
+        duration: 3000,
+      });
+    },
+  });
+
   const scrollToBottom = () => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
@@ -253,6 +276,14 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     if (!isTTSEnabled && synthesis) {
       synthesis.cancel();
       setIsSpeaking(false);
+    }
+  };
+
+  const handleClearChat = () => {
+    if (messages.length === 0) return;
+    
+    if (window.confirm("Are you sure you want to clear all chat messages? This action cannot be undone.")) {
+      clearChatMutation.mutate(courseId);
     }
   };
 
@@ -368,6 +399,26 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
             </div>
           </div>
           <div className="flex items-center space-x-1">
+            {/* Clear Chat Button */}
+            {messages.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearChat}
+                    disabled={clearChatMutation.isPending}
+                    className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-900 text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Clear all messages</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
             {/* TTS Settings (for desktop) */}
             {!isMobile && speechSynthesisSupported && (
               <Tooltip>

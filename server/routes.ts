@@ -307,7 +307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { message, courseId, context } = req.body;
       const userId = req.user.claims.sub;
-      
+
       if (!message || !courseId) {
         return res.status(400).json({ message: "Message and courseId are required" });
       }
@@ -318,7 +318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         context: context || "",
         topK: 5
       });
-      
+
       // Save chat message with RAG response
       const chatMessage = await storage.createChatMessage({
         userId,
@@ -424,7 +424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const documents = await ragService.getStoredDocuments(userId);
-      
+
       // Return sanitized document info
       const documentList = documents.map(doc => ({
         id: doc.id,
@@ -460,7 +460,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Delete document and its chunks
       const success = await ragService.deleteDocument(documentId);
-      
+
       if (success) {
         // Clean up the physical file
         try {
@@ -471,7 +471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Failed to delete physical file:", fileError);
           // Don't fail the request if file cleanup fails
         }
-        
+
         res.json({ message: "Document deleted successfully" });
       } else {
         res.status(500).json({ message: "Failed to delete document" });
@@ -507,6 +507,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get document status error:", error);
       res.status(500).json({ message: "Failed to get document status" });
+    }
+  });
+
+  // Clear all chat messages for a course
+  app.delete("/api/chat/:courseId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.deleteChatMessages(userId, req.params.courseId);
+      res.json({ message: "Chat messages cleared successfully" });
+    } catch (error) {
+      console.error("Error clearing chat messages:", error);
+      res.status(500).json({ message: "Failed to clear chat messages" });
     }
   });
 

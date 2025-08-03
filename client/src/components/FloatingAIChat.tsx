@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Bot, User, Volume2, VolumeX, Mic, MicOff, HelpCircle, Plus, Settings } from "lucide-react";
+import { Send, Bot, User, Volume2, VolumeX, Mic, MicOff, HelpCircle, Plus, Settings, Trash2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface Source {
@@ -115,6 +115,37 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
     },
   });
 
+  // Clear chat mutation
+  const clearChatMutation = useMutation({
+    mutationFn: async (courseId: string) => {
+      const response = await fetch(`/api/chat/${courseId}`, {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to clear chat");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/chat/${courseId}`] });
+      toast({
+        title: "Chat cleared",
+        description: "All previous messages have been removed",
+        duration: 3000,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to clear chat",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -174,6 +205,14 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleClearChat = () => {
+    if (messages.length === 0) return;
+    
+    if (window.confirm("Are you sure you want to clear all chat messages? This action cannot be undone.")) {
+      clearChatMutation.mutate(courseId);
+    }
   };
 
   if (isLoading) {
@@ -285,6 +324,19 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
                 className="flex-1 border-0 bg-transparent text-gray-800 placeholder-gray-500 focus:ring-0 focus:outline-none p-0"
                 disabled={sendMessage.isPending}
               />
+
+              {/* Clear Chat Button */}
+              {messages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearChat}
+                  disabled={clearChatMutation.isPending}
+                  className="h-6 w-6 p-0 text-red-400 hover:text-red-600 mx-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
 
               {/* Tools Button */}
               <Button
