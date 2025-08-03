@@ -10,7 +10,7 @@ import { FloatingAIChat } from "@/components/FloatingAIChat";
 import QuickAccessToolbar from "@/components/QuickAccessToolbar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle, X } from "lucide-react";
+import { HelpCircle, X, Minus, Maximize2 } from "lucide-react";
 
 import type { Course, Module, User, UserProgress } from "@shared/schema";
 
@@ -19,6 +19,8 @@ export default function TrainingPage() {
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatMinimized, setIsChatMinimized] = useState(false);
+  const [chatHeight, setChatHeight] = useState(400);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -133,19 +135,70 @@ export default function TrainingPage() {
           </div>
         </main>
         
-        {/* Chat Section - Conditionally rendered */}
+        {/* Chat Section - Bottom positioned, resizable */}
         {isChatOpen && (
-          <div className={`fixed bottom-0 right-0 z-40 shadow-2xl bg-white rounded-tl-xl transition-all duration-300 ease-in-out transform ${
+          <div className={`fixed bottom-0 left-0 right-0 z-40 shadow-2xl bg-white border-t border-gray-300 transition-all duration-300 ease-in-out transform ${
             isChatOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
-          } ${
-            isMobile 
-              ? 'w-full h-[85vh] max-h-[85vh]' 
-              : 'w-[500px] h-[600px] max-h-[600px]'
-          }`}>
-            <FloatingAIChat 
-              courseId={selectedCourseId || ""}
-              context={currentModule ? `Current module: ${currentModule.title}` : ""}
-            />
+          }`}
+          style={{ height: isChatMinimized ? '44px' : `${isMobile ? Math.min(chatHeight, window.innerHeight * 0.8) : chatHeight}px` }}>
+            {/* Resize Handle and Controls */}
+            <div className="flex items-center justify-between bg-gray-100 border-b border-gray-200 px-4 py-2">
+              <div className="flex items-center space-x-2">
+                {!isChatMinimized && (
+                  <div 
+                    className="flex items-center justify-center cursor-ns-resize hover:bg-gray-200 transition-colors rounded px-2 py-1"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      const startY = e.clientY;
+                      const startHeight = chatHeight;
+                      
+                      const handleMouseMove = (e: MouseEvent) => {
+                        const newHeight = Math.max(200, Math.min(window.innerHeight * 0.8, startHeight + (startY - e.clientY)));
+                        setChatHeight(newHeight);
+                      };
+                      
+                      const handleMouseUp = () => {
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                      };
+                      
+                      document.addEventListener('mousemove', handleMouseMove);
+                      document.addEventListener('mouseup', handleMouseUp);
+                    }}
+                    title="Drag to resize"
+                  >
+                    <div className="w-8 h-1 bg-gray-400 rounded-full"></div>
+                  </div>
+                )}
+                <span className="text-sm font-medium text-gray-700">AI Assistant</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsChatMinimized(!isChatMinimized)}
+                  className="p-1 h-6 w-6 hover:bg-gray-200 rounded text-gray-500 hover:text-gray-700"
+                  title={isChatMinimized ? "Maximize" : "Minimize"}
+                >
+                  {isChatMinimized ? <Maximize2 className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsChatOpen(false)}
+                  className="p-1 h-6 w-6 hover:bg-gray-200 rounded text-gray-500 hover:text-gray-700"
+                  title="Close"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            {!isChatMinimized && (
+              <FloatingAIChat 
+                courseId={selectedCourseId || ""}
+                context={currentModule ? `Current module: ${currentModule.title}` : ""}
+              />
+            )}
           </div>
         )}
       </div>
