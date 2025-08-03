@@ -298,6 +298,7 @@ export function VideoUploadManager({ moduleId, onVideoAdded }: VideoUploadManage
                           type="number"
                           min="1"
                           {...field}
+                          value={field.value || ""}
                           onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                         />
                       </FormControl>
@@ -318,6 +319,7 @@ export function VideoUploadManager({ moduleId, onVideoAdded }: VideoUploadManage
                           min="0"
                           placeholder="0"
                           {...field}
+                          value={field.value || ""}
                           onChange={e => field.onChange(parseInt(e.target.value) || 0)}
                         />
                       </FormControl>
