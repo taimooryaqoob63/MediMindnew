@@ -20,6 +20,91 @@ export default function TrainingPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isChatMinimized, setIsChatMinimized] = useState(false);
+  
+  // Draggable button state
+  const [dragPosition, setDragPosition] = useState({ x: window.innerWidth - 72, y: 80 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  // Drag handlers for mouse
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return;
+    
+    const newX = Math.max(0, Math.min(window.innerWidth - 56, e.clientX - dragOffset.x));
+    const newY = Math.max(0, Math.min(window.innerHeight - 56, e.clientY - dragOffset.y));
+    
+    setDragPosition({ x: newX, y: newY });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Drag handlers for touch
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const touch = e.touches[0];
+    setDragOffset({
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
+    });
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    
+    const touch = e.touches[0];
+    const newX = Math.max(0, Math.min(window.innerWidth - 56, touch.clientX - dragOffset.x));
+    const newY = Math.max(0, Math.min(window.innerHeight - 56, touch.clientY - dragOffset.y));
+    
+    setDragPosition({ x: newX, y: newY });
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
+  // Add event listeners for drag
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging, dragOffset]);
+
+  // Initialize position on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setDragPosition(prev => ({
+        x: Math.min(prev.x, window.innerWidth - 56),
+        y: Math.min(prev.y, window.innerHeight - 56),
+      }));
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [chatHeight, setChatHeight] = useState(400);
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -203,8 +288,16 @@ export default function TrainingPage() {
         )}
       </div>
       
-      {/* Floating Chat Toggle Button */}
-      <div className="fixed top-20 right-4 z-50">
+      {/* Draggable Floating Chat Toggle Button */}
+      <div 
+        className="fixed z-50 cursor-move select-none"
+        style={{
+          top: dragPosition.y,
+          left: dragPosition.x,
+        }}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+      >
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
