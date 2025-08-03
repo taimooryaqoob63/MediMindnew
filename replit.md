@@ -35,12 +35,15 @@ The project is optimized for Replit development with:
 - **Styling**: Tailwind CSS with custom healthcare-themed color palette and CSS variables
 - **Type Safety**: Full TypeScript integration with strict type checking
 - **Build System**: Vite for fast development and optimized production builds
+- **Video Management**: React components for video upload, organization, and playback with drag-and-drop support
 
 ### Backend Services
 - **API Layer**: RESTful Express.js server with structured route handling
 - **AI Integration**: OpenAI GPT-4o integration for intelligent tutoring responses
 - **Data Storage**: PostgreSQL database with Drizzle ORM for persistent data storage
 - **Session Management**: PostgreSQL-backed session storage for Replit Auth
+- **Object Storage**: Secure video file storage with automatic signed URL generation and metadata extraction
+- **Video Management**: Complete CRUD operations for course videos with order management
 
 ### Authentication System
 The application now uses Replit Authentication for secure user management:
@@ -56,6 +59,7 @@ The application uses a well-structured PostgreSQL schema with the following enti
 - **Users**: Healthcare worker profiles with Replit Auth integration
 - **Courses**: Training course definitions and metadata
 - **Modules**: Individual learning modules within courses
+- **Videos**: Video content for training modules with metadata (title, description, duration, file size)
 - **User Progress**: Tracking completion and progress through modules
 - **Chat Messages**: AI tutor conversation history
 - **Resources**: Educational resources and reference materials
@@ -74,6 +78,14 @@ The application uses a well-structured PostgreSQL schema with the following enti
 3. Video-based learning with progress tracking
 4. Interactive AI tutor for questions and clarification
 5. Progress persistence and completion tracking
+
+### Content Management Journey (New)
+1. Administrator access to course management interface at /manage
+2. Course creation with metadata and categorization
+3. Module creation within courses with structured content
+4. Video upload with automatic duration detection and file size tracking
+5. Video organization within modules with drag-and-drop ordering
+6. Secure object storage integration for reliable video hosting
 
 ### API Communication
 - RESTful endpoints for all data operations
@@ -128,3 +140,16 @@ The application uses a well-structured PostgreSQL schema with the following enti
 - Database abstraction layer (IStorage interface) enables easy migration from in-memory to persistent storage
 - Stateless server design supports horizontal scaling
 - CDN-ready static asset structure
+- Object storage integration supports large-scale video hosting and delivery
+
+## Recent Updates (August 2025)
+
+### Video Upload System Implementation
+- **Complete CRUD Operations**: Full video management API with create, read, update, and delete operations
+- **File Upload Support**: Drag-and-drop interface supporting MP4, AVI, and MOV formats up to 500MB
+- **Automatic Metadata Extraction**: Duration detection and file size tracking during upload
+- **Secure Storage**: Integration with Replit Object Storage for reliable video hosting
+- **Course Management Interface**: New /manage route for administrators to create and organize content
+- **Database Schema**: Added videos table with proper relationships and indexing
+- **Protected Routes**: All video management features require authentication
+- **Progress Tracking**: Upload progress indicators and error handling for large files
