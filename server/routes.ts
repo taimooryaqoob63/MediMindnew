@@ -374,7 +374,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               transcriptionStatus: "processing" 
             });
 
-            const objectFile = await objectStorageService.getObjectEntityFile(video.objectPath);
+            // Convert the stored path to the proper object entity path
+            const normalizedPath = objectStorageService.normalizeObjectEntityPath(video.objectPath);
+            const objectFile = await objectStorageService.getObjectEntityFile(normalizedPath);
             const segments = await transcriptionService.transcribeVideo(objectFile);
             const transcriptText = transcriptionService.segmentsToText(segments);
 

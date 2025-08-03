@@ -49,7 +49,9 @@ export function VideoUploader({ onUploadComplete, onClose }: VideoUploaderProps)
       setUploadProgress(60);
 
       // Step 3: Create video record
-      const objectPath = new URL(uploadURL).pathname;
+      // Extract the object path from the signed URL
+      const url = new URL(uploadURL);
+      const objectPath = url.pathname;
       const videoResponse = await apiRequest("POST", "/api/videos", {
         title,
         description,

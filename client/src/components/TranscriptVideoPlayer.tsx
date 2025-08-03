@@ -254,7 +254,7 @@ export default function TranscriptVideoPlayer({
                 <SkipForward className="w-5 h-5" />
               </Button>
               
-              {transcript.length > 0 && (
+              {transcript && transcript.length > 0 && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -286,7 +286,7 @@ export default function TranscriptVideoPlayer({
             {getTranscriptionStatusBadge()}
           </CardHeader>
           <CardContent>
-            {transcript.length > 0 ? (
+            {transcript && transcript.length > 0 ? (
               <ScrollArea className="h-64 w-full">
                 <div className="space-y-2">
                   {transcript.map((segment, index) => (
