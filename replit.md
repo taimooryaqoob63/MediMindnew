@@ -35,12 +35,15 @@ The project is optimized for Replit development with:
 - **Styling**: Tailwind CSS with custom healthcare-themed color palette and CSS variables
 - **Type Safety**: Full TypeScript integration with strict type checking
 - **Build System**: Vite for fast development and optimized production builds
+- **Video Components**: Custom video player with transcript synchronization and video upload interface
 
 ### Backend Services
 - **API Layer**: RESTful Express.js server with structured route handling
-- **AI Integration**: OpenAI GPT-4o integration for intelligent tutoring responses
+- **AI Integration**: OpenAI GPT-4o integration for intelligent tutoring responses and Whisper API for video transcription
 - **Data Storage**: PostgreSQL database with Drizzle ORM for persistent data storage
 - **Session Management**: PostgreSQL-backed session storage for Replit Auth
+- **Object Storage**: Replit object storage integration for video file management
+- **Transcription Service**: Automated video transcription with word-level timestamps
 
 ### Authentication System
 The application now uses Replit Authentication for secure user management:
@@ -59,6 +62,17 @@ The application uses a well-structured PostgreSQL schema with the following enti
 - **User Progress**: Tracking completion and progress through modules
 - **Chat Messages**: AI tutor conversation history
 - **Resources**: Educational resources and reference materials
+- **Uploaded Videos**: User-uploaded training videos with transcription data
+- **Documents**: RAG-indexed documents for enhanced AI responses
+
+### Video Training System
+The application now includes a comprehensive video training system:
+- **Video Upload**: Support for MP4 videos up to 25MB with progress tracking
+- **Automatic Transcription**: OpenAI Whisper API integration for speech-to-text
+- **Synchronized Playback**: Custom video player with real-time transcript highlighting
+- **Interactive Transcripts**: Clickable transcript segments for video navigation
+- **Video Management**: Complete CRUD operations for uploaded training videos
+- **Background Processing**: Asynchronous transcription processing with status tracking
 
 ### AI Tutor System
 - **Specialized Context**: AI responses tailored for diabetes care in healthcare settings

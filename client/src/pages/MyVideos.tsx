@@ -39,9 +39,7 @@ export default function MyVideos() {
 
   const deleteMutation = useMutation({
     mutationFn: async (videoId: string) => {
-      return await apiRequest(`/api/videos/${videoId}`, {
-        method: "DELETE"
-      });
+      return await apiRequest("DELETE", `/api/videos/${videoId}`);
     },
     onSuccess: () => {
       toast({
@@ -65,8 +63,15 @@ export default function MyVideos() {
   const handleVideoSelect = async (video: UploadedVideo) => {
     try {
       // Fetch full video details including transcript
-      const fullVideo = await apiRequest(`/api/videos/${video.id}`) as UploadedVideo;
-      setSelectedVideo(fullVideo);
+      const response = await fetch(`/api/videos/${video.id}`, {
+        credentials: "include"
+      });
+      if (response.ok) {
+        const fullVideo = await response.json() as UploadedVideo;
+        setSelectedVideo(fullVideo);
+      } else {
+        throw new Error('Failed to fetch video details');
+      }
     } catch (error) {
       console.error("Error fetching video details:", error);
       toast({

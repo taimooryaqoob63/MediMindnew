@@ -29,10 +29,8 @@ export function VideoUploader({ onUploadComplete, onClose }: VideoUploaderProps)
       setUploadStatus('uploading');
       setUploadProgress(10);
       
-      const urlResponse = await apiRequest("/api/videos/upload-url", {
-        method: "POST"
-      }) as { uploadURL: string };
-      const { uploadURL } = urlResponse;
+      const urlResponse = await apiRequest("POST", "/api/videos/upload-url");
+      const { uploadURL } = await urlResponse.json() as { uploadURL: string };
 
       // Step 2: Upload file to object storage
       setUploadProgress(30);
@@ -52,15 +50,13 @@ export function VideoUploader({ onUploadComplete, onClose }: VideoUploaderProps)
 
       // Step 3: Create video record
       const objectPath = new URL(uploadURL).pathname;
-      const video = await apiRequest("/api/videos", {
-        method: "POST",
-        body: JSON.stringify({
-          title,
-          description,
-          objectPath,
-          transcriptionStatus: 'pending'
-        })
-      }) as { id: string };
+      const videoResponse = await apiRequest("POST", "/api/videos", {
+        title,
+        description,
+        objectPath,
+        transcriptionStatus: 'pending'
+      });
+      const video = await videoResponse.json() as { id: string };
 
       setUploadProgress(100);
       setUploadStatus('processing');
