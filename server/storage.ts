@@ -73,6 +73,7 @@ export interface IStorage {
   // Chat operations
   getChatMessages(userId: string, courseId: string): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  deleteChatMessages(userId: string, courseId: string): Promise<void>;
   
   // Resource operations
   getResources(): Promise<Resource[]>;
@@ -270,6 +271,12 @@ export class DatabaseStorage implements IStorage {
       sources: message.sources as any // Type assertion for JSON field
     }).returning();
     return newMessage;
+  }
+
+  async deleteChatMessages(userId: string, courseId: string): Promise<void> {
+    await db.delete(chatMessages).where(
+      and(eq(chatMessages.userId, userId), eq(chatMessages.courseId, courseId))
+    );
   }
 
   // Resource operations

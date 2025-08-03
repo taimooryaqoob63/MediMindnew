@@ -118,15 +118,7 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
   // Clear chat mutation
   const clearChatMutation = useMutation({
     mutationFn: async (courseId: string) => {
-      const response = await fetch(`/api/chat/${courseId}`, {
-        method: "DELETE",
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to clear chat");
-      }
-      
+      const response = await apiRequest("DELETE", `/api/chat/${courseId}`);
       return response.json();
     },
     onSuccess: () => {
