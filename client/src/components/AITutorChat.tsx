@@ -178,6 +178,11 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   const clearChatMutation = useMutation({
     mutationFn: async (courseId: string) => {
       const response = await apiRequest("DELETE", `/api/chat/${courseId}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Clear chat error:", errorText);
+        throw new Error(`Failed to clear chat: ${response.status} ${response.statusText}`);
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -189,9 +194,10 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       });
     },
     onError: (error: Error) => {
+      console.error("Clear chat mutation error:", error);
       toast({
         title: "Failed to clear chat",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
         duration: 3000,
       });

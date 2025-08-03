@@ -514,7 +514,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/chat/:courseId", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log(`Deleting chat messages for user ${userId} and course ${req.params.courseId}`);
       await storage.deleteChatMessages(userId, req.params.courseId);
+      console.log(`Successfully deleted chat messages for user ${userId} and course ${req.params.courseId}`);
       res.json({ message: "Chat messages cleared successfully" });
     } catch (error) {
       console.error("Error clearing chat messages:", error);
