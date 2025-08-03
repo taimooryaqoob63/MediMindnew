@@ -312,7 +312,7 @@ export default function TrainingPage() {
               {isChatOpen ? (
                 <X className="w-6 h-6" />
               ) : (
-                <HelpCircle className="w-6 h-6" />
+                <HelpCircle className="w-8 h-8" />
               )}
             </Button>
           </TooltipTrigger>
