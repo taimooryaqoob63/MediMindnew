@@ -20,7 +20,7 @@ export default function TrainingPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isChatMinimized, setIsChatMinimized] = useState(false);
-  
+
   // Draggable button state
   const [dragPosition, setDragPosition] = useState({ x: window.innerWidth - 72, y: 80 });
   const [isDragging, setIsDragging] = useState(false);
@@ -39,10 +39,10 @@ export default function TrainingPage() {
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging) return;
-    
+
     const newX = Math.max(0, Math.min(window.innerWidth - 56, e.clientX - dragOffset.x));
     const newY = Math.max(0, Math.min(window.innerHeight - 56, e.clientY - dragOffset.y));
-    
+
     setDragPosition({ x: newX, y: newY });
   };
 
@@ -64,11 +64,11 @@ export default function TrainingPage() {
   const handleTouchMove = (e: TouchEvent) => {
     if (!isDragging) return;
     e.preventDefault();
-    
+
     const touch = e.touches[0];
     const newX = Math.max(0, Math.min(window.innerWidth - 56, touch.clientX - dragOffset.x));
     const newY = Math.max(0, Math.min(window.innerHeight - 56, touch.clientY - dragOffset.y));
-    
+
     setDragPosition({ x: newX, y: newY });
   };
 
@@ -174,7 +174,7 @@ export default function TrainingPage() {
         onChatToggle={() => setIsChatOpen(!isChatOpen)}
         isMobile={isMobile}
       />
-      
+
       <div className="flex h-[calc(100vh-4rem)] relative">
         {/* Mobile Sidebar Overlay */}
         {isMobile && isSidebarOpen && (
@@ -183,7 +183,7 @@ export default function TrainingPage() {
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
-        
+
         {/* Sidebar */}
         <div className={`
           ${isMobile 
@@ -206,7 +206,7 @@ export default function TrainingPage() {
             isMobile={isMobile}
           />
         </div>
-        
+
         {/* Main Content */}
         <main className="flex-1 h-full overflow-hidden">
           <div className="h-full overflow-y-auto">
@@ -219,7 +219,7 @@ export default function TrainingPage() {
             />
           </div>
         </main>
-        
+
         {/* Chat Section - Bottom positioned, resizable */}
         {isChatOpen && (
           <div className={`fixed bottom-0 left-0 right-0 z-40 shadow-2xl bg-white border-t border-gray-300 transition-all duration-300 ease-in-out transform ${
@@ -236,17 +236,17 @@ export default function TrainingPage() {
                       e.preventDefault();
                       const startY = e.clientY;
                       const startHeight = chatHeight;
-                      
+
                       const handleMouseMove = (e: MouseEvent) => {
                         const newHeight = Math.max(200, Math.min(window.innerHeight * 0.8, startHeight + (startY - e.clientY)));
                         setChatHeight(newHeight);
                       };
-                      
+
                       const handleMouseUp = () => {
                         document.removeEventListener('mousemove', handleMouseMove);
                         document.removeEventListener('mouseup', handleMouseUp);
                       };
-                      
+
                       document.addEventListener('mousemove', handleMouseMove);
                       document.addEventListener('mouseup', handleMouseUp);
                     }}
@@ -287,7 +287,7 @@ export default function TrainingPage() {
           </div>
         )}
       </div>
-      
+
       {/* Draggable Floating Chat Toggle Button */}
       <div 
         className="fixed z-50 cursor-move select-none"
@@ -302,7 +302,7 @@ export default function TrainingPage() {
           <TooltipTrigger asChild>
             <Button
               onClick={() => setIsChatOpen(!isChatOpen)}
-              className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${
+              className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 flex items-center justify-center ${
                 isChatOpen 
                   ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
                   : 'bg-green-500 hover:bg-green-600 text-white shadow-green-200'
@@ -310,18 +310,17 @@ export default function TrainingPage() {
               size="sm"
             >
               {isChatOpen ? (
-                <X className="w-6 h-6" />
+                <X className="w-8 h-8" />
               ) : (
-                <HelpCircle className="w-6 h-6" />
-              )}
-            </Button>
+                <HelpCircle className="w-8 h-8" />
+              )}</Button>
           </TooltipTrigger>
           <TooltipContent side="left" className="bg-gray-800 text-white">
             <p>{isChatOpen ? 'Close AI Assistant' : 'Ask AI Assistant'}</p>
           </TooltipContent>
         </Tooltip>
       </div>
-      
+
       {/* Quick Access Toolbar */}
       <QuickAccessToolbar
         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
