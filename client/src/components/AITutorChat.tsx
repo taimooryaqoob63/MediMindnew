@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX, X, ChevronDown, Pause, Play, Square, Settings, Copy, Check, Trash2 } from "lucide-react";
+import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX, X, ChevronDown, Pause, Play, Square, Settings, Copy, Check, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +24,7 @@ interface ChatResponse {
 export default function AITutorChat({ courseId, currentModule, isMobile, isOpen, onClose }: AITutorChatProps) {
   const [inputMessage, setInputMessage] = useState("");
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
-  
+
   // Enhanced TTS and STT state
   const [isListening, setIsListening] = useState(false);
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
@@ -39,7 +39,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   const [speechRecognitionSupported, setSpeechRecognitionSupported] = useState(false);
   const [speechSynthesisSupported, setSpeechSynthesisSupported] = useState(false);
   const [isRecordingAnimation, setIsRecordingAnimation] = useState(false);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -56,7 +56,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       setSpeechRecognitionSupported(true);
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
-      
+
       recognition.continuous = false;
       recognition.interimResults = true;
       recognition.lang = 'en-US';
@@ -91,7 +91,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
         setIsRecordingAnimation(false);
-        
+
         let errorMessage = "Speech recognition failed";
         switch (event.error) {
           case 'no-speech':
@@ -107,7 +107,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
             errorMessage = "Network error occurred.";
             break;
         }
-        
+
         toast({
           title: "Speech Recognition Error",
           description: errorMessage,
@@ -131,18 +131,18 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       setSpeechSynthesisSupported(true);
       const synth = window.speechSynthesis;
       setSynthesis(synth);
-      
+
       // Load available voices
       const loadVoices = () => {
         const voices = synth.getVoices();
         const englishVoices = voices.filter(voice => voice.lang.startsWith('en-'));
         setAvailableVoices(englishVoices.length > 0 ? englishVoices : voices);
-        
+
         // Try to find a good default voice
         const preferredVoice = englishVoices.find(voice => 
           voice.name.toLowerCase().includes('google') || 
           voice.name.toLowerCase().includes('microsoft') ||
-          voice.default
+          voice.name.toLowerCase().includes('default')
         );
         if (preferredVoice) {
           const index = englishVoices.indexOf(preferredVoice);
@@ -166,7 +166,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       setInputMessage("");
-      
+
       // Read the AI response aloud if TTS is enabled
       if (isTTSEnabled && synthesis && data.message.response) {
         speakText(data.message.response);
@@ -174,6 +174,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     },
   });
 
+  // Clear chat mutation
   const clearChatMutation = useMutation({
     mutationFn: async (courseId: string) => {
       const response = await apiRequest("DELETE", `/api/chat/${courseId}`);
@@ -182,8 +183,8 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       toast({
-        title: "Chat cleared",
-        description: "All previous messages have been removed",
+        title: "New chat started",
+        description: "Ready for a fresh conversation!",
         duration: 3000,
       });
     },
@@ -213,29 +214,29 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   // Enhanced TTS Functions
   const speakText = (text: string) => {
     if (!synthesis || !speechSynthesisSupported) return;
-    
+
     // Stop any current speech
     synthesis.cancel();
-    
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = speechSpeed;
     utterance.pitch = 1;
     utterance.volume = speechVolume;
-    
+
     // Use selected voice
     if (availableVoices.length > 0 && availableVoices[selectedVoiceIndex]) {
       utterance.voice = availableVoices[selectedVoiceIndex];
     }
-    
+
     utterance.onstart = () => {
       setIsSpeaking(true);
     };
-    
+
     utterance.onend = () => {
       setIsSpeaking(false);
       setCurrentUtterance(null);
     };
-    
+
     utterance.onerror = () => {
       setIsSpeaking(false);
       setCurrentUtterance(null);
@@ -246,7 +247,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         duration: 3000,
       });
     };
-    
+
     setCurrentUtterance(utterance);
     synthesis.speak(utterance);
   };
@@ -281,7 +282,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const handleClearChat = () => {
     if (messages.length === 0) return;
-    
+
     if (window.confirm("Are you sure you want to clear all chat messages? This action cannot be undone.")) {
       clearChatMutation.mutate(courseId);
     }
@@ -323,9 +324,9 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
-    
+
     const context = currentModule ? `Current module: ${currentModule.title} - ${currentModule.description}` : undefined;
-    
+
     chatMutation.mutate({
       message: inputMessage.trim(),
       courseId,
@@ -344,7 +345,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     const date = new Date(timestamp);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) return "Just now";
     if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hour ago`;
@@ -399,7 +400,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
             </div>
           </div>
           <div className="flex items-center space-x-1">
-            {/* Clear Chat Button */}
+            {/* New Chat Button */}
             {messages.length > 0 && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -408,13 +409,13 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                     size="sm"
                     onClick={handleClearChat}
                     disabled={clearChatMutation.isPending}
-                    className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-900 text-red-600 hover:text-red-700"
+                    className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-900 text-blue-500 hover:text-blue-700"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Plus className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Clear all messages</p>
+                  <p>New Chat</p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -441,7 +442,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 </TooltipContent>
               </Tooltip>
             )}
-            
+
             {isMobile && (
               <Button
                 variant="ghost"
@@ -676,7 +677,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               }`}
               disabled={chatMutation.isPending}
             />
-            
+
             {/* Input Controls */}
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
               {/* Microphone Button */}
@@ -706,7 +707,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                   </TooltipContent>
                 </Tooltip>
               )}
-              
+
               {/* Send Button */}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -726,7 +727,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
             </div>
           </div>
         </div>
-        
+
         {/* Enhanced Controls and Info */}
         <div className={`flex items-center justify-between ${isMobile ? 'flex-col space-y-2' : ''}`}>
           <div className="flex items-center space-x-2">
@@ -735,7 +736,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               {isMobile ? 'NICE/NHS Guidelines' : 'Based on NICE, NHS & CQC guidelines'}
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {/* Feature Status Indicators */}
             {!speechRecognitionSupported && (
@@ -748,7 +749,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 No TTS
               </Badge>
             )}
-            
+
             {/* TTS Toggle (mobile) */}
             {isMobile && speechSynthesisSupported && (
               <Tooltip>

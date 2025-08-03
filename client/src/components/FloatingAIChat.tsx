@@ -124,8 +124,8 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/chat/${courseId}`] });
       toast({
-        title: "Chat cleared",
-        description: "All previous messages have been removed",
+        title: "New chat started",
+        description: "Ready for a fresh conversation!",
         duration: 3000,
       });
     },
@@ -202,7 +202,7 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
   const handleClearChat = () => {
     if (messages.length === 0) return;
     
-    if (window.confirm("Are you sure you want to clear all chat messages? This action cannot be undone.")) {
+    if (window.confirm("Start a new chat? This will clear your current conversation history.")) {
       clearChatMutation.mutate(courseId);
     }
   };
@@ -317,17 +317,24 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
                 disabled={sendMessage.isPending}
               />
 
-              {/* Clear Chat Button */}
+              {/* New Chat Button */}
               {messages.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearChat}
-                  disabled={clearChatMutation.isPending}
-                  className="h-6 w-6 p-0 text-red-400 hover:text-red-600 mx-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearChat}
+                      disabled={clearChatMutation.isPending}
+                      className="h-6 w-6 p-0 text-blue-500 hover:text-blue-700 mx-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>New Chat</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
 
               {/* Tools Button */}
