@@ -37,7 +37,8 @@ export function VideoManager({ moduleId }: VideoManagerProps) {
   // Create video mutation
   const createVideoMutation = useMutation({
     mutationFn: async (video: InsertModuleVideo) => {
-      return await apiRequest(`/api/modules/${moduleId}/videos`, 'POST', video);
+      const response = await apiRequest('POST', `/api/modules/${moduleId}/videos`, video);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/modules', moduleId, 'videos'] });
@@ -60,7 +61,8 @@ export function VideoManager({ moduleId }: VideoManagerProps) {
   // Delete video mutation
   const deleteVideoMutation = useMutation({
     mutationFn: async (videoId: string) => {
-      return await apiRequest(`/api/videos/${videoId}`, 'DELETE');
+      const response = await apiRequest('DELETE', `/api/videos/${videoId}`);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/modules', moduleId, 'videos'] });
@@ -80,13 +82,14 @@ export function VideoManager({ moduleId }: VideoManagerProps) {
 
   const handleGetUploadParameters = async () => {
     try {
-      const response = await apiRequest('/api/objects/upload', 'POST') as unknown as UploadResponse;
-      if (!response?.uploadURL) {
+      const response = await apiRequest('POST', '/api/objects/upload');
+      const data = await response.json() as UploadResponse;
+      if (!data?.uploadURL) {
         throw new Error('No upload URL received from server');
       }
       return {
         method: 'PUT' as const,
-        url: response.uploadURL,
+        url: data.uploadURL,
       };
     } catch (error) {
       console.error('Failed to get upload URL:', error);
