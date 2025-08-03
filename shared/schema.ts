@@ -38,18 +38,10 @@ export const modules = pgTable("modules", {
   courseId: varchar("course_id").references(() => courses.id).notNull(),
   title: text("title").notNull(),
   description: text("description").notNull(),
+  videoUrl: text("video_url"),
+  duration: text("duration"),
   content: json("content"), // Learning objectives, key takeaways, etc.
   orderIndex: integer("order_index").notNull(),
-});
-
-export const moduleVideos = pgTable("module_videos", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  moduleId: varchar("module_id").references(() => modules.id).notNull(),
-  title: text("title").notNull(),
-  videoUrl: text("video_url").notNull(),
-  duration: integer("duration"), // Duration in seconds
-  orderIndex: integer("order_index").notNull(),
-  description: text("description"),
 });
 
 export const userProgress = pgTable("user_progress", {
@@ -60,15 +52,6 @@ export const userProgress = pgTable("user_progress", {
   completed: boolean("completed").default(false),
   progress: integer("progress").default(0), // 0-100
   lastAccessed: text("last_accessed"),
-});
-
-export const videoProgress = pgTable("video_progress", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  videoId: varchar("video_id").references(() => moduleVideos.id).notNull(),
-  watchTime: integer("watch_time").default(0), // Seconds watched
-  completed: boolean("completed").default(false),
-  lastWatched: timestamp("last_watched").defaultNow(),
 });
 
 export const chatMessages = pgTable("chat_messages", {
@@ -123,9 +106,7 @@ export const documentChunks = pgTable("document_chunks", {
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertCourseSchema = createInsertSchema(courses).omit({ id: true });
 export const insertModuleSchema = createInsertSchema(modules).omit({ id: true });
-export const insertModuleVideoSchema = createInsertSchema(moduleVideos).omit({ id: true });
 export const insertUserProgressSchema = createInsertSchema(userProgress).omit({ id: true });
-export const insertVideoProgressSchema = createInsertSchema(videoProgress).omit({ id: true, lastWatched: true });
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({ id: true });
 export const insertResourceSchema = createInsertSchema(resources).omit({ id: true });
 export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, uploadedAt: true });
@@ -135,9 +116,7 @@ export const insertDocumentChunkSchema = createInsertSchema(documentChunks).omit
 export type User = typeof users.$inferSelect;
 export type Course = typeof courses.$inferSelect;
 export type Module = typeof modules.$inferSelect;
-export type ModuleVideo = typeof moduleVideos.$inferSelect;
 export type UserProgress = typeof userProgress.$inferSelect;
-export type VideoProgress = typeof videoProgress.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type Resource = typeof resources.$inferSelect;
 export type Document = typeof documents.$inferSelect;
@@ -147,9 +126,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = typeof users.$inferInsert;
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type InsertModule = z.infer<typeof insertModuleSchema>;
-export type InsertModuleVideo = z.infer<typeof insertModuleVideoSchema>;
 export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
-export type InsertVideoProgress = z.infer<typeof insertVideoProgressSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertResource = z.infer<typeof insertResourceSchema>;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;

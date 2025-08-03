@@ -3,7 +3,6 @@ import { Bookmark, Award, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import VideoPlayer from "./VideoPlayer";
-import { VideoManager } from "./VideoManager";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -158,12 +157,6 @@ export default function VideoSection({ module, courseId, isMobile }: VideoSectio
                 >
                   Downloads
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="videos"
-                  className="py-4 px-6 border-b-2 border-transparent data-[state=active]:border-medical-blue data-[state=active]:text-medical-blue rounded-none"
-                >
-                  Videos
-                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -234,12 +227,6 @@ export default function VideoSection({ module, courseId, isMobile }: VideoSectio
               <div className="text-sm text-gray-600">
                 <p>Downloadable resources for this module will be listed here.</p>
               </div>
-            </TabsContent>
-
-            <TabsContent value="videos" className="p-6 overflow-y-auto flex-1 scrollbar-thin chat-scroll max-h-96">
-              {module && (
-                <VideoManager moduleId={module.id} />
-              )}
             </TabsContent>
           </Tabs>
         </div>

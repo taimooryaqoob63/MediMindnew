@@ -2,13 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { getAITutorResponse } from "./services/openai";
-import { insertChatMessageSchema, insertModuleVideoSchema } from "@shared/schema";
+import { insertChatMessageSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ragService } from "./ragService";
-import {
-  ObjectStorageService,
-  ObjectNotFoundError,
-} from "./objectStorage";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -94,70 +90,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(module);
     } catch (error) {
       res.status(500).json({ message: "Failed to get module" });
-    }
-  });
-
-  // Get videos for a module
-  app.get("/api/modules/:moduleId/videos", async (req, res) => {
-    try {
-      const videos = await storage.getVideosByModule(req.params.moduleId);
-      res.json(videos);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to get videos" });
-    }
-  });
-
-  // Add video to module - Protected route
-  app.post("/api/modules/:moduleId/videos", isAuthenticated, async (req: any, res) => {
-    try {
-      const videoData = insertModuleVideoSchema.parse({
-        ...req.body,
-        moduleId: req.params.moduleId,
-      });
-      const video = await storage.createVideo(videoData);
-      res.json(video);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to add video" });
-    }
-  });
-
-  // Delete video - Protected route
-  app.delete("/api/videos/:id", isAuthenticated, async (req: any, res) => {
-    try {
-      await storage.deleteVideo(req.params.id);
-      res.json({ message: "Video deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete video" });
-    }
-  });
-
-  // Object storage routes for video uploads
-  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
-    try {
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
-    } catch (error) {
-      console.error("Error getting upload URL:", error);
-      res.status(500).json({ error: "Failed to get upload URL" });
-    }
-  });
-
-  // Serve uploaded objects - Protected route
-  app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
-    const userId = req.user?.claims?.sub;
-    const objectStorageService = new ObjectStorageService();
-    try {
-      const objectFile = await objectStorageService.getObjectEntityFile(
-        req.path,
-      );
-      objectStorageService.downloadObject(objectFile, res);
-    } catch (error) {
-      console.error("Error accessing object:", error);
-      if (error instanceof ObjectNotFoundError) {
-        return res.sendStatus(404);
-      }
-      return res.sendStatus(500);
     }
   });
 
