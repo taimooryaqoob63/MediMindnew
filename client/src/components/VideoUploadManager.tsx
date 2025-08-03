@@ -52,7 +52,7 @@ export function VideoUploadManager({ moduleId, onVideoAdded }: VideoUploadManage
   // Mutation to create a video record
   const createVideoMutation = useMutation({
     mutationFn: async (data: VideoFormData) => {
-      return apiRequest("/api/videos", "POST", data);
+      return apiRequest(`/api/modules/${moduleId}/videos`, "POST", data);
     },
     onSuccess: (newVideo) => {
       // If we have an uploaded video URL, update the video with the URL
