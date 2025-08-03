@@ -60,6 +60,12 @@ export const chatMessages = pgTable("chat_messages", {
   courseId: varchar("course_id").references(() => courses.id).notNull(),
   message: text("message").notNull(),
   response: text("response").notNull(),
+  sources: json("sources").$type<Array<{
+    fileName: string;
+    pageNumber?: number;
+    content: string;
+    relevanceScore: number;
+  }>>(),
   timestamp: text("timestamp").notNull(),
 });
 

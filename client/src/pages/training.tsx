@@ -135,38 +135,17 @@ export default function TrainingPage() {
         
         {/* Chat Section - Conditionally rendered */}
         {isChatOpen && (
-          <div className={`fixed bottom-0 right-0 z-40 shadow-2xl border border-gray-300 bg-white rounded-tl-xl rounded-tr-xl transition-all duration-300 ease-in-out transform ${
+          <div className={`fixed bottom-0 right-0 z-40 shadow-2xl bg-white rounded-tl-xl transition-all duration-300 ease-in-out transform ${
             isChatOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
           } ${
             isMobile 
-              ? 'w-full h-80 max-h-80' 
-              : 'w-96 h-96 max-h-96'
+              ? 'w-full h-[85vh] max-h-[85vh]' 
+              : 'w-[500px] h-[600px] max-h-[600px]'
           }`}>
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50 rounded-tl-xl rounded-tr-xl">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                  <HelpCircle className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">AI Assistant</h3>
-                  <p className="text-xs text-gray-600">Ask me anything about diabetes care</p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsChatOpen(false)}
-                className="p-2 h-8 w-8 hover:bg-red-100 hover:text-red-600 rounded-full transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="h-full pb-16 overflow-hidden">
-              <FloatingAIChat 
-                courseId={selectedCourseId || ""}
-                context={currentModule ? `Current module: ${currentModule.title}` : ""}
-              />
-            </div>
+            <FloatingAIChat 
+              courseId={selectedCourseId || ""}
+              context={currentModule ? `Current module: ${currentModule.title}` : ""}
+            />
           </div>
         )}
       </div>

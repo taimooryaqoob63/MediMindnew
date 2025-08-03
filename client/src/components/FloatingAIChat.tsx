@@ -5,8 +5,15 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Bot, User, Volume2, VolumeX, Mic, MicOff, HelpCircle } from "lucide-react";
+import { Send, Bot, User, Volume2, VolumeX, Mic, MicOff, HelpCircle, Plus, Settings } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+
+interface Source {
+  fileName: string;
+  pageNumber?: number;
+  content: string;
+  relevanceScore: number;
+}
 
 interface ChatMessage {
   id: string;
@@ -15,6 +22,7 @@ interface ChatMessage {
   message: string;
   response: string;
   timestamp: string;
+  sources?: Source[];
 }
 
 interface FloatingAIChatProps {
@@ -178,145 +186,147 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
 
   return (
     <div className="h-full flex flex-col bg-white">
+      {/* Welcome Message */}
+      {messages.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center p-8">
+          <h2 className="text-2xl font-normal text-gray-800 mb-8 text-center">
+            Ready when you are.
+          </h2>
+        </div>
+      )}
+
       {/* Chat Messages */}
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full p-4">
-          <div className="space-y-4">
-            {messages.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
-                <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="mb-2">Welcome to your AI Diabetes Care Tutor!</p>
-                <p className="text-sm">Ask questions about diabetes management, NICE guidelines, or care procedures.</p>
-              </div>
-            ) : (
-              messages.map((msg) => (
-                <div key={msg.id} className="space-y-3">
+      {messages.length > 0 && (
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full p-6">
+            <div className="space-y-6 max-w-3xl mx-auto">
+              {messages.map((msg) => (
+                <div key={msg.id} className="space-y-4">
                   {/* User Message */}
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
-                      <User className="h-4 w-4 text-blue-600" />
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium">You</span>
-                        <span className="text-xs text-gray-500">
-                          {formatTime(msg.timestamp)}
-                        </span>
-                      </div>
-                      <div className="bg-blue-50 rounded-lg p-2">
-                        <p className="text-sm break-words">{msg.message}</p>
+                      <div className="bg-gray-50 rounded-2xl px-4 py-3">
+                        <p className="text-gray-800 leading-relaxed">{msg.message}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* AI Response */}
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-green-100 flex items-center justify-center">
-                      <Bot className="h-4 w-4 text-green-600" />
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium">AI Tutor</span>
-                        {speechSynthesisSupported && isTTSEnabled && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => speakText(msg.response)}
-                                className="h-5 w-5 p-0"
-                              >
-                                <Volume2 className="h-3 w-3" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Read aloud</p>
-                            </TooltipContent>
-                          </Tooltip>
+                      <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
+                        <p className="text-gray-800 leading-relaxed mb-3">{msg.response}</p>
+                        
+                        {/* Sources */}
+                        {msg.sources && msg.sources.length > 0 && (
+                          <div className="border-t border-gray-100 pt-3 mt-3">
+                            <p className="text-xs font-medium text-gray-600 mb-2">Sources:</p>
+                            <div className="space-y-1">
+                              {msg.sources.map((source, index) => (
+                                <div key={index} className="text-xs text-gray-500 bg-gray-50 rounded-lg px-2 py-1">
+                                  <span className="font-medium">{source.fileName}</span>
+                                  {source.pageNumber && <span> - Page {source.pageNumber}</span>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         )}
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-2">
-                        <p className="text-sm break-words leading-relaxed">{msg.response}</p>
-                      </div>
+                      
+                      {/* TTS Button */}
+                      {speechSynthesisSupported && isTTSEnabled && (
+                        <div className="mt-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => speakText(msg.response)}
+                            className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600"
+                          >
+                            <Volume2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
-      </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          </ScrollArea>
+        </div>
+      )}
 
       {/* Input Area */}
-      <div className="border-t bg-gray-50 p-3">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 relative">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask about diabetes care..."
-              className="pr-20"
-              disabled={sendMessage.isPending}
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              {/* TTS Toggle */}
-              {speechSynthesisSupported && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsTTSEnabled(!isTTSEnabled)}
-                      className="h-6 w-6 p-0"
-                    >
-                      {isTTSEnabled ? (
-                        <Volume2 className="h-3 w-3 text-green-600" />
-                      ) : (
-                        <VolumeX className="h-3 w-3 text-gray-400" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{isTTSEnabled ? "Disable TTS" : "Enable TTS"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
+      <div className="p-6 border-t border-gray-100">
+        <div className="max-w-3xl mx-auto">
+          <div className="relative">
+            <div className="flex items-center bg-gray-50 rounded-full border border-gray-200 px-4 py-3">
+              {/* Plus Icon */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600 mr-3"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+
+              {/* Input */}
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask anything"
+                className="flex-1 border-0 bg-transparent text-gray-800 placeholder-gray-500 focus:ring-0 focus:outline-none p-0"
+                disabled={sendMessage.isPending}
+              />
+
+              {/* Tools Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600 mx-3"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-gray-500 mr-3">Tools</span>
 
               {/* Speech Recognition */}
               {speechRecognitionSupported && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={isListening ? stopListening : startListening}
-                      className={`h-6 w-6 p-0 ${isListening ? 'text-red-500' : 'text-gray-600'}`}
-                    >
-                      {isListening ? (
-                        <MicOff className="h-3 w-3" />
-                      ) : (
-                        <Mic className="h-3 w-3" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{isListening ? "Stop listening" : "Voice input"}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={isListening ? stopListening : startListening}
+                  className={`h-6 w-6 p-0 mr-2 ${isListening ? 'text-red-500' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
               )}
-            </div>
-          </div>
 
-          {/* Send Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
+              {/* TTS Toggle */}
+              {speechSynthesisSupported && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsTTSEnabled(!isTTSEnabled)}
+                  className={`h-6 w-6 p-0 mr-2 ${isTTSEnabled ? 'text-green-500' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  {isTTSEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                </Button>
+              )}
+
+              {/* Send Button */}
               <Button
                 onClick={handleSendMessage}
                 disabled={!input.trim() || sendMessage.isPending}
                 size="sm"
-                className="h-8 w-8 p-0"
+                className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600 disabled:opacity-50"
+                variant="ghost"
               >
                 {sendMessage.isPending ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
@@ -324,11 +334,8 @@ export function FloatingAIChat({ courseId, context }: FloatingAIChatProps) {
                   <Send className="h-4 w-4" />
                 )}
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Send message</p>
-            </TooltipContent>
-          </Tooltip>
+            </div>
+          </div>
         </div>
       </div>
     </div>
