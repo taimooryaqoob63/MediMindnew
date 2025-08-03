@@ -32,7 +32,7 @@ import {
   type InsertDocumentChunk,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -44,11 +44,15 @@ export interface IStorage {
   getCourses(): Promise<Course[]>;
   getCourse(id: string): Promise<Course | undefined>;
   createCourse(course: InsertCourse): Promise<Course>;
+  updateCourse(id: string, updates: Partial<InsertCourse>): Promise<Course | undefined>;
+  deleteCourse(id: string): Promise<void>;
   
   // Module operations
   getModulesByCourse(courseId: string): Promise<Module[]>;
   getModule(id: string): Promise<Module | undefined>;
   createModule(module: InsertModule): Promise<Module>;
+  updateModule(id: string, updates: Partial<InsertModule>): Promise<Module | undefined>;
+  deleteModule(id: string): Promise<void>;
   
   // Video operations
   getVideosByModule(moduleId: string): Promise<ModuleVideo[]>;
@@ -118,6 +122,19 @@ export class DatabaseStorage implements IStorage {
     return newCourse;
   }
 
+  async updateCourse(id: string, updates: Partial<InsertCourse>): Promise<Course | undefined> {
+    const [updatedCourse] = await db
+      .update(courses)
+      .set(updates)
+      .where(eq(courses.id, id))
+      .returning();
+    return updatedCourse;
+  }
+
+  async deleteCourse(id: string): Promise<void> {
+    await db.delete(courses).where(eq(courses.id, id));
+  }
+
   // Module operations
   async getModulesByCourse(courseId: string): Promise<Module[]> {
     return await db.select().from(modules).where(eq(modules.courseId, courseId));
@@ -131,6 +148,19 @@ export class DatabaseStorage implements IStorage {
   async createModule(module: InsertModule): Promise<Module> {
     const [newModule] = await db.insert(modules).values(module).returning();
     return newModule;
+  }
+
+  async updateModule(id: string, updates: Partial<InsertModule>): Promise<Module | undefined> {
+    const [updatedModule] = await db
+      .update(modules)
+      .set(updates)
+      .where(eq(modules.id, id))
+      .returning();
+    return updatedModule;
+  }
+
+  async deleteModule(id: string): Promise<void> {
+    await db.delete(modules).where(eq(modules.id, id));
   }
 
   // Video operations
@@ -170,15 +200,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProgress(progress: InsertUserProgress): Promise<UserProgress> {
-    const [updatedProgress] = await db
-      .insert(userProgress)
-      .values(progress)
-      .onConflictDoUpdate({
-        target: [userProgress.userId, userProgress.courseId, userProgress.moduleId],
-        set: progress,
-      })
-      .returning();
-    return updatedProgress;
+    // First, try to find existing progress record
+    const existing = await db
+      .select()
+      .from(userProgress)
+      .where(
+        and(
+          eq(userProgress.userId, progress.userId),
+          eq(userProgress.courseId, progress.courseId),
+          progress.moduleId ? eq(userProgress.moduleId, progress.moduleId) : isNull(userProgress.moduleId)
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Update existing record
+      const [updatedProgress] = await db
+        .update(userProgress)
+        .set(progress)
+        .where(eq(userProgress.id, existing[0].id))
+        .returning();
+      return updatedProgress;
+    } else {
+      // Insert new record
+      const [newProgress] = await db
+        .insert(userProgress)
+        .values(progress)
+        .returning();
+      return newProgress;
+    }
   }
 
   async updateUserProgress(progress: InsertUserProgress): Promise<UserProgress> {
@@ -215,7 +265,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
-    const [newMessage] = await db.insert(chatMessages).values(message).returning();
+    const [newMessage] = await db.insert(chatMessages).values({
+      ...message,
+      sources: message.sources as any // Type assertion for JSON field
+    }).returning();
     return newMessage;
   }
 

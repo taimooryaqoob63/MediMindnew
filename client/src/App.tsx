@@ -9,6 +9,7 @@ import TrainingPage from "@/pages/training";
 import DocumentsPage from "@/pages/documents";
 import AdminPage from "@/pages/admin";
 import LandingPage from "@/pages/landing";
+import { ContentPage } from "@/pages/content";
 import AppHeader from "@/components/AppHeader";
 
 function Router() {
@@ -32,6 +33,7 @@ function Router() {
           <Route path="/training" component={TrainingPage} />
           <Route path="/documents" component={DocumentsPage} />
           <Route path="/admin" component={AdminPage} />
+          <Route path="/content" component={ContentPage} />
         </>
       )}
       <Route component={NotFound} />

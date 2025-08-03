@@ -86,6 +86,14 @@ export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobil
               <Button 
                 variant="ghost" 
                 className="text-gray-600 hover:text-medical-blue button-interactive flex items-center gap-2"
+                onClick={() => window.location.href = '/content'}
+              >
+                <Settings className="h-4 w-4" />
+                Content
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-gray-600 hover:text-medical-blue button-interactive flex items-center gap-2"
                 onClick={() => window.location.href = '/admin'}
               >
                 <Settings className="h-4 w-4" />

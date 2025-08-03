@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { getAITutorResponse } from "./services/openai";
-import { insertChatMessageSchema, insertModuleVideoSchema } from "@shared/schema";
+import { insertChatMessageSchema, insertModuleVideoSchema, insertCourseSchema, insertModuleSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ragService } from "./ragService";
 import {
@@ -74,6 +74,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create course - Protected route
+  app.post("/api/courses", isAuthenticated, async (req: any, res) => {
+    try {
+      const courseData = insertCourseSchema.parse(req.body);
+      const course = await storage.createCourse(courseData);
+      res.json(course);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create course" });
+    }
+  });
+
+  // Update course - Protected route
+  app.patch("/api/courses/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const courseData = insertCourseSchema.partial().parse(req.body);
+      const course = await storage.updateCourse(req.params.id, courseData);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+      res.json(course);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update course" });
+    }
+  });
+
+  // Delete course - Protected route
+  app.delete("/api/courses/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.deleteCourse(req.params.id);
+      res.json({ message: "Course deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete course" });
+    }
+  });
+
   // Get modules for a course
   app.get("/api/courses/:courseId/modules", async (req, res) => {
     try {
@@ -94,6 +129,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(module);
     } catch (error) {
       res.status(500).json({ message: "Failed to get module" });
+    }
+  });
+
+  // Create module - Protected route
+  app.post("/api/modules", isAuthenticated, async (req: any, res) => {
+    try {
+      const moduleData = insertModuleSchema.parse(req.body);
+      const module = await storage.createModule(moduleData);
+      res.json(module);
+    } catch (error) {
+      console.error("Error creating module:", error);
+      res.status(500).json({ message: "Failed to create module" });
+    }
+  });
+
+  // Update module - Protected route
+  app.patch("/api/modules/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const moduleData = insertModuleSchema.partial().parse(req.body);
+      const module = await storage.updateModule(req.params.id, moduleData);
+      if (!module) {
+        return res.status(404).json({ message: "Module not found" });
+      }
+      res.json(module);
+    } catch (error) {
+      console.error("Error updating module:", error);
+      res.status(500).json({ message: "Failed to update module" });
+    }
+  });
+
+  // Delete module - Protected route
+  app.delete("/api/modules/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.deleteModule(req.params.id);
+      res.json({ message: "Module deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting module:", error);
+      res.status(500).json({ message: "Failed to delete module" });
     }
   });
 

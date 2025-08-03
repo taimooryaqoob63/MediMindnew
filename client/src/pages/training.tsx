@@ -204,6 +204,7 @@ export default function TrainingPage() {
               if (isMobile) setIsSidebarOpen(false);
             }}
             isMobile={isMobile}
+            isContentManagementMode={false}
           />
         </div>
         
