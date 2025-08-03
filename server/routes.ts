@@ -514,13 +514,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/chat/:courseId", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      console.log(`Deleting chat messages for user ${userId} and course ${req.params.courseId}`);
-      await storage.deleteChatMessages(userId, req.params.courseId);
-      console.log(`Successfully deleted chat messages for user ${userId} and course ${req.params.courseId}`);
-      res.json({ message: "Chat messages cleared successfully" });
+      const courseId = req.params.courseId;
+      
+      console.log(`Deleting chat messages for user ${userId} and course ${courseId}`);
+      
+      // Ensure we have valid parameters
+      if (!userId || !courseId) {
+        return res.status(400).json({ message: "Invalid user or course ID" });
+      }
+      
+      await storage.deleteChatMessages(userId, courseId);
+      console.log(`Successfully deleted chat messages for user ${userId} and course ${courseId}`);
+      
+      // Ensure we return JSON
+      res.setHeader('Content-Type', 'application/json');
+      res.status(200).json({ 
+        success: true,
+        message: "Chat messages cleared successfully" 
+      });
     } catch (error) {
       console.error("Error clearing chat messages:", error);
-      res.status(500).json({ message: "Failed to clear chat messages" });
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to clear chat messages",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 

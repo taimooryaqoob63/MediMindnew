@@ -177,18 +177,33 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   // Clear chat mutation
   const clearChatMutation = useMutation({
     mutationFn: async (courseId: string) => {
-      const response = await apiRequest("DELETE", `/api/chat/${courseId}`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Clear chat error:", errorText);
-        throw new Error(`Failed to clear chat: ${response.status} ${response.statusText}`);
+      try {
+        const response = await apiRequest("DELETE", `/api/chat/${courseId}`);
+        
+        if (!response.ok) {
+          // Try to parse as JSON first, fallback to text
+          let errorMessage;
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+          } catch {
+            const errorText = await response.text();
+            errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error("Clear chat API error:", error);
+        throw error;
       }
-      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       toast({
-        title: "New chat started",
+        title: "Chat cleared successfully",
         description: "Ready for a fresh conversation!",
         duration: 3000,
       });
@@ -199,7 +214,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         title: "Failed to clear chat",
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
-        duration: 3000,
+        duration: 4000,
       });
     },
   });
