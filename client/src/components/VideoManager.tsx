@@ -12,12 +12,15 @@ import { Trash2, Upload, Play, Clock } from 'lucide-react';
 import type { ModuleVideo, InsertModuleVideo } from '@shared/schema';
 import type { UploadResult } from '@uppy/core';
 
-interface VideoManagerProps {
-  moduleId: string;
-  moduleName: string;
+interface UploadResponse {
+  uploadURL: string;
 }
 
-export function VideoManager({ moduleId, moduleName }: VideoManagerProps) {
+interface VideoManagerProps {
+  moduleId: string;
+}
+
+export function VideoManager({ moduleId }: VideoManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [videoTitle, setVideoTitle] = useState('');
   const [videoDescription, setVideoDescription] = useState('');
@@ -34,10 +37,7 @@ export function VideoManager({ moduleId, moduleName }: VideoManagerProps) {
   // Create video mutation
   const createVideoMutation = useMutation({
     mutationFn: async (video: InsertModuleVideo) => {
-      return await apiRequest(`/api/modules/${moduleId}/videos`, {
-        method: 'POST',
-        body: JSON.stringify(video),
-      });
+      return await apiRequest(`/api/modules/${moduleId}/videos`, 'POST', video);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/modules', moduleId, 'videos'] });
@@ -60,9 +60,7 @@ export function VideoManager({ moduleId, moduleName }: VideoManagerProps) {
   // Delete video mutation
   const deleteVideoMutation = useMutation({
     mutationFn: async (videoId: string) => {
-      return await apiRequest(`/api/videos/${videoId}`, {
-        method: 'DELETE',
-      });
+      return await apiRequest(`/api/videos/${videoId}`, 'DELETE');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/modules', moduleId, 'videos'] });
@@ -81,19 +79,30 @@ export function VideoManager({ moduleId, moduleName }: VideoManagerProps) {
   });
 
   const handleGetUploadParameters = async () => {
-    const response = await apiRequest('/api/objects/upload', {
-      method: 'POST',
-    });
-    return {
-      method: 'PUT' as const,
-      url: response.uploadURL,
-    };
+    try {
+      const response = await apiRequest('/api/objects/upload', 'POST') as unknown as UploadResponse;
+      if (!response?.uploadURL) {
+        throw new Error('No upload URL received from server');
+      }
+      return {
+        method: 'PUT' as const,
+        url: response.uploadURL,
+      };
+    } catch (error) {
+      console.error('Failed to get upload URL:', error);
+      toast({
+        title: 'Upload Error',
+        description: 'Failed to get upload URL. Please try again.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
   };
 
   const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-    if (result.successful.length > 0) {
+    if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
-      setUploadedVideoUrl(uploadedFile.uploadURL);
+      setUploadedVideoUrl(uploadedFile.uploadURL || '');
       
       // Extract video metadata if available
       const file = uploadedFile.data as any;
@@ -160,7 +169,7 @@ export function VideoManager({ moduleId, moduleName }: VideoManagerProps) {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add Video to {moduleName}</DialogTitle>
+              <DialogTitle>Add Video to Module</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
