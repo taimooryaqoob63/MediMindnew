@@ -12,6 +12,10 @@ MediMind AI is a comprehensive diabetes care training platform designed for heal
 - **Enhanced AI Tutor**: RAG-powered responses with source citations and confidence scoring
 - **Document Management Interface**: Built admin interface for uploading and managing medical knowledge base
 - **Entity Relationship Mapping**: Added knowledge graph capabilities for medical entities and relationships
+- **Interactive Course Progress**: Enhanced VideoSection with clickable progress tracking, expandable details, and star-based rating system
+- **Smart Bookmark System**: Added intelligent bookmarking with visual feedback and toast notifications
+- **Conditional Quiz Access**: Implemented progress-gated quiz functionality requiring 80% video completion
+- **Enhanced Progress Visualization**: Added expandable progress section with module statistics and completion status
 
 ## User Preferences
 

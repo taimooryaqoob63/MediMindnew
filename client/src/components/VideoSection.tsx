@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Volume2, Maximize, Bookmark, Award } from "lucide-react";
+import { Play, Volume2, Maximize, Bookmark, Award, BookmarkCheck, Star, Clock, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +20,9 @@ interface VideoSectionProps {
 export default function VideoSection({ module, onProgressUpdate, isMobile, userId, courseId }: VideoSectionProps) {
   const [videoProgress, setVideoProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showQuizDialog, setShowQuizDialog] = useState(false);
+  const [showProgressExpanded, setShowProgressExpanded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -92,6 +96,44 @@ export default function VideoSection({ module, onProgressUpdate, isMobile, userI
     setIsPlaying(false);
   };
 
+  // Bookmark functionality
+  const handleBookmark = () => {
+    setIsBookmarked(!isBookmarked);
+    toast({
+      title: isBookmarked ? "Bookmark Removed" : "Module Bookmarked",
+      description: isBookmarked 
+        ? `"${module?.title}" removed from bookmarks` 
+        : `"${module?.title}" added to your bookmarks for quick access`,
+    });
+  };
+
+  // Quiz functionality
+  const handleTakeQuiz = () => {
+    if (videoProgress < 80) {
+      toast({
+        title: "Complete the Video First",
+        description: "Please watch at least 80% of the video before taking the quiz.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowQuizDialog(true);
+  };
+
+  const handleStartQuiz = () => {
+    setShowQuizDialog(false);
+    toast({
+      title: "Quiz Started",
+      description: "Good luck! Apply what you've learned in this module.",
+    });
+    // Here you would typically navigate to a quiz page or open a quiz component
+  };
+
+  // Progress section interaction
+  const handleProgressClick = () => {
+    setShowProgressExpanded(!showProgressExpanded);
+  };
+
   // Helper function to safely access module content
   const getModuleContent = () => {
     if (!module?.content || typeof module.content !== 'object' || module.content === null) {
@@ -128,14 +170,85 @@ export default function VideoSection({ module, onProgressUpdate, isMobile, userI
             <p className="text-sm text-gray-600 mt-1">{module.description}</p>
           </div>
           <div className={`flex items-center space-x-2 ${isMobile ? 'w-full justify-center' : ''}`}>
-            <Button variant="outline" size="sm" className="button-interactive">
-              <Bookmark className="w-4 h-4 mr-2" />
-              {isMobile ? '' : 'Bookmark'}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={`button-interactive transition-all duration-200 ${
+                isBookmarked 
+                  ? 'border-yellow-400 text-yellow-600 bg-yellow-50 hover:bg-yellow-100' 
+                  : 'hover:border-gray-400'
+              }`}
+              onClick={handleBookmark}
+            >
+              {isBookmarked ? (
+                <BookmarkCheck className="w-4 h-4 mr-2" />
+              ) : (
+                <Bookmark className="w-4 h-4 mr-2" />
+              )}
+              {isMobile ? '' : (isBookmarked ? 'Bookmarked' : 'Bookmark')}
             </Button>
-            <Button size="sm" className="bg-medical-blue hover:bg-medical-blue/90 button-interactive">
+            <Button 
+              size="sm" 
+              className={`button-interactive transition-all duration-200 ${
+                videoProgress >= 80 
+                  ? 'bg-medical-blue hover:bg-medical-blue/90 shadow-md' 
+                  : 'bg-gray-400 hover:bg-gray-500'
+              }`}
+              onClick={handleTakeQuiz}
+            >
               <Award className="w-4 h-4 mr-2" />
               {isMobile ? 'Quiz' : 'Take Quiz'}
             </Button>
+          </div>
+        </div>
+        
+        {/* Enhanced Progress Section */}
+        <div className="bg-gradient-to-r from-medical-blue/5 to-purple-50 border-t border-gray-100">
+          <div className={`${isMobile ? 'p-4' : 'p-4'}`}>
+            <button
+              onClick={handleProgressClick}
+              className="w-full text-left hover:bg-white/50 rounded-lg p-3 transition-all duration-200 group"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-4 h-4 text-medical-blue" />
+                  <span className="text-sm font-medium text-gray-700">Module Progress</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm font-semibold text-medical-blue">{videoProgress}%</span>
+                  <div className="flex space-x-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-3 h-3 ${
+                          i < Math.floor(videoProgress / 20) 
+                            ? 'text-yellow-400 fill-current' 
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <Progress value={videoProgress} className="h-2 mb-2" />
+              
+              {showProgressExpanded && (
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                  <div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2">
+                    <Clock className="w-3 h-3 text-blue-500" />
+                    <span className="text-gray-600">Time: {module.duration}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2">
+                    <Users className="w-3 h-3 text-green-500" />
+                    <span className="text-gray-600">Level: Beginner</span>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-white/60 rounded-lg p-2">
+                    <Award className="w-3 h-3 text-purple-500" />
+                    <span className="text-gray-600">Quiz: {videoProgress >= 80 ? 'Available' : 'Locked'}</span>
+                  </div>
+                </div>
+              )}
+            </button>
           </div>
         </div>
       </div>
@@ -292,6 +405,55 @@ export default function VideoSection({ module, onProgressUpdate, isMobile, userI
           </Tabs>
         </div>
       </div>
+
+      {/* Quiz Dialog */}
+      <Dialog open={showQuizDialog} onOpenChange={setShowQuizDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Award className="w-5 h-5 text-medical-blue" />
+              <span>Ready for the Quiz?</span>
+            </DialogTitle>
+            <DialogDescription>
+              Great progress! You've completed {videoProgress}% of the video. 
+              The quiz will test your understanding of the key concepts covered in "{module?.title}".
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-2">Quiz Details:</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• 10 multiple choice questions</li>
+                <li>• 15 minutes time limit</li>
+                <li>• 80% passing score required</li>
+                <li>• Unlimited attempts allowed</li>
+              </ul>
+            </div>
+            
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <Clock className="w-4 h-4" />
+              <span>Estimated time: 10-15 minutes</span>
+            </div>
+          </div>
+
+          <DialogFooter className="space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowQuizDialog(false)}
+              className="button-interactive"
+            >
+              Maybe Later
+            </Button>
+            <Button 
+              onClick={handleStartQuiz}
+              className="bg-medical-blue hover:bg-medical-blue/90 button-interactive"
+            >
+              Start Quiz
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
