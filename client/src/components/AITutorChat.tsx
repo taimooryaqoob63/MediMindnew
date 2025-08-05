@@ -76,16 +76,29 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const chatMutation = useMutation({
     mutationFn: async (data: { message: string; courseId: string; context?: string }) => {
-      const response = await apiRequest("POST", "/api/chat", data);
-      return response.json() as Promise<ChatResponse>;
+      // Try RAG-enhanced chat first
+      try {
+        const ragResponse = await apiRequest("POST", "/api/rag/chat", {
+          message: data.message,
+          courseId: data.courseId
+        });
+        const result = await ragResponse.json();
+        return { ...result, usedRAG: true } as ChatResponse;
+      } catch (ragError) {
+        console.log('RAG chat failed, falling back to basic chat:', ragError);
+        // Fallback to basic chat
+        const response = await apiRequest("POST", "/api/chat", data);
+        const result = await response.json();
+        return { ...result, usedRAG: false } as ChatResponse;
+      }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       setInputMessage("");
       
       // Read the AI response aloud if TTS is enabled
-      if (isTTSEnabled && synthesis && data.message.response) {
-        speakText(data.message.response);
+      if (isTTSEnabled && synthesis && (data.response || data.content)) {
+        speakText(data.response || data.content);
       }
     },
   });

@@ -90,6 +90,16 @@ export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobil
                   Manage Courses
                 </Button>
               </Link>
+              <Link href="/documents">
+                <Button 
+                  variant="ghost" 
+                  className={`text-gray-600 hover:text-medical-blue button-interactive ${
+                    location === '/documents' ? 'text-medical-blue' : ''
+                  }`}
+                >
+                  Documents
+                </Button>
+              </Link>
               <Button 
                 variant="outline" 
                 className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white button-interactive"

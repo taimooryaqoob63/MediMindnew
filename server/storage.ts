@@ -1,8 +1,12 @@
 import { 
   type User, type Course, type Module, type UserProgress, type ChatMessage, type Resource,
+  type Document, type DocumentChunk, type Entity, type EntityRelationship, type RagChatMessage, type ProcessingJob,
   type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress, 
   type InsertChatMessage, type InsertResource, type UpsertUser,
-  users, courses, modules, userProgress, chatMessages, resources
+  type InsertDocument, type InsertDocumentChunk, type InsertEntity, type InsertEntityRelationship, 
+  type InsertRagChatMessage, type InsertProcessingJob,
+  users, courses, modules, userProgress, chatMessages, resources,
+  documents, documentChunks, entities, entityRelationships, ragChatMessages, processingJobs
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -37,6 +41,41 @@ export interface IStorage {
   // Resources
   getResources(): Promise<Resource[]>;
   createResource(resource: InsertResource): Promise<Resource>;
+
+  // Documents
+  getDocuments(): Promise<Document[]>;
+  getDocument(id: string): Promise<Document | undefined>;
+  createDocument(document: InsertDocument): Promise<Document>;
+  updateDocument(id: string, updates: Partial<InsertDocument>): Promise<Document | undefined>;
+  deleteDocument(id: string): Promise<boolean>;
+
+  // Document Chunks
+  getDocumentChunks(documentId: string): Promise<DocumentChunk[]>;
+  getDocumentChunk(id: string): Promise<DocumentChunk | undefined>;
+  createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk>;
+  updateDocumentChunk(id: string, updates: Partial<InsertDocumentChunk>): Promise<DocumentChunk | undefined>;
+  deleteDocumentChunk(id: string): Promise<boolean>;
+
+  // Entities
+  getEntities(): Promise<Entity[]>;
+  getEntity(id: string): Promise<Entity | undefined>;
+  createEntity(entity: InsertEntity): Promise<Entity>;
+  updateEntity(id: string, updates: Partial<InsertEntity>): Promise<Entity | undefined>;
+  deleteEntity(id: string): Promise<boolean>;
+
+  // Entity Relationships
+  getEntityRelationships(entityId?: string): Promise<EntityRelationship[]>;
+  createEntityRelationship(relationship: InsertEntityRelationship): Promise<EntityRelationship>;
+
+  // RAG Chat Messages
+  getRagChatMessages(userId: string, courseId?: string): Promise<RagChatMessage[]>;
+  createRagChatMessage(message: InsertRagChatMessage): Promise<RagChatMessage>;
+
+  // Processing Jobs
+  getProcessingJobs(): Promise<ProcessingJob[]>;
+  getProcessingJob(id: string): Promise<ProcessingJob | undefined>;
+  createProcessingJob(job: InsertProcessingJob): Promise<ProcessingJob>;
+  updateProcessingJob(id: string, updates: Partial<InsertProcessingJob>): Promise<ProcessingJob | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -170,6 +209,149 @@ export class DatabaseStorage implements IStorage {
   async createResource(insertResource: InsertResource): Promise<Resource> {
     const [resource] = await db.insert(resources).values(insertResource).returning();
     return resource;
+  }
+
+  // Documents
+  async getDocuments(): Promise<Document[]> {
+    return await db.select().from(documents);
+  }
+
+  async getDocument(id: string): Promise<Document | undefined> {
+    const [document] = await db.select().from(documents).where(eq(documents.id, id));
+    return document || undefined;
+  }
+
+  async createDocument(insertDocument: InsertDocument): Promise<Document> {
+    const [document] = await db.insert(documents).values(insertDocument).returning();
+    return document;
+  }
+
+  async updateDocument(id: string, updates: Partial<InsertDocument>): Promise<Document | undefined> {
+    const [document] = await db
+      .update(documents)
+      .set(updates)
+      .where(eq(documents.id, id))
+      .returning();
+    return document || undefined;
+  }
+
+  async deleteDocument(id: string): Promise<boolean> {
+    const result = await db.delete(documents).where(eq(documents.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Document Chunks
+  async getDocumentChunks(documentId: string): Promise<DocumentChunk[]> {
+    return await db.select().from(documentChunks)
+      .where(eq(documentChunks.documentId, documentId));
+  }
+
+  async getDocumentChunk(id: string): Promise<DocumentChunk | undefined> {
+    const [chunk] = await db.select().from(documentChunks).where(eq(documentChunks.id, id));
+    return chunk || undefined;
+  }
+
+  async createDocumentChunk(insertChunk: InsertDocumentChunk): Promise<DocumentChunk> {
+    const [chunk] = await db.insert(documentChunks).values(insertChunk).returning();
+    return chunk;
+  }
+
+  async updateDocumentChunk(id: string, updates: Partial<InsertDocumentChunk>): Promise<DocumentChunk | undefined> {
+    const [chunk] = await db
+      .update(documentChunks)
+      .set(updates)
+      .where(eq(documentChunks.id, id))
+      .returning();
+    return chunk || undefined;
+  }
+
+  async deleteDocumentChunk(id: string): Promise<boolean> {
+    const result = await db.delete(documentChunks).where(eq(documentChunks.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Entities
+  async getEntities(): Promise<Entity[]> {
+    return await db.select().from(entities);
+  }
+
+  async getEntity(id: string): Promise<Entity | undefined> {
+    const [entity] = await db.select().from(entities).where(eq(entities.id, id));
+    return entity || undefined;
+  }
+
+  async createEntity(insertEntity: InsertEntity): Promise<Entity> {
+    const [entity] = await db.insert(entities).values(insertEntity).returning();
+    return entity;
+  }
+
+  async updateEntity(id: string, updates: Partial<InsertEntity>): Promise<Entity | undefined> {
+    const [entity] = await db
+      .update(entities)
+      .set(updates)
+      .where(eq(entities.id, id))
+      .returning();
+    return entity || undefined;
+  }
+
+  async deleteEntity(id: string): Promise<boolean> {
+    const result = await db.delete(entities).where(eq(entities.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Entity Relationships
+  async getEntityRelationships(entityId?: string): Promise<EntityRelationship[]> {
+    if (entityId) {
+      return await db.select().from(entityRelationships)
+        .where(eq(entityRelationships.fromEntityId, entityId));
+    }
+    return await db.select().from(entityRelationships);
+  }
+
+  async createEntityRelationship(insertRelationship: InsertEntityRelationship): Promise<EntityRelationship> {
+    const [relationship] = await db.insert(entityRelationships).values(insertRelationship).returning();
+    return relationship;
+  }
+
+  // RAG Chat Messages
+  async getRagChatMessages(userId: string, courseId?: string): Promise<RagChatMessage[]> {
+    let query = db.select().from(ragChatMessages)
+      .where(eq(ragChatMessages.userId, userId));
+    
+    if (courseId) {
+      query = query.where(eq(ragChatMessages.courseId, courseId));
+    }
+    
+    return await query.orderBy(ragChatMessages.timestamp);
+  }
+
+  async createRagChatMessage(insertMessage: InsertRagChatMessage): Promise<RagChatMessage> {
+    const [message] = await db.insert(ragChatMessages).values(insertMessage).returning();
+    return message;
+  }
+
+  // Processing Jobs
+  async getProcessingJobs(): Promise<ProcessingJob[]> {
+    return await db.select().from(processingJobs);
+  }
+
+  async getProcessingJob(id: string): Promise<ProcessingJob | undefined> {
+    const [job] = await db.select().from(processingJobs).where(eq(processingJobs.id, id));
+    return job || undefined;
+  }
+
+  async createProcessingJob(insertJob: InsertProcessingJob): Promise<ProcessingJob> {
+    const [job] = await db.insert(processingJobs).values(insertJob).returning();
+    return job;
+  }
+
+  async updateProcessingJob(id: string, updates: Partial<InsertProcessingJob>): Promise<ProcessingJob | undefined> {
+    const [job] = await db
+      .update(processingJobs)
+      .set(updates)
+      .where(eq(processingJobs.id, id))
+      .returning();
+    return job || undefined;
   }
 }
 
@@ -472,6 +654,162 @@ export class MemStorage implements IStorage {
     const resource: Resource = { ...insertResource, id };
     this.resources.set(id, resource);
     return resource;
+  }
+
+  // Add upsertUser method
+  async upsertUser(user: UpsertUser): Promise<User> {
+    const existingUser = this.users.get(user.id);
+    if (existingUser) {
+      const updated = { ...existingUser, ...user };
+      this.users.set(user.id, updated);
+      return updated;
+    } else {
+      const newUser: User = {
+        id: user.id,
+        email: user.email || null,
+        firstName: user.firstName || null,
+        lastName: user.lastName || null,
+        profileImageUrl: user.profileImageUrl || null,
+        role: user.role || "care_worker",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      this.users.set(user.id, newUser);
+      return newUser;
+    }
+  }
+
+  // RAG-related methods (stub implementations for MemStorage)
+  async getDocuments(): Promise<Document[]> {
+    return [];
+  }
+
+  async getDocument(id: string): Promise<Document | undefined> {
+    return undefined;
+  }
+
+  async createDocument(document: InsertDocument): Promise<Document> {
+    const id = randomUUID();
+    const newDoc: Document = {
+      ...document,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newDoc;
+  }
+
+  async updateDocument(id: string, updates: Partial<InsertDocument>): Promise<Document | undefined> {
+    return undefined;
+  }
+
+  async deleteDocument(id: string): Promise<boolean> {
+    return false;
+  }
+
+  async getDocumentChunks(documentId: string): Promise<DocumentChunk[]> {
+    return [];
+  }
+
+  async getDocumentChunk(id: string): Promise<DocumentChunk | undefined> {
+    return undefined;
+  }
+
+  async createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk> {
+    const id = randomUUID();
+    const newChunk: DocumentChunk = {
+      ...chunk,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newChunk;
+  }
+
+  async updateDocumentChunk(id: string, updates: Partial<InsertDocumentChunk>): Promise<DocumentChunk | undefined> {
+    return undefined;
+  }
+
+  async deleteDocumentChunk(id: string): Promise<boolean> {
+    return false;
+  }
+
+  async getEntities(): Promise<Entity[]> {
+    return [];
+  }
+
+  async getEntity(id: string): Promise<Entity | undefined> {
+    return undefined;
+  }
+
+  async createEntity(entity: InsertEntity): Promise<Entity> {
+    const id = randomUUID();
+    const newEntity: Entity = {
+      ...entity,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newEntity;
+  }
+
+  async updateEntity(id: string, updates: Partial<InsertEntity>): Promise<Entity | undefined> {
+    return undefined;
+  }
+
+  async deleteEntity(id: string): Promise<boolean> {
+    return false;
+  }
+
+  async getEntityRelationships(entityId?: string): Promise<EntityRelationship[]> {
+    return [];
+  }
+
+  async createEntityRelationship(relationship: InsertEntityRelationship): Promise<EntityRelationship> {
+    const id = randomUUID();
+    const newRelationship: EntityRelationship = {
+      ...relationship,
+      id,
+      createdAt: new Date()
+    };
+    return newRelationship;
+  }
+
+  async getRagChatMessages(userId: string, courseId?: string): Promise<RagChatMessage[]> {
+    return [];
+  }
+
+  async createRagChatMessage(message: InsertRagChatMessage): Promise<RagChatMessage> {
+    const id = randomUUID();
+    const newMessage: RagChatMessage = {
+      ...message,
+      id,
+      timestamp: new Date()
+    };
+    return newMessage;
+  }
+
+  async getProcessingJobs(): Promise<ProcessingJob[]> {
+    return [];
+  }
+
+  async getProcessingJob(id: string): Promise<ProcessingJob | undefined> {
+    return undefined;
+  }
+
+  async createProcessingJob(job: InsertProcessingJob): Promise<ProcessingJob> {
+    const id = randomUUID();
+    const newJob: ProcessingJob = {
+      ...job,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newJob;
+  }
+
+  async updateProcessingJob(id: string, updates: Partial<InsertProcessingJob>): Promise<ProcessingJob | undefined> {
+    return undefined;
   }
 }
 

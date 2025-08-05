@@ -1,0 +1,62 @@
+I want to enhance my existing healthcare chatbot (MediMind AI) with an advanced agentic RAG (Retrieval-Augmented Generation) system. The current chatbot uses OpenAI GPT-4o and focuses on diabetes care for healthcare workers in care homes and nursing facilities.
+
+Current System Overview:
+
+Express.js backend with TypeScript
+React frontend with shadcn/ui components
+PostgreSQL database
+OpenAI integration for chat responses
+Authentication system already in place
+Specializes in NICE, NHS, CQC guidelines for diabetes care
+What I Need Agent to Build:
+
+Document Processing & Vectorization:
+
+PDF ingestion system for NICE, NHS, CQC guidelines and Oxford Handbook
+Chunking strategy for medical documents (maintain context across sections)
+Vector embeddings using OpenAI embeddings API
+Vector database integration (suggest Pinecone, Weaviate, or similar)
+Metadata extraction (document source, section, page numbers, guideline type)
+Knowledge Graph Integration:
+
+Create relationships between medical concepts, procedures, and guidelines
+Link related topics across different documents
+Entity extraction for medical terms, medications, procedures
+Graph database integration (Neo4j or similar)
+Agentic RAG Architecture:
+
+Query analysis agent to understand user intent
+Document retrieval agent with semantic search
+Context synthesis agent to combine relevant information
+Response generation agent with source attribution
+Quality assurance agent to verify medical accuracy
+Enhanced Chat Features:
+
+Source citations with page numbers and document references
+Follow-up question suggestions based on retrieved content
+Confidence scoring for responses
+Fallback to general medical knowledge when specific guidelines aren't available
+Conversation memory to maintain context across questions
+Admin Interface:
+
+Document upload and management system
+Vector database monitoring
+Knowledge graph visualization
+RAG pipeline configuration
+Response quality analytics
+Technical Requirements:
+
+Integrate with existing OpenAI service in server/services/openai.ts
+Use existing database schema and extend as needed
+Maintain current authentication and authorization
+Keep existing UI components and styling consistent
+Ensure mobile responsiveness
+Add proper error handling and logging
+Key Features:
+
+Personalized responses based on user role (care worker, nurse, manager)
+Multi-document synthesis for comprehensive answers
+Real-time document updates and re-indexing
+Conversation export for training purposes
+Compliance tracking for audit requirements
+Please create a complete implementation that extends my current system without breaking existing functionality. Focus on making the RAG system truly agentic with multiple specialized agents working together to provide the most accurate and contextual responses possible.

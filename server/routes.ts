@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { getAITutorResponse } from "./services/openai";
 import { insertChatMessageSchema, insertModuleSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { registerRAGRoutes } from "./routes/rag";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
@@ -12,6 +13,9 @@ import express from "express";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+
+  // Register RAG routes
+  registerRAGRoutes(app);
 
   // Configure multer for video uploads
   const storage_config = multer.diskStorage({
