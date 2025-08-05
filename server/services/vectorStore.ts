@@ -9,7 +9,7 @@ interface VectorStoreConfig {
 
 export class VectorStore {
   private pinecone?: Pinecone;
-  private openai: OpenAI;
+  private openai?: OpenAI;
   private config: VectorStoreConfig;
 
   constructor(config: VectorStoreConfig) {
@@ -22,9 +22,11 @@ export class VectorStore {
       });
     }
     
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || 'default_key',
-    });
+    if (process.env.OPENAI_API_KEY) {
+      this.openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+    }
   }
 
   async initialize(): Promise<void> {
@@ -82,6 +84,10 @@ export class VectorStore {
   }
 
   async createEmbedding(text: string): Promise<number[]> {
+    if (!this.openai) {
+      throw new Error('OpenAI not configured');
+    }
+    
     try {
       const response = await this.openai.embeddings.create({
         model: 'text-embedding-3-small',

@@ -25,12 +25,14 @@ interface QueryAnalysis {
 }
 
 export class RagAgentOrchestrator {
-  private openai: OpenAI;
+  private openai?: OpenAI;
 
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY!,
-    });
+    if (process.env.OPENAI_API_KEY) {
+      this.openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+    }
   }
 
   async processQuery(
@@ -70,6 +72,10 @@ export class RagAgentOrchestrator {
   }
 
   private async analyzeQuery(query: string, user: User): Promise<QueryAnalysis> {
+    if (!this.openai) {
+      throw new Error('OpenAI not configured');
+    }
+    
     const prompt = `Analyze this healthcare query from a ${user.role} in a care home setting:
 
 Query: "${query}"
@@ -175,6 +181,10 @@ Focus on diabetes care, NICE guidelines, NHS practices, and CQC requirements.`;
     user: User,
     analysis: QueryAnalysis
   ): Promise<AgentResponse> {
+    if (!this.openai) {
+      throw new Error('OpenAI not configured');
+    }
+    
     const systemPrompt = `You are MediMind AI, a specialized healthcare assistant for diabetes care in care homes and nursing facilities.
 
 User Role: ${user.role}
@@ -233,6 +243,10 @@ Respond in JSON format with:
     response: AgentResponse,
     analysis: QueryAnalysis
   ): Promise<AgentResponse> {
+    if (!this.openai) {
+      throw new Error('OpenAI not configured');
+    }
+    
     // Simple quality checks
     const qaPrompt = `Review this healthcare response for accuracy and safety:
 
