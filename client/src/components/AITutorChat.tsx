@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import type { ChatMessage, Module, ChatResponse } from "@shared/schema";
+import type { ChatMessage, Module } from "@shared/schema";
 
 interface AITutorChatProps {
   courseId: string;
@@ -12,6 +12,10 @@ interface AITutorChatProps {
   isMobile?: boolean;
   isOpen?: boolean;
   onClose?: () => void;
+}
+
+interface ChatResponse {
+  message: ChatMessage;
 }
 
 export default function AITutorChat({ courseId, currentModule, isMobile, isOpen, onClose }: AITutorChatProps) {
@@ -83,20 +87,9 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       } catch (ragError) {
         console.log('RAG chat failed, falling back to basic chat:', ragError);
         // Fallback to basic chat
-        try {
-          const response = await apiRequest("POST", "/api/chat", data);
-          const result = await response.json();
-          return { ...result, usedRAG: false } as ChatResponse;
-        } catch (authError) {
-          console.log('Authenticated chat failed, using public endpoint:', authError);
-          // Final fallback to public chat for unauthenticated users
-          const publicResponse = await apiRequest("POST", "/api/chat/public", {
-            message: data.message,
-            context: data.context
-          });
-          const result = await publicResponse.json();
-          return { ...result, usedRAG: false, isPublic: true } as ChatResponse;
-        }
+        const response = await apiRequest("POST", "/api/chat", data);
+        const result = await response.json();
+        return { ...result, usedRAG: false } as ChatResponse;
       }
     },
     onSuccess: (data) => {

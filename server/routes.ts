@@ -278,35 +278,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ 
         message: chatMessage,
-        suggestedQuestions: aiResponse.followUpQuestions 
+        suggestedQuestions: aiResponse.suggestedQuestions 
       });
     } catch (error) {
       console.error('Chat error:', error);
-      res.status(500).json({ message: "Failed to process chat message" });
-    }
-  });
-
-  // Public AI chat endpoint for unauthenticated users (demo mode)
-  app.post("/api/chat/public", async (req: any, res) => {
-    try {
-      const { message, context } = req.body;
-      
-      if (!message) {
-        return res.status(400).json({ message: "Message is required" });
-      }
-
-      // Get AI response without saving to database
-      const aiResponse = await getAITutorResponse(message, context);
-      
-      res.json({ 
-        response: aiResponse.response,
-        content: aiResponse.response,
-        suggestedQuestions: aiResponse.followUpQuestions,
-        timestamp: new Date().toISOString(),
-        usedRAG: false
-      });
-    } catch (error) {
-      console.error('Public chat error:', error);
       res.status(500).json({ message: "Failed to process chat message" });
     }
   });
