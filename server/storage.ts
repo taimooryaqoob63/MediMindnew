@@ -10,7 +10,7 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // Users - Replit Auth compatible
@@ -110,7 +110,7 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { 
+    const user = { 
       ...insertUser, 
       id,
       role: insertUser.role || "care_worker",
@@ -162,20 +162,21 @@ export class DatabaseStorage implements IStorage {
 
   async deleteModule(id: string): Promise<boolean> {
     const result = await db.delete(modules).where(eq(modules.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
     return await db.select().from(userProgress)
-      .where(eq(userProgress.userId, userId))
-      .where(eq(userProgress.courseId, courseId));
+      .where(and(eq(userProgress.userId, userId), eq(userProgress.courseId, courseId)));
   }
 
   async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
     const existing = await db.select().from(userProgress)
-      .where(eq(userProgress.userId, insertProgress.userId))
-      .where(eq(userProgress.courseId, insertProgress.courseId))
-      .where(eq(userProgress.moduleId, insertProgress.moduleId || ""));
+      .where(and(
+        eq(userProgress.userId, insertProgress.userId),
+        eq(userProgress.courseId, insertProgress.courseId),
+        eq(userProgress.moduleId, insertProgress.moduleId || "")
+      ));
     
     if (existing.length > 0) {
       const [updated] = await db
@@ -192,8 +193,7 @@ export class DatabaseStorage implements IStorage {
 
   async getChatMessages(userId: string, courseId: string): Promise<ChatMessage[]> {
     return await db.select().from(chatMessages)
-      .where(eq(chatMessages.userId, userId))
-      .where(eq(chatMessages.courseId, courseId))
+      .where(and(eq(chatMessages.userId, userId), eq(chatMessages.courseId, courseId)))
       .orderBy(chatMessages.timestamp);
   }
 
@@ -237,7 +237,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteDocument(id: string): Promise<boolean> {
     const result = await db.delete(documents).where(eq(documents.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Document Chunks
@@ -267,7 +267,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteDocumentChunk(id: string): Promise<boolean> {
     const result = await db.delete(documentChunks).where(eq(documentChunks.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Entities
@@ -296,7 +296,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteEntity(id: string): Promise<boolean> {
     const result = await db.delete(entities).where(eq(entities.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Entity Relationships
@@ -315,14 +315,15 @@ export class DatabaseStorage implements IStorage {
 
   // RAG Chat Messages
   async getRagChatMessages(userId: string, courseId?: string): Promise<RagChatMessage[]> {
-    let query = db.select().from(ragChatMessages)
-      .where(eq(ragChatMessages.userId, userId));
-    
     if (courseId) {
-      query = query.where(eq(ragChatMessages.courseId, courseId));
+      return await db.select().from(ragChatMessages)
+        .where(and(eq(ragChatMessages.userId, userId), eq(ragChatMessages.courseId, courseId)))
+        .orderBy(ragChatMessages.timestamp);
     }
     
-    return await query.orderBy(ragChatMessages.timestamp);
+    return await db.select().from(ragChatMessages)
+      .where(eq(ragChatMessages.userId, userId))
+      .orderBy(ragChatMessages.timestamp);
   }
 
   async createRagChatMessage(insertMessage: InsertRagChatMessage): Promise<RagChatMessage> {
@@ -371,9 +372,13 @@ export class MemStorage implements IStorage {
     // Create sample user
     const sampleUser: User = {
       id: "user-1",
-      username: "jane.doe",
-      name: "Jane Doe",
-      role: "care_worker"
+      email: "jane.doe@example.com",
+      firstName: "Jane",
+      lastName: "Doe",
+      profileImageUrl: null,
+      role: "care_worker",
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(sampleUser.id, sampleUser);
 
@@ -531,8 +536,8 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -540,7 +545,13 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id,
-      role: insertUser.role || "care_worker"
+      email: insertUser.email ?? null,
+      firstName: insertUser.firstName ?? null,
+      lastName: insertUser.lastName ?? null,
+      profileImageUrl: insertUser.profileImageUrl ?? null,
+      role: insertUser.role || "care_worker",
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(id, user);
     return user;
@@ -658,23 +669,23 @@ export class MemStorage implements IStorage {
 
   // Add upsertUser method
   async upsertUser(user: UpsertUser): Promise<User> {
-    const existingUser = this.users.get(user.id);
+    const existingUser = this.users.get(user.id!);
     if (existingUser) {
-      const updated = { ...existingUser, ...user };
-      this.users.set(user.id, updated);
+      const updated = { ...existingUser, ...user, updatedAt: new Date() };
+      this.users.set(user.id!, updated);
       return updated;
     } else {
       const newUser: User = {
-        id: user.id,
-        email: user.email || null,
-        firstName: user.firstName || null,
-        lastName: user.lastName || null,
-        profileImageUrl: user.profileImageUrl || null,
-        role: user.role || "care_worker",
+        id: user.id!,
+        email: user.email ?? null,
+        firstName: user.firstName ?? null,
+        lastName: user.lastName ?? null,
+        profileImageUrl: user.profileImageUrl ?? null,
+        role: user.role ?? "care_worker",
         createdAt: new Date(),
         updatedAt: new Date()
       };
-      this.users.set(user.id, newUser);
+      this.users.set(user.id!, newUser);
       return newUser;
     }
   }
@@ -693,6 +704,8 @@ export class MemStorage implements IStorage {
     const newDoc: Document = {
       ...document,
       id,
+      metadata: document.metadata ?? null,
+      vectorId: document.vectorId ?? null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -720,8 +733,9 @@ export class MemStorage implements IStorage {
     const newChunk: DocumentChunk = {
       ...chunk,
       id,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      metadata: chunk.metadata ?? null,
+      vectorId: chunk.vectorId ?? null,
+      createdAt: new Date()
     };
     return newChunk;
   }
@@ -747,8 +761,9 @@ export class MemStorage implements IStorage {
     const newEntity: Entity = {
       ...entity,
       id,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      description: entity.description ?? null,
+      metadata: entity.metadata ?? null,
+      createdAt: new Date()
     };
     return newEntity;
   }
@@ -770,6 +785,8 @@ export class MemStorage implements IStorage {
     const newRelationship: EntityRelationship = {
       ...relationship,
       id,
+      confidence: relationship.confidence ?? 100,
+      source: relationship.source ?? null,
       createdAt: new Date()
     };
     return newRelationship;
@@ -784,6 +801,10 @@ export class MemStorage implements IStorage {
     const newMessage: RagChatMessage = {
       ...message,
       id,
+      courseId: message.courseId ?? null,
+      confidence: message.confidence ?? 0,
+      sources: message.sources ?? null,
+      agentTrace: message.agentTrace ?? null,
       timestamp: new Date()
     };
     return newMessage;
@@ -802,6 +823,11 @@ export class MemStorage implements IStorage {
     const newJob: ProcessingJob = {
       ...job,
       id,
+      status: job.status ?? "pending",
+      progress: job.progress ?? 0,
+      errorMessage: job.errorMessage ?? null,
+      metadata: job.metadata ?? null,
+      documentId: job.documentId ?? null,
       createdAt: new Date(),
       updatedAt: new Date()
     };
