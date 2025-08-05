@@ -24,8 +24,8 @@ interface AITutorResponse {
 
 export async function getAITutorResponse(question: string, context?: string, user?: User, courseId?: string): Promise<AITutorResponse> {
   try {
-    // Try RAG-enhanced response first if user is provided
-    if (user && process.env.PINECONE_API_KEY) {
+    // Try RAG-enhanced response first if user is provided (temporarily disabled due to Pinecone filter issues)
+    if (false && user && process.env.PINECONE_API_KEY) {
       try {
         const ragResponse = await ragOrchestrator.processQuery(question, user, courseId);
         

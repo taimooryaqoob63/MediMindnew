@@ -86,7 +86,7 @@ Provide a JSON response with:
 2. entities: List medical terms, procedures, conditions mentioned
 3. complexity: simple/moderate/complex based on medical expertise required
 4. requiresSpecialistKnowledge: true if needs specialist medical knowledge
-5. suggestedFilters: Suggested document filters (documentType, category)
+5. suggestedFilters: Empty object (filters disabled for now)
 
 Focus on diabetes care, NICE guidelines, NHS practices, and CQC requirements.`;
 
