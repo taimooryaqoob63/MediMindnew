@@ -1,0 +1,29 @@
+NICE Diabetes Guidelines - Blood Glucose Management
+
+Introduction
+This document outlines the key principles for managing blood glucose levels in adults with diabetes in care home settings.
+
+Blood Glucose Targets
+- Pre-meal glucose: 4-7 mmol/L
+- Post-meal glucose: <9 mmol/L after 2 hours
+- HbA1c target: <53 mmol/mol (7.0%) for most adults
+
+Hypoglycemia Management
+Symptoms include sweating, trembling, confusion, and altered consciousness.
+
+Treatment:
+1. If conscious and able to swallow: Give 15-20g fast-acting carbohydrate
+2. Recheck glucose after 10-15 minutes
+3. If still below 4 mmol/L, repeat treatment
+4. Once glucose >4 mmol/L, give long-acting carbohydrate
+
+Emergency situations requiring glucagon or IV glucose should be escalated to medical professionals immediately.
+
+Medication Administration
+- Always check blood glucose before insulin administration
+- Rotate injection sites to prevent lipodystrophy
+- Store insulin at 2-8°C when not in use
+- Never shake insulin - roll gently between hands
+
+Documentation Requirements
+All blood glucose readings, medication administration, and hypoglycemic episodes must be documented in the resident's care plan and reported to the GP as per CQC requirements.

@@ -111,6 +111,9 @@ export class VectorStore {
     }
     
     try {
+      // Ensure index exists before upserting
+      await this.ensureIndexExists();
+      
       const index = this.pinecone.index(this.config.indexName);
       
       await index.upsert([{
@@ -120,6 +123,44 @@ export class VectorStore {
       }]);
     } catch (error) {
       console.error('Error upserting vector:', error);
+      throw error;
+    }
+  }
+
+  private async ensureIndexExists(): Promise<void> {
+    if (!this.pinecone) {
+      throw new Error('Pinecone not initialized');
+    }
+    
+    try {
+      // Check if index exists
+      const indexList = await this.pinecone.listIndexes();
+      const indexExists = indexList.indexes?.some(index => index.name === this.config.indexName);
+
+      if (!indexExists) {
+        console.log(`Creating Pinecone index: ${this.config.indexName}`);
+        await this.pinecone.createIndex({
+          name: this.config.indexName,
+          dimension: this.config.dimension,
+          metric: 'cosine',
+          spec: {
+            serverless: {
+              cloud: 'aws',
+              region: 'us-east-1'
+            }
+          }
+        });
+        
+        // Wait for index to be ready
+        await this.waitForIndexReady();
+        console.log(`Index ${this.config.indexName} created successfully`);
+      }
+    } catch (error) {
+      // If index already exists, that's fine
+      if (error.message?.includes('already exists')) {
+        console.log(`Index ${this.config.indexName} already exists`);
+        return;
+      }
       throw error;
     }
   }
