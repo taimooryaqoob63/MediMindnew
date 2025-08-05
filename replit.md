@@ -18,6 +18,14 @@ MediMind AI is a comprehensive diabetes care training platform designed for heal
 Preferred communication style: Simple, everyday language.
 Branding: Use consistent MediMind AI logo (healthcare hands/heart design) across all pages.
 
+**CRITICAL SAFETY REQUIREMENTS (August 2025):**
+- AI tutor must be extremely strict for nursing/care home regulations
+- NEVER provide medical advice without explicit source documentation
+- Every statement MUST include citation: [Source: Document Title, Section X, Page Y]
+- If information unavailable, respond exactly: "I don't have sufficient information in my knowledge base to answer this safely. Please consult NICE guidelines or healthcare professionals."
+- PROHIBITED: General statements, assumptions, or "common practice" advice
+- REQUIRED: Specific guideline references, confidence scores, professional consultation flags
+
 ## System Architecture
 
 ### Full-Stack Application Structure

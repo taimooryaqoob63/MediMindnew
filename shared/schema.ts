@@ -61,6 +61,9 @@ export const chatMessages = pgTable("chat_messages", {
   message: text("message").notNull(),
   response: text("response").notNull(),
   timestamp: text("timestamp").notNull(),
+  confidence: integer("confidence"),
+  sources: json("sources"),
+  usedRAG: boolean("used_rag").default(false),
 });
 
 export const resources = pgTable("resources", {
