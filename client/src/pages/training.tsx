@@ -7,7 +7,6 @@ import AppHeader from "@/components/AppHeader";
 import Sidebar from "@/components/Sidebar";
 import VideoSection from "@/components/VideoSection";
 import AITutorChat from "@/components/AITutorChat";
-import QuickAccessToolbar from "@/components/QuickAccessToolbar";
 
 import type { Course, Module, User, UserProgress } from "@shared/schema";
 
@@ -76,24 +75,28 @@ export default function TrainingPage() {
   const completedModules = progress.filter(p => p.completed).length;
   const overallProgress = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0;
 
+  // Helper functions to toggle sidebar and chat
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const toggleChat = () => setIsChatOpen(!isChatOpen);
+
   return (
     <div className="min-h-screen bg-light">
       <AppHeader 
         user={user} 
-        onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        onChatToggle={() => setIsChatOpen(!isChatOpen)}
+        onSidebarToggle={toggleSidebar}
+        onChatToggle={toggleChat}
         isMobile={isMobile}
       />
-      
+
       <div className="flex h-screen pt-16 relative">
         {/* Mobile Sidebar Overlay */}
         {isMobile && isSidebarOpen && (
           <div 
             className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-            onClick={() => setIsSidebarOpen(false)}
+            onClick={toggleSidebar}
           />
         )}
-        
+
         {/* Sidebar */}
         <div className={`
           ${isMobile 
@@ -111,12 +114,12 @@ export default function TrainingPage() {
             selectedModuleId={selectedModuleId || ""}
             onModuleSelect={(moduleId) => {
               setSelectedModuleId(moduleId);
-              if (isMobile) setIsSidebarOpen(false);
+              if (isMobile) toggleSidebar();
             }}
             isMobile={isMobile}
           />
         </div>
-        
+
         {/* Main Content */}
         <main className={`
           flex-1 flex overflow-hidden
@@ -136,7 +139,7 @@ export default function TrainingPage() {
               courseId={selectedCourseId || undefined}
             />
           </div>
-          
+
           {/* Chat Section */}
           <div className={`
             ${isMobile 
@@ -151,27 +154,19 @@ export default function TrainingPage() {
               currentModule={currentModule}
               isMobile={isMobile}
               isOpen={isChatOpen}
-              onClose={() => setIsChatOpen(false)}
+              onClose={toggleChat}
             />
           </div>
         </main>
-        
+
         {/* Mobile Chat Overlay */}
         {isMobile && isChatOpen && (
           <div 
             className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
-            onClick={() => setIsChatOpen(false)}
+            onClick={toggleChat}
           />
         )}
       </div>
-      
-      {/* Quick Access Toolbar */}
-      <QuickAccessToolbar
-        onChatToggle={() => setIsChatOpen(!isChatOpen)}
-        onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        isMobile={isMobile}
-        isChatOpen={isChatOpen}
-      />
     </div>
   );
 }
