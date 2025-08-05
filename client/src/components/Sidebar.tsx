@@ -1,5 +1,4 @@
 import { PlayCircle, Check, FileText } from "lucide-react";
-import { InlineModuleEditor } from "./InlineModuleEditor";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type { Course, Module, UserProgress } from "@shared/schema";
@@ -12,7 +11,6 @@ interface SidebarProps {
   selectedModuleId: string;
   onModuleSelect: (moduleId: string) => void;
   isMobile?: boolean;
-  isContentManagementMode?: boolean;
 }
 
 export default function Sidebar({ 
@@ -22,8 +20,7 @@ export default function Sidebar({
   overallProgress, 
   selectedModuleId, 
   onModuleSelect,
-  isMobile,
-  isContentManagementMode = false
+  isMobile 
 }: SidebarProps) {
   const isModuleCompleted = (moduleId: string) => {
     return progress.some(p => p.moduleId === moduleId && p.completed);
@@ -73,35 +70,29 @@ export default function Sidebar({
                 const isInProgress = isModuleInProgress(module.id);
                 
                 return (
-                  <div key={module.id} className="group relative">
-                    <Button
-                      variant={isSelected ? "default" : "ghost"}
-                      className={`w-full justify-start px-3 py-2 text-sm h-auto transition-all duration-200 ${
-                        isSelected 
-                          ? 'bg-medical-blue text-white hover:bg-medical-blue/90 shadow-md' 
-                          : 'text-gray-700 hover:bg-gray-50 hover:shadow-sm'
-                      } button-interactive`}
-                      onClick={() => onModuleSelect(module.id)}
-                    >
-                      <PlayCircle className={`mr-3 w-4 h-4 transition-all duration-200 ${
-                        isSelected ? 'text-white' : 'text-gray-400'
-                      }`} />
-                      <span className="flex-1 text-left">
-                        {index + 1}. {module.title}
-                      </span>
-                      {isCompleted && (
-                        <Check className="ml-2 w-4 h-4 success-green animate-pulse" />
-                      )}
-                      {isInProgress && !isCompleted && (
-                        <div className="w-2 h-2 bg-medical-blue rounded-full ml-2 pulse-soft" />
-                      )}
-                    </Button>
-                    {isContentManagementMode && course && (
-                      <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                        <InlineModuleEditor module={module} courseId={course.id} />
-                      </div>
+                  <Button
+                    key={module.id}
+                    variant={isSelected ? "default" : "ghost"}
+                    className={`w-full justify-start px-3 py-2 text-sm h-auto transition-all duration-200 ${
+                      isSelected 
+                        ? 'bg-medical-blue text-white hover:bg-medical-blue/90 shadow-md' 
+                        : 'text-gray-700 hover:bg-gray-50 hover:shadow-sm'
+                    } button-interactive`}
+                    onClick={() => onModuleSelect(module.id)}
+                  >
+                    <PlayCircle className={`mr-3 w-4 h-4 transition-all duration-200 ${
+                      isSelected ? 'text-white' : 'text-gray-400'
+                    }`} />
+                    <span className="flex-1 text-left">
+                      {index + 1}. {module.title}
+                    </span>
+                    {isCompleted && (
+                      <Check className="ml-2 w-4 h-4 success-green animate-pulse" />
                     )}
-                  </div>
+                    {isInProgress && !isCompleted && (
+                      <div className="w-2 h-2 bg-medical-blue rounded-full ml-2 pulse-soft" />
+                    )}
+                  </Button>
                 );
               })}
             </div>

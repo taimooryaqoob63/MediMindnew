@@ -6,11 +6,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import TrainingPage from "@/pages/training";
-import DocumentsPage from "@/pages/documents";
-import AdminPage from "@/pages/admin";
 import LandingPage from "@/pages/landing";
-import { ContentPage } from "@/pages/content";
-import AppHeader from "@/components/AppHeader";
+import CourseManagement from "@/pages/courseManagement";
+
+function CourseManagementWrapper() {
+  const { user } = useAuth();
+  return <CourseManagement user={user} />;
+}
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -31,9 +33,7 @@ function Router() {
         <>
           <Route path="/" component={TrainingPage} />
           <Route path="/training" component={TrainingPage} />
-          <Route path="/documents" component={DocumentsPage} />
-          <Route path="/admin" component={AdminPage} />
-          <Route path="/content" component={ContentPage} />
+          <Route path="/manage" component={CourseManagementWrapper} />
         </>
       )}
       <Route component={NotFound} />

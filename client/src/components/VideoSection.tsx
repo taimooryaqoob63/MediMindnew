@@ -1,9 +1,8 @@
-import { useState } from "react";
-import { Bookmark, Award, Play } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Play, Volume2, Maximize, Bookmark, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ModuleVideoPlayer from "./ModuleVideoPlayer";
-import { VideoManager } from "./VideoManager";
+import { Progress } from "@/components/ui/progress";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -11,32 +10,87 @@ import type { Module } from "@shared/schema";
 
 interface VideoSectionProps {
   module?: Module;
-  courseId?: string;
+  onProgressUpdate: (moduleId: string, progress: number) => void;
   isMobile?: boolean;
+  userId?: string;
+  courseId?: string;
 }
 
-export default function VideoSection({ module, courseId, isMobile }: VideoSectionProps) {
-  const { toast } = useToast();
+export default function VideoSection({ module, onProgressUpdate, isMobile, userId, courseId }: VideoSectionProps) {
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  // Progress update mutation
-  const progressMutation = useMutation({
-    mutationFn: async (data: { courseId: string; moduleId: string; progress: number; completed?: boolean }) => {
-      return apiRequest("/api/progress", "POST", data);
+  // Progress tracking mutation
+  const updateProgressMutation = useMutation({
+    mutationFn: async (progressData: { progress: number; completed: boolean }) => {
+      if (!module || !userId || !courseId) return;
+      
+      const payload = {
+        courseId,
+        moduleId: module.id,
+        progress: progressData.progress,
+        completed: progressData.completed,
+        lastAccessed: new Date().toISOString()
+      };
+      
+      const response = await apiRequest("POST", "/api/progress", payload);
+      return response.json();
     },
     onSuccess: () => {
-      // Invalidate progress cache to refresh sidebar
       queryClient.invalidateQueries({ queryKey: ["/api/progress", courseId] });
     },
     onError: (error) => {
       console.error("Failed to update progress:", error);
-      toast({
-        title: "Progress Update Failed",
-        description: "Unable to save your progress. Please try again.",
-        variant: "destructive",
-      });
-    },
+    }
   });
+
+  // Video event handlers
+  const handleTimeUpdate = () => {
+    if (!videoRef.current || !module) return;
+    
+    const video = videoRef.current;
+    const currentProgress = Math.round((video.currentTime / video.duration) * 100);
+    
+    if (currentProgress !== videoProgress) {
+      setVideoProgress(currentProgress);
+      onProgressUpdate(module.id, currentProgress);
+      
+      // Update progress every 5% or when video completes
+      if (currentProgress % 5 === 0 || currentProgress >= 95) {
+        updateProgressMutation.mutate({
+          progress: currentProgress,
+          completed: currentProgress >= 95
+        });
+      }
+    }
+  };
+
+  const handleVideoEnded = () => {
+    if (!module) return;
+    
+    setVideoProgress(100);
+    onProgressUpdate(module.id, 100);
+    updateProgressMutation.mutate({
+      progress: 100,
+      completed: true
+    });
+    
+    toast({
+      title: "Module Completed!",
+      description: `You've finished "${module.title}". Great work!`,
+    });
+  };
+
+  const handlePlay = () => {
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
 
   // Helper function to safely access module content
   const getModuleContent = () => {
@@ -59,32 +113,8 @@ export default function VideoSection({ module, courseId, isMobile }: VideoSectio
     );
   }
 
-  const handleProgressUpdate = (progress: number) => {
-    if (module && courseId) {
-      progressMutation.mutate({
-        courseId,
-        moduleId: module.id,
-        progress: Math.round(progress),
-        completed: false
-      });
-    }
-  };
-
-  const handleVideoComplete = () => {
-    if (module && courseId) {
-      progressMutation.mutate({
-        courseId,
-        moduleId: module.id,
-        progress: 100,
-        completed: true
-      });
-
-      toast({
-        title: "Module Completed!",
-        description: `You've successfully completed "${module.title}"`,
-        variant: "default",
-      });
-    }
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
   };
 
   return (
@@ -111,14 +141,53 @@ export default function VideoSection({ module, courseId, isMobile }: VideoSectio
       </div>
 
       <div className={`flex-1 ${isMobile ? 'p-4' : 'p-6'}`}>
-        <div className="mb-6">
-          <ModuleVideoPlayer 
-            module={module}
-            courseId={courseId}
-            onProgressUpdate={handleProgressUpdate}
-            onComplete={handleVideoComplete}
-            isMobile={isMobile}
-          />
+        <div className="bg-black rounded-lg overflow-hidden shadow-lg mb-6 card-hover">
+          <div className="relative aspect-video bg-gray-900">
+            {module.videoUrl && module.videoUrl.startsWith('/uploads') ? (
+              // Local uploaded video
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                controls
+                poster="/api/placeholder-image"
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleVideoEnded}
+                onPlay={handlePlay}
+                onPause={handlePause}
+                onLoadedMetadata={(e) => {
+                  const video = e.target as HTMLVideoElement;
+                  const duration = Math.floor(video.duration);
+                  const minutes = Math.floor(duration / 60);
+                  const seconds = duration % 60;
+                  // Update duration if not set
+                }}
+              >
+                <source src={module.videoUrl} type="video/mp4" />
+                <source src={module.videoUrl} type="video/webm" />
+                <source src={module.videoUrl} type="video/ogg" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              // Placeholder for external videos or no video
+              <div className="flex items-center justify-center h-full">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                <div className="text-center text-white z-10">
+                  <div 
+                    className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-all duration-300 interactive-hover"
+                    onClick={handlePlayPause}
+                  >
+                    <Play className="w-8 h-8 ml-1" />
+                  </div>
+                  <p className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>{module.title}</p>
+                  <p className="text-sm opacity-80">Duration: {module.duration}</p>
+                  {!module.videoUrl && (
+                    <p className="text-xs opacity-60 mt-2">Video not yet uploaded</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden">
@@ -148,12 +217,6 @@ export default function VideoSection({ module, courseId, isMobile }: VideoSectio
                   className="py-4 px-6 border-b-2 border-transparent data-[state=active]:border-medical-blue data-[state=active]:text-medical-blue rounded-none"
                 >
                   Downloads
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="videos"
-                  className="py-4 px-6 border-b-2 border-transparent data-[state=active]:border-medical-blue data-[state=active]:text-medical-blue rounded-none"
-                >
-                  Videos
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -225,12 +288,6 @@ export default function VideoSection({ module, courseId, isMobile }: VideoSectio
               <div className="text-sm text-gray-600">
                 <p>Downloadable resources for this module will be listed here.</p>
               </div>
-            </TabsContent>
-
-            <TabsContent value="videos" className="p-6 overflow-y-auto flex-1 scrollbar-thin chat-scroll max-h-96">
-              {module && (
-                <VideoManager moduleId={module.id} />
-              )}
             </TabsContent>
           </Tabs>
         </div>
