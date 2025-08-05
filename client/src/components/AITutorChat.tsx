@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ChatMessage, Module } from "@shared/schema";
+import ReactMarkdown from "react-markdown";
 
 interface AITutorChatProps {
   courseId: string;
@@ -252,11 +253,17 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           </div>
           <div className="flex-1">
             <div className="bg-gray-100 rounded-lg p-3">
-              <p className="text-sm text-text-dark">
-                Hello! I'm your AI tutor, ready to help you understand diabetes management. 
-                I can answer questions based on NICE guidelines, NHS best practices, and CQC requirements. 
-                What would you like to know?
-              </p>
+              <div className="text-sm text-text-dark prose prose-sm max-w-none">
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <p className="mb-0">{children}</p>,
+                  }}
+                >
+                  Hello! I'm your AI tutor, ready to help you understand diabetes management. 
+                  I can answer questions based on NICE guidelines, NHS best practices, and CQC requirements. 
+                  What would you like to know?
+                </ReactMarkdown>
+              </div>
             </div>
             <p className="text-xs text-gray-500 mt-1">AI Assistant</p>
           </div>
@@ -287,7 +294,21 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               </div>
               <div className="flex-1">
                 <div className="bg-gray-100 hover:bg-gray-50 rounded-lg p-3 transition-all duration-200 hover:shadow-md">
-                  <p className="text-sm text-text-dark whitespace-pre-wrap select-text">{msg.response}</p>
+                  <div className="text-sm text-text-dark select-text prose prose-sm max-w-none">
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        strong: ({ children }) => <strong className="font-semibold text-medical-blue">{children}</strong>,
+                        ul: ({ children }) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal ml-4 mb-2">{children}</ol>,
+                        li: ({ children }) => <li className="mb-1">{children}</li>,
+                        h3: ({ children }) => <h3 className="font-semibold text-base mb-2">{children}</h3>,
+                        h4: ({ children }) => <h4 className="font-medium text-sm mb-1">{children}</h4>,
+                      }}
+                    >
+                      {msg.response}
+                    </ReactMarkdown>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   {formatTimestamp(msg.timestamp)}
