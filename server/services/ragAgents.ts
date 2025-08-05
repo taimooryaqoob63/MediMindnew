@@ -127,11 +127,11 @@ Focus on diabetes care, NICE guidelines, NHS practices, and CQC requirements.`;
       // Create query embedding
       const queryEmbedding = await vectorStore.createEmbedding(query);
       
-      // Search with filters based on analysis
+      // Search without filters for now (until proper documents are uploaded)
       const searchResults = await vectorStore.queryVectors(
         queryEmbedding,
-        10, // Get top 10 results
-        analysis.suggestedFilters
+        10 // Get top 10 results
+        // Note: Filters disabled temporarily due to Pinecone schema mismatch
       );
 
       // Get document details for each result
