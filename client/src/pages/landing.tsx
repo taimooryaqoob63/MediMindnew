@@ -27,9 +27,6 @@ export default function Landing() {
             </div>
             <div className="flex space-x-3">
               <Button variant="outline" asChild>
-                <a href="/chat-demo">Chat Demo</a>
-              </Button>
-              <Button variant="outline" asChild>
                 <a href="/api/login">Log In</a>
               </Button>
             </div>

@@ -9,7 +9,7 @@ import TrainingPage from "@/pages/training";
 import LandingPage from "@/pages/landing";
 import CourseManagement from "@/pages/courseManagement";
 import DocumentManagement from "@/pages/documentManagement";
-import ChatDemo from "@/pages/chatDemo";
+
 
 function CourseManagementWrapper() {
   const { user } = useAuth();
@@ -37,7 +37,6 @@ function Router() {
       {!isAuthenticated ? (
         <>
           <Route path="/" component={LandingPage} />
-          <Route path="/chat-demo" component={ChatDemo} />
         </>
       ) : (
         <>
@@ -45,7 +44,6 @@ function Router() {
           <Route path="/training" component={TrainingPage} />
           <Route path="/manage" component={CourseManagementWrapper} />
           <Route path="/documents" component={DocumentManagementWrapper} />
-          <Route path="/chat-demo" component={ChatDemo} />
         </>
       )}
       <Route component={NotFound} />
