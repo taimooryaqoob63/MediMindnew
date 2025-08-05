@@ -64,7 +64,7 @@ export class RagAgentOrchestrator {
     } catch (error) {
       console.error('RAG processing error:', error);
       return {
-        content: "I don't have sufficient information in my knowledge base to answer this safely. Please consult NICE guidelines or healthcare professionals.",
+        content: "I'm experiencing technical difficulties. Please consult your local healthcare guidelines for immediate assistance.",
         confidence: 0,
         sources: [],
         agentName: 'error_handler'
@@ -86,7 +86,7 @@ Provide a JSON response with:
 2. entities: List medical terms, procedures, conditions mentioned
 3. complexity: simple/moderate/complex based on medical expertise required
 4. requiresSpecialistKnowledge: true if needs specialist medical knowledge
-5. suggestedFilters: Empty object (filters disabled for now)
+5. suggestedFilters: Suggested document filters (documentType, category)
 
 Focus on diabetes care, NICE guidelines, NHS practices, and CQC requirements.`;
 
@@ -127,11 +127,11 @@ Focus on diabetes care, NICE guidelines, NHS practices, and CQC requirements.`;
       // Create query embedding
       const queryEmbedding = await vectorStore.createEmbedding(query);
       
-      // Search without filters for now (until proper documents are uploaded)
+      // Search with filters based on analysis
       const searchResults = await vectorStore.queryVectors(
         queryEmbedding,
-        10 // Get top 10 results
-        // Note: Filters disabled temporarily due to Pinecone schema mismatch
+        10, // Get top 10 results
+        analysis.suggestedFilters
       );
 
       // Get document details for each result
@@ -186,39 +186,26 @@ Focus on diabetes care, NICE guidelines, NHS practices, and CQC requirements.`;
       throw new Error('OpenAI not configured');
     }
     
-    const systemPrompt = `You are MediMind AI for nursing and care homes where regulations are EXTREMELY STRICT. Follow these CRITICAL SAFETY RULES:
-
-CRITICAL RULES - NO EXCEPTIONS:
-1. NEVER provide medical advice without explicit source documentation
-2. Every statement MUST include citation: [Source: Document Title, Section X, Page Y]
-3. If information unavailable from provided context, respond: "I don't have sufficient information in my knowledge base to answer this safely. Please consult NICE guidelines or healthcare professionals."
-4. PROHIBITED: General statements, assumptions, or "common practice" advice
-5. REQUIRED: Specific guideline references, confidence scores, professional consultation flags
+    const systemPrompt = `You are MediMind AI, a specialized healthcare assistant for diabetes care in care homes and nursing facilities.
 
 User Role: ${user.role}
 Query Complexity: ${analysis.complexity}
 Requires Specialist Knowledge: ${analysis.requiresSpecialistKnowledge}
 
-ACCEPTABLE SOURCES ONLY:
-- NICE guidelines with specific reference numbers
-- NHS best practices with document citations
-- CQC requirements with regulation numbers
-- Peer-reviewed medical literature with full citations
+Guidelines:
+- Base responses on NICE guidelines, NHS practices, and CQC requirements
+- Provide practical, actionable advice appropriate for the user's role
+- Always emphasize safety protocols and professional consultation
+- Include specific blood glucose ranges, medication guidelines when relevant
+- Maintain professional tone while being accessible
 
 Context from Guidelines:
 ${context}
 
-RESPONSE FORMAT REQUIREMENTS:
-- Start with confidence level (0-100%)
-- Include mandatory consultation flag if confidence < 95%
-- Provide exact source citations for every claim
-- End with professional consultation reminder
-
 Respond in JSON format with:
 {
-  "content": "Your response with mandatory citations [Source: ...] after every claim",
+  "content": "Your detailed response",
   "confidence": 0-100,
-  "requiresConsultation": true/false,
   "agentName": "response_generator",
   "followUpQuestions": ["Question 1", "Question 2", "Question 3"]
 }`;
@@ -236,28 +223,16 @@ Respond in JSON format with:
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
       
-      // Enforce strict safety checks
-      const confidence = result.confidence || 0;
-      const requiresConsultation = result.requiresConsultation || confidence < 95;
-      
-      let safeContent = result.content || "I don't have sufficient information in my knowledge base to answer this safely. Please consult NICE guidelines or healthcare professionals.";
-      
-      // Add consultation warning if required
-      if (requiresConsultation) {
-        safeContent += "\n\n⚠️ IMPORTANT: This response requires professional consultation. Please verify with healthcare professionals or consult official guidelines before implementation.";
-      }
-      
       return {
-        content: safeContent,
-        confidence: confidence,
+        content: result.content || "I couldn't generate a proper response.",
+        confidence: result.confidence || 50,
         sources: [],
-        agentName: result.agentName || 'response_generator',
-        followUpQuestions: result.followUpQuestions || []
+        agentName: result.agentName || 'response_generator'
       };
     } catch (error) {
       console.error('Response generation error:', error);
       return {
-        content: "I don't have sufficient information in my knowledge base to answer this safely. Please consult NICE guidelines or healthcare professionals.",
+        content: "I'm having trouble generating a response. Please try rephrasing your question.",
         confidence: 0,
         sources: [],
         agentName: 'response_generator'

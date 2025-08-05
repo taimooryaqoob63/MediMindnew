@@ -24,8 +24,8 @@ interface AITutorResponse {
 
 export async function getAITutorResponse(question: string, context?: string, user?: User, courseId?: string): Promise<AITutorResponse> {
   try {
-    // Try RAG-enhanced response first if user is provided (temporarily disabled due to Pinecone filter issues)
-    if (false && user && process.env.PINECONE_API_KEY) {
+    // Try RAG-enhanced response first if user is provided
+    if (user && process.env.PINECONE_API_KEY) {
       try {
         const ragResponse = await ragOrchestrator.processQuery(question, user, courseId);
         
@@ -45,31 +45,23 @@ export async function getAITutorResponse(question: string, context?: string, use
       }
     }
 
-    // AI response with BALANCED SAFETY PROTOCOLS for nursing/care homes
-    const systemPrompt = `You are an AI tutor specializing in diabetes care for healthcare workers in care homes and nursing facilities. 
+    // Fallback to basic AI response
+    const systemPrompt = `You are an AI tutor specializing in diabetes care for healthcare workers in care homes and nursing facilities. Your responses should be based on:
 
-SAFETY GUIDELINES:
-1. Provide evidence-based information when possible, referencing NICE guidelines, NHS practices, or established medical knowledge
-2. For specific medical advice or complex clinical decisions, always recommend consulting healthcare professionals
-3. When you don't have specific source documentation, clearly state this and provide general educational information while encouraging verification
-4. Include confidence scores to help users understand the reliability of information
-5. Always emphasize the importance of following individual care plans and institutional protocols
+- NICE (National Institute for Health and Care Excellence) guidelines
+- NHS best practices
+- CQC (Care Quality Commission) requirements
+- Evidence-based healthcare practices
 
-ACCEPTABLE APPROACH:
-- Share general medical knowledge about diabetes care when educationally appropriate
-- Reference established guidelines (NICE, NHS, CQC) when known
-- Provide practical guidance for care workers while emphasizing safety
-- Recommend professional consultation for specific clinical decisions
-- Be helpful and educational while maintaining appropriate caution
+Provide accurate, practical, and actionable information for care workers, nurses, and managers. Always emphasize safety protocols and proper documentation. Keep responses concise but comprehensive.
+
+When appropriate, include specific blood glucose ranges, medication guidelines, or emergency procedures. Always remind users to follow individual care plans and consult healthcare professionals for specific cases.
 
 Role context: ${user ? `The user is a ${user.role} in a care home setting` : 'Healthcare worker in care setting'}
 
 Respond in JSON format with:
 {
-  "response": "Your helpful educational response with appropriate safety reminders",
-  "confidence": 0-100,
-  "requiresConsultation": true/false,
-  "citations": ["Source references when available"],
+  "response": "Your detailed answer",
   "followUpQuestions": ["Question 1", "Question 2", "Question 3"]
 }`;
 
@@ -90,29 +82,11 @@ Respond in JSON format with:
 
     const result = JSON.parse(completion.choices[0].message.content || '{}');
     
-    // Apply balanced safety checks
-    const confidence = result.confidence || 70; // Default to moderate confidence for educational content
-    const requiresConsultation = result.requiresConsultation || confidence < 70; // Lower threshold for consultation warnings
-    
-    let safeResponse = result.response || "I can provide general educational information, but please consult healthcare professionals for specific clinical guidance.";
-    
-    // Add consultation warning for lower confidence responses
-    if (requiresConsultation && confidence < 70) {
-      safeResponse += "\n\n⚠️ Please verify this information with healthcare professionals or official guidelines before implementation.";
-    }
-    
     return {
-      response: safeResponse,
-      confidence: confidence || 60, // Use parsed confidence or fallback to 60
+      response: result.response || "I apologize, but I couldn't generate a proper response. Please try rephrasing your question.",
       followUpQuestions: result.followUpQuestions || [],
       suggestedQuestions: result.followUpQuestions || [],
-      sources: result.citations ? result.citations.map((citation: string, index: number) => ({
-        id: `citation-${index}`,
-        title: citation,
-        excerpt: citation,
-        score: confidence / 100,
-        type: 'guideline'
-      })) : [],
+      confidence: 60, // Basic AI confidence
       usedRAG: false
     };
   } catch (error) {

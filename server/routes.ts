@@ -286,28 +286,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Message and courseId are required" });
       }
 
-      // Get AI response with user context for strict safety protocols
-      const user = await storage.getUser(userId);
-      const aiResponse = await getAITutorResponse(message, context, user, courseId);
+      // Get AI response
+      const aiResponse = await getAITutorResponse(message, context);
       
-      // Save chat message with enhanced safety data
+      // Save chat message
       const chatMessage = await storage.createChatMessage({
         userId,
         courseId,
         message,
         response: aiResponse.response,
-        timestamp: new Date().toISOString(),
-        confidence: aiResponse.confidence || 0,
-        sources: aiResponse.sources || [],
-        usedRAG: aiResponse.usedRAG || false
+        timestamp: new Date().toISOString()
       });
 
       res.json({ 
         message: chatMessage,
-        suggestedQuestions: aiResponse.suggestedQuestions,
-        confidence: aiResponse.confidence,
-        sources: aiResponse.sources,
-        usedRAG: aiResponse.usedRAG
+        suggestedQuestions: aiResponse.suggestedQuestions 
       });
     } catch (error) {
       console.error('Chat error:', error);
