@@ -1,12 +1,12 @@
 import { 
   type User, type Course, type Module, type UserProgress, type ChatMessage, type Resource,
   type Document, type DocumentChunk, type Entity, type EntityRelationship, type RagChatMessage, type ProcessingJob,
-  type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress, 
+  type Notification, type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress, 
   type InsertChatMessage, type InsertResource, type UpsertUser,
   type InsertDocument, type InsertDocumentChunk, type InsertEntity, type InsertEntityRelationship, 
-  type InsertRagChatMessage, type InsertProcessingJob,
+  type InsertRagChatMessage, type InsertProcessingJob, type InsertNotification,
   users, courses, modules, userProgress, chatMessages, resources,
-  documents, documentChunks, entities, entityRelationships, ragChatMessages, processingJobs
+  documents, documentChunks, entities, entityRelationships, ragChatMessages, processingJobs, notifications
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -76,6 +76,13 @@ export interface IStorage {
   getProcessingJob(id: string): Promise<ProcessingJob | undefined>;
   createProcessingJob(job: InsertProcessingJob): Promise<ProcessingJob>;
   updateProcessingJob(id: string, updates: Partial<InsertProcessingJob>): Promise<ProcessingJob | undefined>;
+
+  // Notifications
+  getNotifications(userId: string): Promise<Notification[]>;
+  getUnreadNotifications(userId: string): Promise<Notification[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  markNotificationAsRead(id: string): Promise<boolean>;
+  markAllNotificationsAsRead(userId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -353,6 +360,40 @@ export class DatabaseStorage implements IStorage {
       .where(eq(processingJobs.id, id))
       .returning();
     return job || undefined;
+  }
+
+  // Notifications
+  async getNotifications(userId: string): Promise<Notification[]> {
+    return await db.select().from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(notifications.createdAt);
+  }
+
+  async getUnreadNotifications(userId: string): Promise<Notification[]> {
+    return await db.select().from(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.read, false)))
+      .orderBy(notifications.createdAt);
+  }
+
+  async createNotification(insertNotification: InsertNotification): Promise<Notification> {
+    const [notification] = await db.insert(notifications).values(insertNotification).returning();
+    return notification;
+  }
+
+  async markNotificationAsRead(id: string): Promise<boolean> {
+    const result = await db
+      .update(notifications)
+      .set({ read: true })
+      .where(eq(notifications.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<boolean> {
+    const result = await db
+      .update(notifications)
+      .set({ read: true })
+      .where(eq(notifications.userId, userId));
+    return (result.rowCount ?? 0) > 0;
   }
 }
 
@@ -836,6 +877,63 @@ export class MemStorage implements IStorage {
 
   async updateProcessingJob(id: string, updates: Partial<InsertProcessingJob>): Promise<ProcessingJob | undefined> {
     return undefined;
+  }
+
+  // Notifications
+  async getNotifications(userId: string): Promise<Notification[]> {
+    // Return some sample notifications for demo
+    const sampleNotifications: Notification[] = [
+      {
+        id: "notif-1",
+        userId,
+        title: "Course Progress Update",
+        message: "You've completed 2 of 3 modules in Diabetes Management Training",
+        type: "info",
+        read: false,
+        actionUrl: "/training",
+        metadata: { courseId: "course-1", progress: 67 },
+        createdAt: new Date(Date.now() - 1000 * 60 * 30) // 30 minutes ago
+      },
+      {
+        id: "notif-2",
+        userId,
+        title: "New Document Available",
+        message: "Updated NICE guidelines for diabetes care have been uploaded",
+        type: "info",
+        read: false,
+        actionUrl: "/documents",
+        metadata: { documentType: "NICE", category: "diabetes" },
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2) // 2 hours ago
+      }
+    ];
+    return sampleNotifications;
+  }
+
+  async getUnreadNotifications(userId: string): Promise<Notification[]> {
+    const all = await this.getNotifications(userId);
+    return all.filter(n => !n.read);
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const id = randomUUID();
+    const newNotification: Notification = {
+      ...notification,
+      id,
+      type: notification.type ?? "info",
+      read: notification.read ?? false,
+      actionUrl: notification.actionUrl ?? null,
+      metadata: notification.metadata ?? null,
+      createdAt: new Date()
+    };
+    return newNotification;
+  }
+
+  async markNotificationAsRead(id: string): Promise<boolean> {
+    return true; // Always succeed in memory storage
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<boolean> {
+    return true; // Always succeed in memory storage
   }
 }
 

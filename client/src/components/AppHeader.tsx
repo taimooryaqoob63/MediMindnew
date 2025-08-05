@@ -1,8 +1,13 @@
-import { Clock, Bell, Menu, MessageCircle, X } from "lucide-react";
+import { Clock, Bell, Menu, MessageCircle, X, User as UserIcon, Settings, LogOut, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
-import type { User } from "@shared/schema";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import type { User, Notification } from "@shared/schema";
 import logoPath from "@assets/logo (1)_1753961810037.png";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useState } from "react";
 
 interface AppHeaderProps {
   user?: User;
@@ -12,12 +17,63 @@ interface AppHeaderProps {
 }
 
 export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobile }: AppHeaderProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const queryClient = useQueryClient();
+  
   const currentTime = new Date().toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false
   });
+
+  // Fetch unread notifications
+  const { data: unreadNotifications = [], isLoading: notificationsLoading } = useQuery<Notification[]>({
+    queryKey: ['/api/notifications/unread'],
+    enabled: !!user,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  // Mark notification as read mutation
+  const markAsReadMutation = useMutation({
+    mutationFn: async (notificationId: string) => {
+      return apiRequest('PATCH', `/api/notifications/${notificationId}/read`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread'] });
+    },
+  });
+
+  // Mark all notifications as read mutation
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('PATCH', '/api/notifications/read-all');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread'] });
+    },
+  });
+
+  const handleNotificationClick = (notification: Notification) => {
+    // Mark as read
+    markAsReadMutation.mutate(notification.id);
+    
+    // Navigate to action URL if provided
+    if (notification.actionUrl) {
+      setLocation(notification.actionUrl);
+    }
+    
+    // Close popover
+    setNotificationOpen(false);
+  };
+
+  const handleMarkAllAsRead = () => {
+    markAllAsReadMutation.mutate();
+  };
+
+  const handleLogoClick = () => {
+    setLocation('/training');
+  };
 
   const getInitials = (user: User) => {
     if (user.firstName && user.lastName) {
@@ -56,7 +112,10 @@ export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobil
               </Button>
             )}
             
-            <div className="flex items-center space-x-2">
+            <button 
+              onClick={handleLogoClick}
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-medical-blue focus:ring-offset-2 rounded-md p-1"
+            >
               <img 
                 src={logoPath} 
                 alt="MediMind AI Logo" 
@@ -65,7 +124,7 @@ export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobil
               <h1 className={`font-semibold medical-blue ${isMobile ? 'text-lg' : 'text-xl'}`}>
                 MediMind AI
               </h1>
-            </div>
+            </button>
           </div>
           
           <div className="flex items-center space-x-6">
@@ -126,19 +185,113 @@ export default function AppHeader({ user, onSidebarToggle, onChatToggle, isMobil
                 <Clock className="w-4 h-4 medical-blue" />
                 <span>{currentTime}</span>
               </div>
-              <Button variant="ghost" size="sm" className="p-2 text-gray-400 hover:text-medical-blue button-interactive">
-                <Bell className="w-4 h-4" />
-              </Button>
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-medical-blue rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    {user ? getInitials(user) : 'U'}
-                  </span>
-                </div>
-                <span className="hidden md:block text-sm font-medium">
-                  {user ? getUserDisplayName(user) : 'User'}
-                </span>
-              </div>
+              
+              {/* Notification Bell */}
+              <Popover open={notificationOpen} onOpenChange={setNotificationOpen}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="p-2 text-gray-400 hover:text-medical-blue button-interactive relative"
+                  >
+                    <Bell className="w-4 h-4" />
+                    {unreadNotifications.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {unreadNotifications.length > 9 ? '9+' : unreadNotifications.length}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-0" align="end">
+                  <div className="p-4 border-b">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium">Notifications</h3>
+                      {unreadNotifications.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleMarkAllAsRead}
+                          className="text-xs text-medical-blue hover:text-medical-blue/80"
+                        >
+                          Mark all as read
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notificationsLoading ? (
+                      <div className="p-4 text-center text-gray-500">Loading...</div>
+                    ) : unreadNotifications.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500">No new notifications</div>
+                    ) : (
+                      <div className="divide-y">
+                        {unreadNotifications.map((notification) => (
+                          <button
+                            key={notification.id}
+                            onClick={() => handleNotificationClick(notification)}
+                            className="w-full p-4 text-left hover:bg-gray-50 transition-colors"
+                          >
+                            <div className="flex items-start space-x-3">
+                              <div className="w-2 h-2 bg-medical-blue rounded-full mt-2 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm text-gray-900 truncate">
+                                  {notification.title}
+                                </p>
+                                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                  {notification.message}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                  {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : 'Recently'}
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center space-x-2 h-auto p-2 hover:bg-gray-100">
+                    <div className="w-8 h-8 bg-medical-blue rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">
+                        {user ? getInitials(user) : 'U'}
+                      </span>
+                    </div>
+                    <span className="hidden md:block text-sm font-medium max-w-32 truncate">
+                      {user ? getUserDisplayName(user) : 'User'}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{user ? getUserDisplayName(user) : 'User'}</p>
+                    <p className="text-xs text-gray-500">{user?.email || 'user@example.com'}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer">
+                    <UserIcon className="w-4 h-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="cursor-pointer text-red-600 focus:text-red-600"
+                    onClick={() => window.location.href = '/api/logout'}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

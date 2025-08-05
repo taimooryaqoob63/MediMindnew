@@ -143,6 +143,19 @@ export const processingJobs = pgTable("processing_jobs", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Notifications
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  type: text("type").notNull().default("info"), // info, success, warning, error
+  read: boolean("read").default(false),
+  actionUrl: text("action_url"), // Optional URL to navigate to when clicked
+  metadata: json("metadata"), // Additional data like course completion, new document, etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertCourseSchema = createInsertSchema(courses).omit({ id: true });
@@ -156,6 +169,7 @@ export const insertEntitySchema = createInsertSchema(entities).omit({ id: true, 
 export const insertEntityRelationshipSchema = createInsertSchema(entityRelationships).omit({ id: true, createdAt: true });
 export const insertRagChatMessageSchema = createInsertSchema(ragChatMessages).omit({ id: true, timestamp: true });
 export const insertProcessingJobSchema = createInsertSchema(processingJobs).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -170,6 +184,7 @@ export type Entity = typeof entities.$inferSelect;
 export type EntityRelationship = typeof entityRelationships.$inferSelect;
 export type RagChatMessage = typeof ragChatMessages.$inferSelect;
 export type ProcessingJob = typeof processingJobs.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;
 
 // Chat message types
 export interface ChatResponse {
@@ -203,3 +218,4 @@ export type InsertEntity = z.infer<typeof insertEntitySchema>;
 export type InsertEntityRelationship = z.infer<typeof insertEntityRelationshipSchema>;
 export type InsertRagChatMessage = z.infer<typeof insertRagChatMessageSchema>;
 export type InsertProcessingJob = z.infer<typeof insertProcessingJobSchema>;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;

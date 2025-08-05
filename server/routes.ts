@@ -318,6 +318,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Notification routes - Protected
+  app.get("/api/notifications", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const notifications = await storage.getNotifications(userId);
+      res.json(notifications);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get notifications" });
+    }
+  });
+
+  app.get("/api/notifications/unread", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const unreadNotifications = await storage.getUnreadNotifications(userId);
+      res.json(unreadNotifications);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get unread notifications" });
+    }
+  });
+
+  app.patch("/api/notifications/:id/read", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.markNotificationAsRead(id);
+      if (success) {
+        res.json({ message: "Notification marked as read" });
+      } else {
+        res.status(404).json({ message: "Notification not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  app.patch("/api/notifications/read-all", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const success = await storage.markAllNotificationsAsRead(userId);
+      if (success) {
+        res.json({ message: "All notifications marked as read" });
+      } else {
+        res.status(500).json({ message: "Failed to mark notifications as read" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
