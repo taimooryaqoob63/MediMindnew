@@ -91,23 +91,16 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const chatMutation = useMutation({
     mutationFn: async (data: { message: string; courseId: string; context?: string }) => {
-      // Try RAG-enhanced chat first
-      try {
-        const ragResponse = await apiRequest("POST", "/api/rag/chat", {
-          message: data.message,
-          courseId: data.courseId
-        });
-        const result = await ragResponse.json();
-        console.log('RAG response:', result); // Debug log
-        return { ...result, usedRAG: true } as ChatResponse;
-      } catch (ragError) {
-        console.log('RAG chat failed, falling back to basic chat:', ragError);
-        // Fallback to basic chat
-        const response = await apiRequest("POST", "/api/chat", data);
-        const result = await response.json();
-        console.log('Basic chat response:', result); // Debug log
-        return { ...result, usedRAG: false } as ChatResponse;
-      }
+      // Use basic chat with strict safety protocols (RAG temporarily disabled)
+      const response = await apiRequest("POST", "/api/chat", data);
+      const result = await response.json();
+      console.log('Basic chat response:', result); // Debug log
+      return { 
+        ...result.message, 
+        confidence: result.confidence,
+        sources: result.sources,
+        usedRAG: result.usedRAG || false 
+      } as ChatResponse;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
