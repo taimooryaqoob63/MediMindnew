@@ -2,7 +2,16 @@
 
 ## Overview
 
-MediMind AI is a comprehensive diabetes care training platform designed for healthcare workers in care homes and nursing facilities. The application combines video-based learning modules with an AI-powered tutor to provide interactive, evidence-based training on diabetes management. The platform emphasizes compliance with NICE guidelines, NHS best practices, and CQC requirements.
+MediMind AI is a comprehensive diabetes care training platform designed for healthcare workers in care homes and nursing facilities. The application combines video-based learning modules with an advanced agentic RAG (Retrieval-Augmented Generation) system to provide interactive, evidence-based training on diabetes management. The platform features multi-agent AI reasoning, sophisticated document processing capabilities, and emphasizes compliance with NICE guidelines, NHS best practices, and CQC requirements.
+
+## Recent Changes (August 2025)
+
+- **Advanced Agentic RAG System**: Implemented multi-agent architecture with specialized medical roles (medical specialist, compliance officer, learning facilitator)
+- **Document Processing Pipeline**: Added comprehensive document processing for PDFs, DOCX, HTML, and TXT files with vector storage
+- **Vector Database Integration**: Integrated Pinecone for semantic search and retrieval of medical knowledge
+- **Enhanced AI Tutor**: RAG-powered responses with source citations and confidence scoring
+- **Document Management Interface**: Built admin interface for uploading and managing medical knowledge base
+- **Entity Relationship Mapping**: Added knowledge graph capabilities for medical entities and relationships
 
 ## User Preferences
 
@@ -60,11 +69,16 @@ The application uses a well-structured PostgreSQL schema with the following enti
 - **Chat Messages**: AI tutor conversation history
 - **Resources**: Educational resources and reference materials
 
-### AI Tutor System
-- **Specialized Context**: AI responses tailored for diabetes care in healthcare settings
-- **Compliance Focus**: Responses emphasize NICE guidelines, NHS practices, and CQC requirements
-- **Interactive Learning**: Suggested follow-up questions to encourage deeper engagement
-- **Safety-First Approach**: Consistent emphasis on safety protocols and professional consultation
+### Advanced Agentic RAG System
+- **Multi-Agent Architecture**: Three specialized AI agents work together for comprehensive responses:
+  - Medical Specialist: Evidence-based clinical guidance
+  - Compliance Officer: Regulatory adherence (NICE, NHS, CQC)
+  - Learning Facilitator: Educational engagement and follow-up questions
+- **Document Processing Pipeline**: Sophisticated text extraction and chunking for multiple file formats
+- **Vector Storage**: Pinecone integration for semantic search across medical knowledge base
+- **Entity Recognition**: NLP-powered extraction of medical entities and relationships
+- **Source Attribution**: All responses include citations and confidence scores
+- **Knowledge Graph**: Relationship mapping between medical concepts for deeper understanding
 
 ## Data Flow
 

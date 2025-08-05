@@ -171,6 +171,25 @@ export type EntityRelationship = typeof entityRelationships.$inferSelect;
 export type RagChatMessage = typeof ragChatMessages.$inferSelect;
 export type ProcessingJob = typeof processingJobs.$inferSelect;
 
+// Chat message types
+export interface ChatResponse {
+  message?: ChatMessage;
+  id?: string;
+  response?: string;
+  content?: string;
+  sources?: Array<{
+    id: string;
+    title: string;
+    excerpt: string;
+    score: number;
+    type: string;
+  }>;
+  confidence?: number;
+  followUpQuestions?: string[];
+  usedRAG?: boolean;
+  timestamp?: Date;
+}
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = typeof users.$inferInsert;
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
