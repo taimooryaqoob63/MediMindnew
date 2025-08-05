@@ -13,12 +13,12 @@ import DocumentManagement from "@/pages/documentManagement";
 
 function CourseManagementWrapper() {
   const { user } = useAuth();
-  return <CourseManagement user={user} />;
+  return <CourseManagement user={user || null} />;
 }
 
 function DocumentManagementWrapper() {
   const { user } = useAuth();
-  return <DocumentManagement user={user} />;
+  return <DocumentManagement user={user || null} />;
 }
 
 function Router() {

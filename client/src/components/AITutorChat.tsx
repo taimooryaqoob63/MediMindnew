@@ -15,7 +15,21 @@ interface AITutorChatProps {
 }
 
 interface ChatResponse {
-  message: ChatMessage;
+  message?: ChatMessage;
+  id?: string;
+  response?: string;
+  content?: string;
+  sources?: Array<{
+    id: string;
+    title: string;
+    excerpt: string;
+    score: number;
+    type: string;
+  }>;
+  confidence?: number;
+  followUpQuestions?: string[];
+  usedRAG?: boolean;
+  timestamp?: Date;
 }
 
 export default function AITutorChat({ courseId, currentModule, isMobile, isOpen, onClose }: AITutorChatProps) {

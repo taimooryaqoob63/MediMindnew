@@ -13,6 +13,7 @@ interface AgentResponse {
     score: number;
     type: string;
   }>;
+  followUpQuestions?: string[];
   agentName: string;
 }
 

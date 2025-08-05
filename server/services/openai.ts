@@ -18,6 +18,7 @@ interface AITutorResponse {
   }>;
   confidence?: number;
   followUpQuestions?: string[];
+  suggestedQuestions?: string[];
   usedRAG?: boolean;
 }
 
@@ -34,6 +35,8 @@ export async function getAITutorResponse(question: string, context?: string, use
             response: ragResponse.content,
             sources: ragResponse.sources,
             confidence: ragResponse.confidence,
+            followUpQuestions: ragResponse.followUpQuestions || [],
+            suggestedQuestions: ragResponse.followUpQuestions || [],
             usedRAG: true
           };
         }
@@ -82,6 +85,7 @@ Respond in JSON format with:
     return {
       response: result.response || "I apologize, but I couldn't generate a proper response. Please try rephrasing your question.",
       followUpQuestions: result.followUpQuestions || [],
+      suggestedQuestions: result.followUpQuestions || [],
       confidence: 60, // Basic AI confidence
       usedRAG: false
     };
