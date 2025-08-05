@@ -83,12 +83,14 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           courseId: data.courseId
         });
         const result = await ragResponse.json();
+        console.log('RAG response:', result); // Debug log
         return { ...result, usedRAG: true } as ChatResponse;
       } catch (ragError) {
         console.log('RAG chat failed, falling back to basic chat:', ragError);
         // Fallback to basic chat
         const response = await apiRequest("POST", "/api/chat", data);
         const result = await response.json();
+        console.log('Basic chat response:', result); // Debug log
         return { ...result, usedRAG: false } as ChatResponse;
       }
     },
@@ -97,10 +99,14 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       setInputMessage("");
       
       // Read the AI response aloud if TTS is enabled
-      if (isTTSEnabled && synthesis && (data.response || data.content)) {
-        speakText(data.response || data.content);
+      const responseText = data.response || data.content;
+      if (isTTSEnabled && synthesis && responseText) {
+        speakText(responseText);
       }
     },
+    onError: (error) => {
+      console.error('Chat mutation error:', error);
+    }
   });
 
   const scrollToBottom = () => {

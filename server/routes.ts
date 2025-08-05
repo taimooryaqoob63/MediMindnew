@@ -247,9 +247,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/chat/:courseId", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const messages = await storage.getChatMessages(userId, req.params.courseId);
-      res.json(messages);
+      const courseId = req.params.courseId;
+      
+      // Get both regular chat messages and RAG chat messages
+      const [regularMessages, ragMessages] = await Promise.all([
+        storage.getChatMessages(userId, courseId),
+        storage.getRagChatMessages(userId, courseId)
+      ]);
+
+      // Transform RAG messages to match ChatMessage interface
+      const transformedRagMessages = ragMessages.map(ragMsg => ({
+        id: ragMsg.id,
+        userId: ragMsg.userId,
+        courseId: ragMsg.courseId || courseId,
+        message: ragMsg.message,
+        response: ragMsg.response,
+        timestamp: ragMsg.timestamp?.toISOString() || new Date().toISOString()
+      }));
+
+      // Combine and sort by timestamp
+      const allMessages = [...regularMessages, ...transformedRagMessages]
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+      res.json(allMessages);
     } catch (error) {
+      console.error('Failed to get chat messages:', error);
       res.status(500).json({ message: "Failed to get chat messages" });
     }
   });
