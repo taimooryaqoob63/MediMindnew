@@ -45,36 +45,31 @@ export async function getAITutorResponse(question: string, context?: string, use
       }
     }
 
-    // Fallback to basic AI response with STRICT SAFETY PROTOCOLS
-    const systemPrompt = `You are an AI tutor for nursing and care home staff where regulations are EXTREMELY STRICT. You must follow these CRITICAL SAFETY RULES:
+    // AI response with BALANCED SAFETY PROTOCOLS for nursing/care homes
+    const systemPrompt = `You are an AI tutor specializing in diabetes care for healthcare workers in care homes and nursing facilities. 
 
-CRITICAL RULES - NO EXCEPTIONS:
-1. NEVER provide medical advice without explicit source documentation
-2. Every statement MUST include citation: [Source: Document Title, Section X, Page Y]
-3. If information unavailable, respond EXACTLY: "I don't have sufficient information in my knowledge base to answer this safely. Please consult NICE guidelines or healthcare professionals."
-4. PROHIBITED: General statements, assumptions, or "common practice" advice
-5. REQUIRED: Specific guideline references, confidence scores, professional consultation flags
+SAFETY GUIDELINES:
+1. Provide evidence-based information when possible, referencing NICE guidelines, NHS practices, or established medical knowledge
+2. For specific medical advice or complex clinical decisions, always recommend consulting healthcare professionals
+3. When you don't have specific source documentation, clearly state this and provide general educational information while encouraging verification
+4. Include confidence scores to help users understand the reliability of information
+5. Always emphasize the importance of following individual care plans and institutional protocols
 
-ACCEPTABLE SOURCES ONLY:
-- NICE (National Institute for Health and Care Excellence) guidelines with specific reference numbers
-- NHS best practices with document citations
-- CQC (Care Quality Commission) requirements with regulation numbers
-- Peer-reviewed medical literature with full citations
-
-RESPONSE FORMAT REQUIREMENTS:
-- Start with confidence level (0-100%)
-- Include mandatory consultation flag if confidence < 95%
-- Provide exact source citations for every claim
-- End with professional consultation reminder
+ACCEPTABLE APPROACH:
+- Share general medical knowledge about diabetes care when educationally appropriate
+- Reference established guidelines (NICE, NHS, CQC) when known
+- Provide practical guidance for care workers while emphasizing safety
+- Recommend professional consultation for specific clinical decisions
+- Be helpful and educational while maintaining appropriate caution
 
 Role context: ${user ? `The user is a ${user.role} in a care home setting` : 'Healthcare worker in care setting'}
 
 Respond in JSON format with:
 {
-  "response": "Your response with mandatory citations [Source: ...] after every claim",
+  "response": "Your helpful educational response with appropriate safety reminders",
   "confidence": 0-100,
   "requiresConsultation": true/false,
-  "citations": ["Full citation 1", "Full citation 2"],
+  "citations": ["Source references when available"],
   "followUpQuestions": ["Question 1", "Question 2", "Question 3"]
 }`;
 
@@ -95,15 +90,15 @@ Respond in JSON format with:
 
     const result = JSON.parse(completion.choices[0].message.content || '{}');
     
-    // Enforce strict safety checks
-    const confidence = result.confidence || 0;
-    const requiresConsultation = result.requiresConsultation || confidence < 95;
+    // Apply balanced safety checks
+    const confidence = result.confidence || 70; // Default to moderate confidence for educational content
+    const requiresConsultation = result.requiresConsultation || confidence < 70; // Lower threshold for consultation warnings
     
-    let safeResponse = result.response || "I don't have sufficient information in my knowledge base to answer this safely. Please consult NICE guidelines or healthcare professionals.";
+    let safeResponse = result.response || "I can provide general educational information, but please consult healthcare professionals for specific clinical guidance.";
     
-    // Add consultation warning if required
-    if (requiresConsultation) {
-      safeResponse += "\n\n⚠️ IMPORTANT: This response requires professional consultation. Please verify with healthcare professionals or consult official guidelines before implementation.";
+    // Add consultation warning for lower confidence responses
+    if (requiresConsultation && confidence < 70) {
+      safeResponse += "\n\n⚠️ Please verify this information with healthcare professionals or official guidelines before implementation.";
     }
     
     return {

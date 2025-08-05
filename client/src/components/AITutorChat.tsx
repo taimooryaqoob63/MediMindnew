@@ -297,14 +297,15 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 {/* Confidence Score & Safety Warning */}
                 {msg.confidence !== null && msg.confidence !== undefined && (
                   <div className={`mb-2 px-3 py-2 rounded-lg text-xs font-medium ${
-                    msg.confidence >= 95 ? 'bg-green-50 text-green-800 border border-green-200' :
-                    msg.confidence >= 70 ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' :
+                    msg.confidence >= 85 ? 'bg-green-50 text-green-800 border border-green-200' :
+                    msg.confidence >= 70 ? 'bg-blue-50 text-blue-800 border border-blue-200' :
+                    msg.confidence >= 50 ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' :
                     'bg-red-50 text-red-800 border border-red-200'
                   }`}>
                     <div className="flex items-center justify-between">
                       <span>Confidence: {msg.confidence}%</span>
-                      {msg.confidence < 95 && (
-                        <span className="ml-2">⚠️ Verification Required</span>
+                      {msg.confidence < 70 && (
+                        <span className="ml-2">⚠️ Verify with professionals</span>
                       )}
                     </div>
                   </div>
