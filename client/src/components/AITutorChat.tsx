@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MarkdownRenderer } from "@/components/ui/markdown";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { ChatMessage, Module } from "@shared/schema";
@@ -301,7 +302,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               </div>
               <div className="flex-1">
                 <div className="bg-gray-100 hover:bg-gray-50 rounded-lg p-3 transition-all duration-200 hover:shadow-md">
-                  <p className="text-sm text-text-dark whitespace-pre-wrap select-text">{msg.response}</p>
+                  <MarkdownRenderer content={msg.response} className="text-sm text-text-dark select-text" />
                 </div>
                 <p className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   {formatTimestamp(msg.timestamp)}
