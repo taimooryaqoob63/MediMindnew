@@ -1,0 +1,41 @@
+Hi! Based on our current healthcare AI Tutor chatbot implementation, here are some important features and improvements we want to focus on next. Please evaluate and implement where feasible, or advise on complexity and alternatives where needed:
+
+Advanced Re-ranking Systems
+
+Investigate adding cross-encoder or LLM-based re-ranking of retrieved document chunks to improve answer relevance.
+
+If full LLM re-ranking is too costly or slow, propose a lightweight hybrid approach or enhancements beyond current semantic similarity + metadata filtering.
+
+Knowledge Graph & Complex Graph Traversal
+
+We currently have basic entity extraction and relationship mapping.
+
+Explore options for integrating a more advanced knowledge graph database (e.g., Neo4j) or alternative approaches to support complex queries and richer context exploration.
+
+Real-time Document Updates / Auto-Reindexing
+
+Automate the ingestion pipeline to detect changes or additions in guideline documents and trigger re-indexing without manual intervention.
+
+Implement notification or logging to track ingestion status.
+
+Advanced Analytics Dashboard
+
+Build a more sophisticated real-time analytics dashboard for monitoring: retrieval hit quality, agent decision patterns, response times, and user feedback trends.
+
+Include visualizations and filtering options for actionable insights.
+
+Local or Cached LLM Models
+
+Assess possibilities to integrate smaller local or cached language models (e.g., via Hugging Face APIs) for FAQ or simple queries to reduce API cost and latency.
+
+Provide fallback or hybrid routing between local and GPT-4o APIs where applicable.
+
+Further UX Enhancements
+
+Implement follow-up suggestion buttons after answers (e.g., “View NICE Guidelines,” “Test your knowledge,” “Related Topics”).
+
+Add interactive citation pop-ups showing definitions or document excerpts when users hover over medical terms.
+
+Improve voice interaction UI with better visual feedback, such as microphone pulsation and clearer status indicators.
+
+Please provide an implementation plan with milestones and potential blockers for these items. Prioritize features that can deliver significant user or system improvements within the current Replit environment constraints.
