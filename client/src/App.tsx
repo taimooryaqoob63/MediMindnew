@@ -4,10 +4,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import { useEffect } from "react";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import { SkipLinks } from "@/components/AccessibilityEnhancements";
 import NotFound from "@/pages/not-found";
 import TrainingPage from "@/pages/training";
 import LandingPage from "@/pages/landing";
@@ -26,31 +22,12 @@ function DocumentManagementWrapper() {
 }
 
 function Router() {
-  const { isAuthenticated, isLoading, user } = useAuth();
-  const { track, setUserId } = useAnalytics();
-
-  useEffect(() => {
-    if (user?.id) {
-      setUserId(user.id);
-    }
-  }, [user?.id, setUserId]);
-
-  useEffect(() => {
-    // Track page views
-    const handleRouteChange = () => {
-      track("page_view", { page: window.location.pathname });
-    };
-
-    window.addEventListener("popstate", handleRouteChange);
-    return () => window.removeEventListener("popstate", handleRouteChange);
-  }, [track]);
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg" role="status" aria-live="polite">
-          Loading...
-        </div>
+        <div className="text-lg">Loading...</div>
       </div>
     );
   }
@@ -76,15 +53,12 @@ function Router() {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <SkipLinks />
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Router />
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 

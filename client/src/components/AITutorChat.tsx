@@ -1,15 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX, X, ChevronDown, AlertTriangle } from "lucide-react";
+import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarkdownRenderer } from "@/components/ui/markdown";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { useAnalytics, trackEvents } from "@/hooks/useAnalytics";
-import { useToast } from "@/hooks/use-toast";
-import { ApiError, NetworkError } from "@/components/ErrorBoundary";
-import { ResponseQuality } from "@/components/ConfidenceIndicator";
-import { mobileOptimized } from "@/hooks/use-mobile";
 import type { ChatMessage, Module } from "@shared/schema";
 
 interface AITutorChatProps {
@@ -40,7 +35,6 @@ interface ChatResponse {
 
 export default function AITutorChat({ courseId, currentModule, isMobile, isOpen, onClose }: AITutorChatProps) {
   const [inputMessage, setInputMessage] = useState("");
-  const [networkError, setNetworkError] = useState<Error | null>(null);
   
   // TTS and STT state
   const [isListening, setIsListening] = useState(false);
@@ -52,8 +46,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
-  const { track } = useAnalytics();
-  const { toast } = useToast();
 
   const { data: messages = [] } = useQuery<ChatMessage[]>({
     queryKey: ["/api/chat", courseId],
@@ -99,15 +91,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const chatMutation = useMutation({
     mutationFn: async (data: { message: string; courseId: string; context?: string }) => {
-      const startTime = Date.now();
-      setNetworkError(null);
-      
-      // Track chat attempt
-      track("chat_message", { 
-        queryLength: data.message.length, 
-        courseId: data.courseId 
-      });
-      
       // Try RAG-enhanced chat first
       try {
         const ragResponse = await apiRequest("POST", "/api/rag/chat", {
@@ -115,81 +98,29 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           courseId: data.courseId
         });
         const result = await ragResponse.json();
-        const responseTime = Date.now() - startTime;
-        
-        // Track successful response
-        track("chat_response_received", { 
-          confidence: result.confidence, 
-          sources: result.sources?.length || 0,
-          responseTime,
-          usedRAG: true
-        });
-        
-        return { ...result, usedRAG: true, responseTime } as ChatResponse;
+        console.log('RAG response:', result); // Debug log
+        return { ...result, usedRAG: true } as ChatResponse;
       } catch (ragError) {
         console.log('RAG chat failed, falling back to basic chat:', ragError);
-        
-        // Track RAG failure
-        track("error", { 
-          errorType: "rag_failure", 
-          message: String(ragError), 
-          location: "ai_tutor_chat" 
-        });
-        
         // Fallback to basic chat
-        try {
-          const response = await apiRequest("POST", "/api/chat", data);
-          const result = await response.json();
-          const responseTime = Date.now() - startTime;
-          
-          track("chat_response_received", { 
-            responseTime,
-            usedRAG: false 
-          });
-          
-          return { ...result, usedRAG: false, responseTime } as ChatResponse;
-        } catch (fallbackError) {
-          // Track complete failure
-          track("error", { 
-            errorType: "chat_complete_failure", 
-            message: String(fallbackError), 
-            location: "ai_tutor_chat" 
-          });
-          throw fallbackError;
-        }
+        const response = await apiRequest("POST", "/api/chat", data);
+        const result = await response.json();
+        console.log('Basic chat response:', result); // Debug log
+        return { ...result, usedRAG: false } as ChatResponse;
       }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       setInputMessage("");
-      setNetworkError(null);
       
       // Read the AI response aloud if TTS is enabled
       const responseText = data.response || data.content;
       if (isTTSEnabled && synthesis && responseText) {
         speakText(responseText);
       }
-      
-      // Track successful interaction
-      track("feature_used", { feature: "ai_chat", context: "successful_response" });
     },
     onError: (error) => {
       console.error('Chat mutation error:', error);
-      setNetworkError(error as Error);
-      
-      // Track error
-      track("error", { 
-        errorType: "chat_mutation_error", 
-        message: String(error), 
-        location: "ai_tutor_chat" 
-      });
-      
-      // Show user-friendly toast
-      toast({
-        title: "Unable to send message",
-        description: "Please check your connection and try again. The AI tutor will be back shortly.",
-        variant: "destructive",
-      });
     }
   });
 
@@ -372,16 +303,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <div className="flex-1">
                 <div className="bg-gray-100 hover:bg-gray-50 rounded-lg p-3 transition-all duration-200 hover:shadow-md">
                   <MarkdownRenderer content={msg.response} className="text-sm text-text-dark select-text" />
-                  
-                  {/* Response Quality Indicators */}
-                  {(msg as any).confidence !== undefined && (
-                    <ResponseQuality 
-                      confidence={(msg as any).confidence}
-                      sources={(msg as any).sources?.length || 0}
-                      responseTime={(msg as any).responseTime}
-                      usedRAG={(msg as any).usedRAG}
-                    />
-                  )}
                 </div>
                 <p className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   {formatTimestamp(msg.timestamp)}
@@ -406,16 +327,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Network Error Display */}
-        {networkError && (
-          <div className="mt-4">
-            <NetworkError 
-              onRetry={() => setNetworkError(null)} 
-              message="Unable to connect to AI tutor"
-            />
           </div>
         )}
 
