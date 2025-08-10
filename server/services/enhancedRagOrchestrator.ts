@@ -272,6 +272,7 @@ Provide JSON response with:
       const response = await this.openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
         temperature: 0.1,
         max_tokens: 500,
       });
@@ -281,12 +282,14 @@ Provide JSON response with:
         throw new Error('No analysis received');
       }
 
-      const analysis = JSON.parse(analysisText);
+      // Clean up any markdown formatting if present
+      const cleanedText = analysisText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const analysis = JSON.parse(cleanedText);
       
       await storage.createIntentClassification({
         query,
-        intent: analysis.intent,
-        confidence: analysis.confidence,
+        intent: analysis.intent || 'unknown',
+        confidence: analysis.confidence || 50,
         modelUsed: "gpt-4o-mini",
         processingTime: Date.now(),
       });
@@ -316,7 +319,7 @@ Provide JSON response with:
         : 'No previous interactions recorded.';
 
       const recentInteractions = summaries
-        .filter(s => s.lastUpdated > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
+        .filter(s => s.lastUpdated && s.lastUpdated > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
         .map(s => s.summary)
         .slice(-5);
 
@@ -463,7 +466,7 @@ Provide JSON response with:
       throw new Error('OpenAI not configured');
     }
 
-    const agentPrompts = {
+    const agentPrompts: Record<string, string> = {
       medical_specialist: `You are a medical specialist providing evidence-based guidance on diabetes care. Focus on clinical accuracy, medication management, and patient safety.`,
       compliance_officer: `You are a healthcare compliance officer ensuring adherence to NICE guidelines, NHS standards, and CQC requirements.`,
       learning_facilitator: `You are an educational specialist helping healthcare workers understand diabetes care concepts.`
@@ -636,7 +639,7 @@ Provide JSON response with:
       );
 
       const allQuestions = agentResponses.flatMap(r => r.followUpQuestions || []);
-      const uniqueQuestions = [...new Set(allQuestions)].slice(0, 3);
+      const uniqueQuestions = Array.from(new Set(allQuestions)).slice(0, 3);
 
       const allActions = agentResponses.flatMap(r => r.suggestedActions || []);
       const uniqueActions = allActions.filter((action, index, array) => 
@@ -696,8 +699,8 @@ Provide JSON response with:
           
           await storage.updateChatSummary(existingSummary.id, {
             summary: updatedSummary.slice(-2000),
-            messageCount: existingSummary.messageCount + 1,
-            tokenCount: existingSummary.tokenCount + response.tokenUsage.prompt + response.tokenUsage.completion,
+            messageCount: (existingSummary.messageCount || 0) + 1,
+            tokenCount: (existingSummary.tokenCount || 0) + response.tokenUsage.prompt + response.tokenUsage.completion,
           });
         } else {
           await storage.createChatSummary({

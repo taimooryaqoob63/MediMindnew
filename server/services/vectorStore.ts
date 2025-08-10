@@ -67,7 +67,7 @@ export class VectorStore {
     
     while (retries < maxRetries) {
       try {
-        const indexStats = await this.pinecone.index(this.config.indexName).describeIndexStats();
+        const indexStats = await this.pinecone!.index(this.config.indexName).describeIndexStats();
         if (indexStats) {
           console.log('Index is ready');
           return;
@@ -157,7 +157,7 @@ export class VectorStore {
       }
     } catch (error) {
       // If index already exists, that's fine
-      if (error.message?.includes('already exists')) {
+      if ((error as Error).message?.includes('already exists')) {
         console.log(`Index ${this.config.indexName} already exists`);
         return;
       }
@@ -175,6 +175,10 @@ export class VectorStore {
     metadata?: Record<string, any>;
   }>> {
     try {
+      if (!this.pinecone) {
+        throw new Error('Pinecone not initialized');
+      }
+      
       const index = this.pinecone.index(this.config.indexName);
       
       const queryRequest: any = {
@@ -200,8 +204,50 @@ export class VectorStore {
     }
   }
 
+  async searchSimilar(
+    query: string,
+    topK: number = 5,
+    filter?: Record<string, any>
+  ): Promise<Array<{
+    id: string;
+    title: string;
+    excerpt: string;
+    score: number;
+    type: string;
+    pageNumber?: number;
+    section?: string;
+    clickable?: boolean;
+  }>> {
+    try {
+      // Create embedding for the query
+      const embedding = await this.createEmbedding(query);
+      
+      // Query vectors
+      const vectors = await this.queryVectors(embedding, topK, filter);
+      
+      // Transform results to expected format
+      return vectors.map(vector => ({
+        id: vector.id,
+        title: vector.metadata?.title || 'Unknown Document',
+        excerpt: vector.metadata?.content || 'No content available',
+        score: vector.score,
+        type: vector.metadata?.type || 'document',
+        pageNumber: vector.metadata?.page,
+        section: vector.metadata?.section,
+        clickable: true,
+      }));
+    } catch (error) {
+      console.error('Error in searchSimilar:', error);
+      // Return empty array on error to prevent app crash
+      return [];
+    }
+  }
+
   async deleteVector(id: string): Promise<void> {
     try {
+      if (!this.pinecone) {
+        throw new Error('Pinecone not initialized');
+      }
       const index = this.pinecone.index(this.config.indexName);
       await index.deleteOne(id);
     } catch (error) {
@@ -212,6 +258,9 @@ export class VectorStore {
 
   async deleteVectorsByFilter(filter: Record<string, any>): Promise<void> {
     try {
+      if (!this.pinecone) {
+        throw new Error('Pinecone not initialized');
+      }
       const index = this.pinecone.index(this.config.indexName);
       await index.deleteMany(filter);
     } catch (error) {
