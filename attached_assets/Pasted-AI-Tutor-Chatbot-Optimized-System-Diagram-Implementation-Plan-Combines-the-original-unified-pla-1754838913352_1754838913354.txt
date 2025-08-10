@@ -1,0 +1,101 @@
+AI Tutor Chatbot — Optimized System Diagram & Implementation Plan
+
+Combines the original unified plan with advanced retrieval, multi-agent, and efficiency optimizations for a best-in-class healthcare training chatbot.
+
+1) Retrieval & Context Optimization
+
+Dynamic Context Windowing: Rank retrieved chunks by (semantic_similarity × weight1) + (recency × weight2) + (role_relevance × weight3). Pass only the top N that fit in GPT-4o’s context budget.
+
+Hierarchical Retrieval: First retrieve high-level guidelines → then pull detailed supporting chunks.
+
+Metadata-Aware Filtering: Use Pinecone metadata (document_type, date, audience) to filter before embedding search.
+
+Hybrid Search: Combine BM25 keyword search with vector similarity.
+
+Multi-Step Retrieval: Module/course context first, then national guideline matches.
+
+Re-ranking: Cross-encoder or LLM-based re-rank of top results.
+
+2) Multi-Agent Coordination Efficiency
+
+Parallel Agent Execution: Run Medical Specialist and Compliance Officer in parallel; merge results before Learning Facilitator.
+
+Agent Role Pruning: Skip non-essential agents for purely educational queries.
+
+Agent Decision Logs: Record run times, skip decisions, and merge outcomes for monitoring.
+
+3) Chat History Management
+
+Summary Compression: Maintain a rolling semantic summary instead of sending full transcript.
+
+Role-Adaptive Histories: Keep separate summaries for clinical, compliance, and learning contexts; inject relevant one based on intent.
+
+TTL & Size Control: Limit stored summary length and lifespan for performance.
+
+4) Faster Document Ingestion
+
+Parallel Chunk Embedding: Batch and embed chunks asynchronously.
+
+Pre-Computed Entity Embeddings: Extract key entities (e.g., “insulin”) and store vector representations for faster lookups.
+
+Retry & Idempotency: Ensure ingestion jobs can recover from failures without duplicating data.
+
+5) Response Quality vs Speed
+
+Hybrid Model Routing: For FAQs/short queries → gpt-4o-mini or local cached LLM; for complex queries → GPT-4o + multi-agent.
+
+Intent Classifier: Route based on query type, complexity, and urgency.
+
+Answer Caching: Cache common answers; invalidate when guidelines update.
+
+6) UX & Engagement Improvements
+
+Streaming Responses: Show partial answers instantly while refining citations.
+
+Interactive Citations: Clickable, with hover definitions from a knowledge graph.
+
+Follow-Up Buttons: “View NICE Guidelines”, “Test Your Knowledge”, “Related Topics”.
+
+Proactive Assistance: Based on current module context.
+
+Plain-Language Toggle: Switch between clinical and layperson explanations.
+
+Mini-Quizzes: Reinforce knowledge after responses.
+
+7) Monitoring & Feedback Loop
+
+Retrieval Hit Quality Metrics: Track which chunks were retrieved and if users rated answers helpful.
+
+Agent Decision Logs: Monitor and tune routing rules.
+
+Analytics Dashboard: Track success rate, fallback rate, confidence scores, and topic gaps.
+
+8) Safety & Compliance Layer
+
+Post-Processing QA Agent: Verify facts against retrieved context, enforce citations, detect emergencies.
+
+Hallucination Filter: Remove unsupported claims.
+
+Emergency Keyword Detection: Immediate stop + escalation message.
+
+Always Cite Sources: NICE, NHS, CQC.
+
+9) Architecture Data Flow (condensed)
+
+User query (text/voice) → API Gateway → RAG Orchestrator.
+
+Hybrid search + metadata filtering + hierarchical retrieval.
+
+Cross-encoder re-ranking → confidence scoring.
+
+Parallel agents (Medical Specialist + Compliance) → merge → Learning Facilitator.
+
+QA & Safety Agent → prompt assembly → LLM (model routed by complexity).
+
+Streamed tokens to client with citations.
+
+Log retrieval hits, agent decisions, and user feedback.
+
+10) Implementation Roadmap (with optimizations)
+
+Week 1-2 — Ingestion pipeline upgrades (parallel embedding, entity embeddings, metadata tagging).Week 3 — Retrieval optimizations (dynamic windowing, hierarchical retrieval, hybrid search).Week 4 — Cross-encoder re-ranking, role-adaptive history, summary compression.Week 5 — Parallel agents, pruning rules, decision logs.Week 6 — Model routing, caching, UX enhancements (hover defs, follow-ups).Week 7 — QA/safety layer tuning, retrieval hit quality metrics, dashboard.Week 8 — Testing, GDPR review, pilot rollout.
