@@ -156,6 +156,72 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Enhanced chat summaries for efficient history management
+export const chatSummaries = pgTable("chat_summaries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  courseId: varchar("course_id").references(() => courses.id),
+  summary: text("summary").notNull(),
+  agentType: text("agent_type"), // medical_specialist, compliance_officer, learning_facilitator
+  messageCount: integer("message_count").default(0),
+  tokenCount: integer("token_count").default(0),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Query cache for performance optimization
+export const queryCache = pgTable("query_cache", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  queryHash: text("query_hash").unique().notNull(),
+  query: text("query").notNull(),
+  response: text("response").notNull(),
+  sources: json("sources"),
+  confidence: integer("confidence").default(0),
+  hitCount: integer("hit_count").default(1),
+  lastAccessed: timestamp("last_accessed").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User feedback for response quality
+export const responseFeedback = pgTable("response_feedback", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  messageId: varchar("message_id").references(() => ragChatMessages.id),
+  rating: integer("rating").notNull(), // 1 (thumbs down) to 5 (thumbs up)
+  feedbackType: text("feedback_type"), // helpful, incorrect, unclear, off_topic
+  comments: text("comments"),
+  responseTime: integer("response_time"), // milliseconds
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Analytics for monitoring and optimization
+export const ragAnalytics = pgTable("rag_analytics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventType: text("event_type").notNull(), // query, response, cache_hit, agent_pruning
+  userId: varchar("user_id").references(() => users.id),
+  queryType: text("query_type"), // educational, clinical, emergency
+  agentsUsed: json("agents_used"), // Array of agent names
+  retrievalHits: integer("retrieval_hits").default(0),
+  confidence: integer("confidence").default(0),
+  responseTime: integer("response_time"), // milliseconds
+  tokenUsage: json("token_usage"), // {prompt: number, completion: number}
+  cacheHit: boolean("cache_hit").default(false),
+  metadata: json("metadata"),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+// Intent classification for routing optimization
+export const intentClassification = pgTable("intent_classification", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  query: text("query").notNull(),
+  intent: text("intent").notNull(), // faq, educational, clinical, emergency
+  confidence: integer("confidence").default(0),
+  modelUsed: text("model_used"), // gpt-4o, gpt-4o-mini
+  processingTime: integer("processing_time"), // milliseconds
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertCourseSchema = createInsertSchema(courses).omit({ id: true });
@@ -170,6 +236,11 @@ export const insertEntityRelationshipSchema = createInsertSchema(entityRelations
 export const insertRagChatMessageSchema = createInsertSchema(ragChatMessages).omit({ id: true, timestamp: true });
 export const insertProcessingJobSchema = createInsertSchema(processingJobs).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
+export const insertChatSummarySchema = createInsertSchema(chatSummaries).omit({ id: true, createdAt: true, lastUpdated: true });
+export const insertQueryCacheSchema = createInsertSchema(queryCache).omit({ id: true, createdAt: true, lastAccessed: true });
+export const insertResponseFeedbackSchema = createInsertSchema(responseFeedback).omit({ id: true, createdAt: true });
+export const insertRagAnalyticsSchema = createInsertSchema(ragAnalytics).omit({ id: true, timestamp: true });
+export const insertIntentClassificationSchema = createInsertSchema(intentClassification).omit({ id: true, createdAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -185,6 +256,11 @@ export type EntityRelationship = typeof entityRelationships.$inferSelect;
 export type RagChatMessage = typeof ragChatMessages.$inferSelect;
 export type ProcessingJob = typeof processingJobs.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
+export type ChatSummary = typeof chatSummaries.$inferSelect;
+export type QueryCache = typeof queryCache.$inferSelect;
+export type ResponseFeedback = typeof responseFeedback.$inferSelect;
+export type RagAnalytics = typeof ragAnalytics.$inferSelect;
+export type IntentClassification = typeof intentClassification.$inferSelect;
 
 // Chat message types
 export interface ChatResponse {
@@ -198,10 +274,22 @@ export interface ChatResponse {
     excerpt: string;
     score: number;
     type: string;
+    pageNumber?: number;
+    section?: string;
+    clickable?: boolean;
   }>;
   confidence?: number;
   followUpQuestions?: string[];
+  suggestedActions?: Array<{
+    label: string;
+    action: string;
+    url?: string;
+  }>;
   usedRAG?: boolean;
+  cacheHit?: boolean;
+  agentsUsed?: string[];
+  responseTime?: number;
+  streamable?: boolean;
   timestamp?: Date;
 }
 
@@ -219,3 +307,8 @@ export type InsertEntityRelationship = z.infer<typeof insertEntityRelationshipSc
 export type InsertRagChatMessage = z.infer<typeof insertRagChatMessageSchema>;
 export type InsertProcessingJob = z.infer<typeof insertProcessingJobSchema>;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type InsertChatSummary = z.infer<typeof insertChatSummarySchema>;
+export type InsertQueryCache = z.infer<typeof insertQueryCacheSchema>;
+export type InsertResponseFeedback = z.infer<typeof insertResponseFeedbackSchema>;
+export type InsertRagAnalytics = z.infer<typeof insertRagAnalyticsSchema>;
+export type InsertIntentClassification = z.infer<typeof insertIntentClassificationSchema>;

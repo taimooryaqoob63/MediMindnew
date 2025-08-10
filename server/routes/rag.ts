@@ -4,6 +4,7 @@ import { storage } from "../storage";
 import { documentProcessor } from "../services/documentProcessor";
 import { vectorStore } from "../services/vectorStore";
 import { ragOrchestrator } from "../services/ragAgents";
+import { enhancedRagOrchestrator } from "../services/enhancedRagOrchestrator";
 import { insertDocumentSchema, insertRagChatMessageSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -144,28 +145,50 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
-  // Enhanced RAG chat endpoint
+  // Enhanced RAG chat endpoint with multi-agent processing
   app.post("/api/rag/chat", isAuthenticated, async (req, res) => {
     try {
-      const { message, courseId } = req.body;
+      const { message, courseId, conversationHistory } = req.body;
       const user = req.user as any;
 
       if (!message) {
         return res.status(400).json({ message: "Message is required" });
       }
 
-      // Process query with RAG
-      const response = await ragOrchestrator.processQuery(message, user, courseId);
+      // Create user object for the enhanced orchestrator
+      const userObj = {
+        id: user.claims.sub,
+        email: user.claims.email || user.claims.global_name || null,
+        firstName: user.claims.given_name || null,
+        lastName: user.claims.family_name || null,
+        profileImageUrl: user.claims.picture || null,
+        role: 'care_worker' as const,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Process query with Enhanced RAG Orchestrator
+      const response = await enhancedRagOrchestrator.processQuery(
+        message, 
+        userObj, 
+        courseId, 
+        conversationHistory
+      );
 
       // Store the enhanced chat message
       const chatMessage = await storage.createRagChatMessage({
         userId: user.claims.sub,
         courseId: courseId || null,
         message,
-        response: response.content,
-        sources: response.sources,
-        confidence: response.confidence,
-        agentTrace: { agent: response.agentName }
+        response: response.content || '',
+        sources: response.sources || [],
+        confidence: response.confidence || 0,
+        agentTrace: { 
+          agents: response.agentsUsed || [],
+          responseTime: response.responseTime || 0,
+          cacheHit: response.cacheHit || false,
+          usedRAG: response.usedRAG || false
+        }
       });
 
       res.json({
@@ -174,10 +197,13 @@ export function registerRAGRoutes(app: Express) {
         timestamp: chatMessage.timestamp
       });
     } catch (error) {
-      console.error("RAG chat error:", error);
+      console.error("Enhanced RAG chat error:", error);
       res.status(500).json({ 
-        message: "I'm experiencing technical difficulties. Please try again later.",
-        confidence: 0
+        message: "I'm experiencing technical difficulties. Please consult your local healthcare guidelines for immediate assistance.",
+        confidence: 0,
+        sources: [],
+        usedRAG: false,
+        agentsUsed: ['error_handler']
       });
     }
   });
@@ -227,6 +253,50 @@ export function registerRAGRoutes(app: Express) {
     } catch (error) {
       console.error("Error fetching relationships:", error);
       res.status(500).json({ message: "Failed to fetch relationships" });
+    }
+  });
+
+  // Feedback collection endpoint
+  app.post("/api/rag/feedback", isAuthenticated, async (req, res) => {
+    try {
+      const { messageId, rating, feedbackType, comments, responseTime } = req.body;
+      const user = req.user as any;
+
+      if (!messageId || rating === undefined) {
+        return res.status(400).json({ message: "Message ID and rating are required" });
+      }
+
+      await enhancedRagOrchestrator.collectFeedback(
+        user.claims.sub,
+        messageId,
+        rating,
+        feedbackType,
+        comments,
+        responseTime
+      );
+
+      res.json({ message: "Feedback collected successfully" });
+    } catch (error) {
+      console.error("Error collecting feedback:", error);
+      res.status(500).json({ message: "Failed to collect feedback" });
+    }
+  });
+
+  // Analytics endpoint for monitoring (admin only)
+  app.get("/api/rag/analytics", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      
+      // Simple role check - in production would need proper admin role verification
+      if (user.claims.email && user.claims.email.includes('admin')) {
+        const analytics = await storage.getRagAnalytics();
+        res.json(analytics);
+      } else {
+        res.status(403).json({ message: "Access denied" });
+      }
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
     }
   });
 }

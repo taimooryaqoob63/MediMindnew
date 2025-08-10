@@ -1,16 +1,19 @@
 import { 
   type User, type Course, type Module, type UserProgress, type ChatMessage, type Resource,
   type Document, type DocumentChunk, type Entity, type EntityRelationship, type RagChatMessage, type ProcessingJob,
-  type Notification, type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress, 
+  type Notification, type ChatSummary, type QueryCache, type ResponseFeedback, type RagAnalytics, type IntentClassification,
+  type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress, 
   type InsertChatMessage, type InsertResource, type UpsertUser,
   type InsertDocument, type InsertDocumentChunk, type InsertEntity, type InsertEntityRelationship, 
   type InsertRagChatMessage, type InsertProcessingJob, type InsertNotification,
+  type InsertChatSummary, type InsertQueryCache, type InsertResponseFeedback, type InsertRagAnalytics, type InsertIntentClassification,
   users, courses, modules, userProgress, chatMessages, resources,
-  documents, documentChunks, entities, entityRelationships, ragChatMessages, processingJobs, notifications
+  documents, documentChunks, entities, entityRelationships, ragChatMessages, processingJobs, notifications,
+  chatSummaries, queryCache, responseFeedback, ragAnalytics, intentClassification
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Users - Replit Auth compatible
@@ -83,6 +86,29 @@ export interface IStorage {
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationAsRead(id: string): Promise<boolean>;
   markAllNotificationsAsRead(userId: string): Promise<boolean>;
+
+  // Chat Summaries
+  getChatSummaries(userId: string, courseId?: string): Promise<ChatSummary[]>;
+  getChatSummary(userId: string, courseId?: string, agentType?: string | null): Promise<ChatSummary | undefined>;
+  createChatSummary(summary: InsertChatSummary): Promise<ChatSummary>;
+  updateChatSummary(id: string, updates: Partial<InsertChatSummary>): Promise<ChatSummary | undefined>;
+
+  // Query Cache
+  getQueryCache(queryHash: string): Promise<QueryCache | undefined>;
+  createQueryCache(cache: InsertQueryCache): Promise<QueryCache>;
+  updateQueryCacheHit(id: string): Promise<void>;
+
+  // Response Feedback
+  createResponseFeedback(feedback: InsertResponseFeedback): Promise<ResponseFeedback>;
+  getResponseFeedback(messageId: string): Promise<ResponseFeedback[]>;
+
+  // RAG Analytics
+  createRagAnalytics(analytics: InsertRagAnalytics): Promise<RagAnalytics>;
+  getRagAnalytics(filters?: Partial<RagAnalytics>): Promise<RagAnalytics[]>;
+
+  // Intent Classification
+  createIntentClassification(classification: InsertIntentClassification): Promise<IntentClassification>;
+  getIntentClassifications(query?: string): Promise<IntentClassification[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -394,6 +420,100 @@ export class DatabaseStorage implements IStorage {
       .set({ read: true })
       .where(eq(notifications.userId, userId));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Chat Summaries
+  async getChatSummaries(userId: string, courseId?: string): Promise<ChatSummary[]> {
+    let query = db.select().from(chatSummaries).where(eq(chatSummaries.userId, userId));
+    
+    if (courseId) {
+      query = query.where(eq(chatSummaries.courseId, courseId));
+    }
+    
+    return await query;
+  }
+
+  async getChatSummary(userId: string, courseId?: string, agentType?: string | null): Promise<ChatSummary | undefined> {
+    let query = db.select().from(chatSummaries)
+      .where(eq(chatSummaries.userId, userId));
+    
+    if (courseId) {
+      query = query.where(eq(chatSummaries.courseId, courseId));
+    }
+    
+    if (agentType !== undefined) {
+      query = query.where(eq(chatSummaries.agentType, agentType));
+    }
+    
+    const [summary] = await query;
+    return summary || undefined;
+  }
+
+  async createChatSummary(summary: InsertChatSummary): Promise<ChatSummary> {
+    const [created] = await db.insert(chatSummaries).values(summary).returning();
+    return created;
+  }
+
+  async updateChatSummary(id: string, updates: Partial<InsertChatSummary>): Promise<ChatSummary | undefined> {
+    const [updated] = await db.update(chatSummaries)
+      .set({ ...updates, lastUpdated: new Date() })
+      .where(eq(chatSummaries.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  // Query Cache
+  async getQueryCache(queryHash: string): Promise<QueryCache | undefined> {
+    const [cached] = await db.select().from(queryCache).where(eq(queryCache.queryHash, queryHash));
+    return cached || undefined;
+  }
+
+  async createQueryCache(cache: InsertQueryCache): Promise<QueryCache> {
+    const [created] = await db.insert(queryCache).values(cache).returning();
+    return created;
+  }
+
+  async updateQueryCacheHit(id: string): Promise<void> {
+    await db.update(queryCache)
+      .set({ 
+        hitCount: sql`${queryCache.hitCount} + 1`,
+        lastAccessed: new Date()
+      })
+      .where(eq(queryCache.id, id));
+  }
+
+  // Response Feedback
+  async createResponseFeedback(feedback: InsertResponseFeedback): Promise<ResponseFeedback> {
+    const [created] = await db.insert(responseFeedback).values(feedback).returning();
+    return created;
+  }
+
+  async getResponseFeedback(messageId: string): Promise<ResponseFeedback[]> {
+    return await db.select().from(responseFeedback).where(eq(responseFeedback.messageId, messageId));
+  }
+
+  // RAG Analytics
+  async createRagAnalytics(analytics: InsertRagAnalytics): Promise<RagAnalytics> {
+    const [created] = await db.insert(ragAnalytics).values(analytics).returning();
+    return created;
+  }
+
+  async getRagAnalytics(filters?: Partial<RagAnalytics>): Promise<RagAnalytics[]> {
+    // Basic implementation - could be enhanced with proper filtering
+    return await db.select().from(ragAnalytics);
+  }
+
+  // Intent Classification
+  async createIntentClassification(classification: InsertIntentClassification): Promise<IntentClassification> {
+    const [created] = await db.insert(intentClassification).values(classification).returning();
+    return created;
+  }
+
+  async getIntentClassifications(query?: string): Promise<IntentClassification[]> {
+    if (query) {
+      return await db.select().from(intentClassification).where(eq(intentClassification.query, query));
+    }
+    return await db.select().from(intentClassification);
   }
 }
 
@@ -934,6 +1054,106 @@ export class MemStorage implements IStorage {
 
   async markAllNotificationsAsRead(userId: string): Promise<boolean> {
     return true; // Always succeed in memory storage
+  }
+
+  // Stub implementations for new schema tables in MemStorage
+  async getChatSummaries(userId: string, courseId?: string): Promise<ChatSummary[]> {
+    return [];
+  }
+
+  async getChatSummary(userId: string, courseId?: string, agentType?: string | null): Promise<ChatSummary | undefined> {
+    return undefined;
+  }
+
+  async createChatSummary(summary: InsertChatSummary): Promise<ChatSummary> {
+    const id = randomUUID();
+    const newSummary: ChatSummary = {
+      ...summary,
+      id,
+      messageCount: summary.messageCount ?? 0,
+      tokenCount: summary.tokenCount ?? 0,
+      lastUpdated: new Date(),
+      createdAt: new Date()
+    };
+    return newSummary;
+  }
+
+  async updateChatSummary(id: string, updates: Partial<InsertChatSummary>): Promise<ChatSummary | undefined> {
+    return undefined;
+  }
+
+  async getQueryCache(queryHash: string): Promise<QueryCache | undefined> {
+    return undefined;
+  }
+
+  async createQueryCache(cache: InsertQueryCache): Promise<QueryCache> {
+    const id = randomUUID();
+    const newCache: QueryCache = {
+      ...cache,
+      id,
+      hitCount: cache.hitCount ?? 1,
+      lastAccessed: new Date(),
+      createdAt: new Date()
+    };
+    return newCache;
+  }
+
+  async updateQueryCacheHit(id: string): Promise<void> {
+    // No-op in memory storage
+  }
+
+  async createResponseFeedback(feedback: InsertResponseFeedback): Promise<ResponseFeedback> {
+    const id = randomUUID();
+    const newFeedback: ResponseFeedback = {
+      ...feedback,
+      id,
+      responseTime: feedback.responseTime ?? null,
+      createdAt: new Date()
+    };
+    return newFeedback;
+  }
+
+  async getResponseFeedback(messageId: string): Promise<ResponseFeedback[]> {
+    return [];
+  }
+
+  async createRagAnalytics(analytics: InsertRagAnalytics): Promise<RagAnalytics> {
+    const id = randomUUID();
+    const newAnalytics: RagAnalytics = {
+      ...analytics,
+      id,
+      userId: analytics.userId ?? null,
+      queryType: analytics.queryType ?? null,
+      agentsUsed: analytics.agentsUsed ?? null,
+      retrievalHits: analytics.retrievalHits ?? 0,
+      confidence: analytics.confidence ?? 0,
+      responseTime: analytics.responseTime ?? null,
+      tokenUsage: analytics.tokenUsage ?? null,
+      cacheHit: analytics.cacheHit ?? false,
+      metadata: analytics.metadata ?? null,
+      timestamp: new Date()
+    };
+    return newAnalytics;
+  }
+
+  async getRagAnalytics(filters?: Partial<RagAnalytics>): Promise<RagAnalytics[]> {
+    return [];
+  }
+
+  async createIntentClassification(classification: InsertIntentClassification): Promise<IntentClassification> {
+    const id = randomUUID();
+    const newClassification: IntentClassification = {
+      ...classification,
+      id,
+      confidence: classification.confidence ?? 0,
+      processingTime: classification.processingTime ?? null,
+      createdAt: new Date()
+    };
+    return newClassification;
+  }
+
+  async getIntentClassifications(query?: string): Promise<IntentClassification[]> {
+    return [];
   }
 }
 
