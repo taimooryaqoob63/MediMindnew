@@ -251,6 +251,7 @@ Keywords detected: ${keywords.join(', ')}
       throw new Error('OpenAI not configured');
     }
 
+    const startTime = Date.now();
     const prompt = `Analyze this healthcare query for intent classification and routing optimization:
 
 Query: "${query}"
@@ -291,7 +292,7 @@ Provide JSON response with:
         intent: analysis.intent || 'unknown',
         confidence: analysis.confidence || 50,
         modelUsed: "gpt-4o-mini",
-        processingTime: Date.now(),
+        processingTime: Date.now() - startTime,
       });
 
       return analysis;

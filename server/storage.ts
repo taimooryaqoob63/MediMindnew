@@ -13,7 +13,7 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, ilike, inArray, desc, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // Users - Replit Auth compatible
@@ -424,28 +424,30 @@ export class DatabaseStorage implements IStorage {
 
   // Chat Summaries
   async getChatSummaries(userId: string, courseId?: string): Promise<ChatSummary[]> {
-    let query = db.select().from(chatSummaries).where(eq(chatSummaries.userId, userId));
-    
     if (courseId) {
-      query = query.where(eq(chatSummaries.courseId, courseId));
+      return await db.select().from(chatSummaries)
+        .where(and(eq(chatSummaries.userId, userId), eq(chatSummaries.courseId, courseId)));
     }
     
-    return await query;
+    return await db.select().from(chatSummaries).where(eq(chatSummaries.userId, userId));
   }
 
   async getChatSummary(userId: string, courseId?: string, agentType?: string | null): Promise<ChatSummary | undefined> {
-    let query = db.select().from(chatSummaries)
-      .where(eq(chatSummaries.userId, userId));
+    let conditions = [eq(chatSummaries.userId, userId)];
     
     if (courseId) {
-      query = query.where(eq(chatSummaries.courseId, courseId));
+      conditions.push(eq(chatSummaries.courseId, courseId));
     }
     
     if (agentType !== undefined) {
-      query = query.where(eq(chatSummaries.agentType, agentType));
+      if (agentType === null) {
+        conditions.push(isNull(chatSummaries.agentType));
+      } else {
+        conditions.push(eq(chatSummaries.agentType, agentType));
+      }
     }
     
-    const [summary] = await query;
+    const [summary] = await db.select().from(chatSummaries).where(and(...conditions));
     return summary || undefined;
   }
 
@@ -1070,6 +1072,8 @@ export class MemStorage implements IStorage {
     const newSummary: ChatSummary = {
       ...summary,
       id,
+      courseId: summary.courseId || null,
+      agentType: summary.agentType || null,
       messageCount: summary.messageCount ?? 0,
       tokenCount: summary.tokenCount ?? 0,
       lastUpdated: new Date(),
@@ -1091,6 +1095,8 @@ export class MemStorage implements IStorage {
     const newCache: QueryCache = {
       ...cache,
       id,
+      confidence: cache.confidence || null,
+      sources: cache.sources || null,
       hitCount: cache.hitCount ?? 1,
       lastAccessed: new Date(),
       createdAt: new Date()
@@ -1107,6 +1113,9 @@ export class MemStorage implements IStorage {
     const newFeedback: ResponseFeedback = {
       ...feedback,
       id,
+      messageId: feedback.messageId || null,
+      feedbackType: feedback.feedbackType || null,
+      comments: feedback.comments || null,
       responseTime: feedback.responseTime ?? null,
       createdAt: new Date()
     };
@@ -1145,7 +1154,8 @@ export class MemStorage implements IStorage {
     const newClassification: IntentClassification = {
       ...classification,
       id,
-      confidence: classification.confidence ?? 0,
+      confidence: classification.confidence || null,
+      modelUsed: classification.modelUsed || null,
       processingTime: classification.processingTime ?? null,
       createdAt: new Date()
     };
