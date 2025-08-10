@@ -1,0 +1,67 @@
+1. Core Retrieval & RAG Improvements
+Keep using Pinecone + text-embedding-3-small with your current semantic + keyword hybrid search.
+
+Implement dynamic context windowing: rank retrieved chunks by semantic similarity × recency × role relevance, pass only top N fitting the token limit.
+
+Use metadata filtering to exclude irrelevant docs early (document type, date, audience).
+
+Maintain your existing hierarchical retrieval (guideline overview → detailed evidence).
+
+2. Multi-Agent Orchestration (Optimized)
+Continue running Medical Specialist, Compliance Officer, Learning Facilitator agents.
+
+Parallelize Medical Specialist + Compliance Officer; merge outputs before passing to Learning Facilitator.
+
+Use agent pruning for query types (skip Compliance Officer on purely educational queries).
+
+No cross-encoder re-ranking — rely on current semantic similarity + metadata filtering.
+
+3. Chat History Management
+Keep semantic summary compression of conversation instead of full chat history.
+
+Maintain role-specific summaries for each agent context.
+
+Ensure summaries are updated dynamically with each turn.
+
+4. Document Ingestion & Management
+Manual upload and chunking of healthcare guideline PDFs using semantic chunking.
+
+Parallelize chunk embedding with Pinecone’s batch API to improve speed.
+
+Maintain metadata tags for filtering.
+
+No auto-reindexing — admin will manually re-upload when guidelines update.
+
+5. Response Handling & UX
+Enable streaming responses token-by-token in frontend React UI.
+
+Enhance prompt engineering to get precise, source-cited answers.
+
+Implement interactive citations: clickable source references open relevant document sections or show pop-ups.
+
+Add follow-up suggestion buttons: “View NICE Guidelines”, “Test your knowledge”, “Related Topics”.
+
+Refine voice input UI with better visual cues (pulsing mic icon, tap-to-talk mode on mobile).
+
+6. Safety & Compliance Layers
+Implement emergency keyword detection with clear escalation messages.
+
+Use your “Shield” icon to explain AI limitations clearly.
+
+Add GDPR-compliant privacy notices and data handling practices.
+
+7. Monitoring, Feedback & Metrics
+Log retrieval hits, confidence scores, fallback occurrences.
+
+Add user feedback (thumbs up/down) on answers with optional reason capture.
+
+Track agent pruning decisions for future tuning.
+
+Basic logging dashboard (within Replit limits) to review key metrics.
+
+8. Performance & Cost Optimizations
+Use intent classification to route simple FAQs to lighter LLM (e.g., GPT-4o-mini) or cached answers.
+
+Cache frequent queries and responses on backend to reduce API calls.
+
+Prioritize prompt engineering to reduce tokens per call without losing quality.
