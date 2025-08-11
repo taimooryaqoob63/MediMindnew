@@ -63,6 +63,51 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
+  // Get verification data
+  app.get("/api/rag/verification", isAuthenticated, async (req, res) => {
+    try {
+      // Get document counts
+      const documents = await storage.getAllDocuments();
+      const jobs = await storage.getAllProcessingJobs();
+      
+      // Count documents with chunks
+      let documentsWithChunks = 0;
+      let totalChunks = 0;
+      
+      for (const doc of documents) {
+        const chunks = await storage.getDocumentChunks(doc.id);
+        if (chunks.length > 0) {
+          documentsWithChunks++;
+          totalChunks += chunks.length;
+        }
+      }
+
+      // Categorize jobs
+      const completedJobs = jobs.filter(job => job.status === 'completed');
+      const processingJobs = jobs.filter(job => job.status === 'processing');
+      const failedJobs = jobs.filter(job => job.status === 'failed');
+
+      // Count documents by category
+      const documentsByCategory: Record<string, number> = {};
+      documents.forEach(doc => {
+        documentsByCategory[doc.category] = (documentsByCategory[doc.category] || 0) + 1;
+      });
+
+      res.json({
+        totalDocuments: documents.length,
+        documentsWithChunks,
+        completedJobs,
+        processingJobs,
+        failedJobs,
+        totalChunks,
+        documentsByCategory
+      });
+    } catch (error) {
+      console.error('Verification endpoint error:', error);
+      res.status(500).json({ message: 'Failed to load verification data' });
+    }
+  });
+
   // Upload and process document
   app.post("/api/rag/documents/upload", isAuthenticated, upload.single('document'), async (req, res) => {
     try {
