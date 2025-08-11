@@ -68,7 +68,7 @@ export function registerRAGRoutes(app: Express) {
     try {
       // Get document counts
       const documents = await storage.getAllDocuments();
-      const jobs = await storage.getAllProcessingJobs();
+      const jobs = await storage.getProcessingJobs();
       
       // Count documents with chunks
       let documentsWithChunks = 0;
@@ -341,7 +341,7 @@ export function registerRAGRoutes(app: Express) {
         processingJobs: jobs.filter(job => job.status === 'processing'),
         completedJobs: jobs.filter(job => job.status === 'completed'),
         failedJobs: jobs.filter(job => job.status === 'failed'),
-        documentsByCategory: {}
+        documentsByCategory: {} as Record<string, number>
       };
 
       // Get chunk counts and categorize documents
