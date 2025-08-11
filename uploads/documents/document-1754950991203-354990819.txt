@@ -1,0 +1,24 @@
+Diabetes - type 2:
+What is the prognosis?
+Last revised in March 2025
+The content on the NICE Clinical Knowledge Summaries site (CKS) is the copyright ofClarity Informatics Limited (trading
+as Agilio Software Primary Care) (https://agiliosoftware.com/primary-care/). By using CKS, you agree to the licence set
+out in theCKS End User Licence Agreement (https://www.nice.org.uk/terms-and-conditions/cks-end-user-licence-
+agreement).With optimal management, people with type 2 diabetes can live a normal life, but are
+at risk of multiple complications (/topics/diabetes-type-2/background-
+information/complications/) long term. 
+[SECTION-INSULIN] Insulin deficiency in type 2 diabetes progresses with time and usually worsens over a
+period of years [NICE, 2020a (/topics/diabetes-type-2/references/)].
+The International Society for Pediatric and Adolescent Diabetes (ISPAD) guidelines
+note that type 2 diabetes diagnosed in young people is characterized by rapid onset
+and progression, with more common and progressive co-morbidities (such as fatty
+liver disease and sleep apnoea), and more rapid development of microvascular
+complications and cardiovascular risk than adult-onset type 2 diabetes, leading to
+increased morbidity and mortality rates [Zeitler, 2018 (/topics/diabetes-type-
+2/references/)].
+The World Health Organization notes that young-onset type 2 diabetes is associated
+with greater mortality rates, more complications, and increased cardiovascular
+disease risk factors than for people with type 1 diabetes of similar duration [WHO,
+2019 (/topics/diabetes-type-2/references/)].
+©NICE (National Institute for Health and Care Excellence)2025. All rights reserved. Subject toNotice of rights
+(https://www.nice.org.uk/terms-and-conditions#notice-of-rights).

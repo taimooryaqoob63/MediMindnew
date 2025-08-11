@@ -1,0 +1,416 @@
+Diabetes - type 2:
+Scenario: Management of children and young
+people with type 2 diabetes
+Last revised in March 2025
+From age 12 months to 17 years.
+What initial information and advice should I offer a chil
+person with type 2 diabetes?
+Ensure that the child or young person has an individualized care plan, provided by a
+multidisciplinary paediatric diabetes team.
+Ensure that the child and their family/carers know how to contact the specialist diabetes
+team and are involved in making decisions about their care.
+The child or young person may be offered home-based or inpatient management
+initially, depending on clinical need and family circumstances and wishes.
+Ensure that the child and their family/carers are offered a continuing programme of
+education, which is tailored to their individual needs, including:
+The need for HbA1c monitoring and treatment targets (/topics/diabetes-type-
+2/management/management-children-young-people/#treatment-targets).
+The effects of lifestyle (/topics/diabetes-type-2/management/management-children-
+young-people/#lifestyle-advice) and intercurrent illness (/topics/diabetes-type-
+2/management/management-children-young-people/#managing-intercurrent-illness)
+on blood glucose control.
+The aims of treatment with antidiabetic drugs (/topics/diabetes-type-
+2/management/management-children-young-people/#antidiabetic-drugs) and
+possible adverse effects.
+The need for regular monitoring for complications (/topics/diabetes-type-
+2/management/management-children-young-people/#screening-for-managing-
+complications) of type 2 diabetes, and how to reduce the risk. Note: this will usually
+be arranged by the paediatric diabetes team at diagnosis and regularly thereafter. If
+there is any uncertainty, seek specialist advice.
+Provide advice on sources of information and support.
+Diabetes UK (website available at www.diabetes.org.uk
+(https://www.diabetes.org.uk/)) — a national charity that provides information,
+support, and advocacy for people with diabetes and their families. It has a
+confidential helpline (0345 123 2399) and hosts an online community for peer
+support, as well as a wide range of education and information patient resources
+(https://www.diabetes.org.uk/professionals/information-support-for-your-
+patients/education-information).
+For detailed information on managing other lifestyle and cultural issues, such as
+driving, fasting, holiday and travel, insurance, and shift work, see the CKS topic
+on [SECTION-INSULIN] Insulin therapy in type 2 diabetes (/topics/insulin-therapy-in-type-2-diabetes/).
+Assess for anxiety, depression, emotional and behavioural difficulties, and eating
+disorders, and offer emotional and psychosocial support as needed. See the CKS topics
+on Depression in children (/topics/depression-in-children/), Conduct disorders in
+
+children and young people (/topics/conduct-disorders-in-children-young-people/), and
+Eating disorders (/topics/eating-disorders/) for more information.
+The Diabetes UK patient resource Diabetes and your emotions
+(https://www.diabetes.org.uk/guide-to-diabetes/emotions) may be helpful.
+Advise about sexual health, contraception, and the importance of pre-pregnancy
+counselling, if appropriate. See the CKS topics on Contraception - assessment
+(/topics/contraception-assessment/) and Pre-conception - advice and management
+(/topics/pre-conception-advice-management/) for more information.
+The Diabetes UK patient resource Planning for a pregnancy when you have diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/life-with-diabetes/pregnancy) may
+be helpful.
+Offer immunization against influenza (if over the age of 6 months) and pneumococcal
+infection (if needing oral antidiabetic drugs or insulin). See the CKS topics on
+Immunizations - seasonal influenza (/topics/immunizations-seasonal-
+influenza/) and Immunizations - pneumococcal (/topics/immunizations-
+pneumococcal/) for more information.
+Measure height and weight, calculate body mass index (BMI), and plot on an
+appropriate growth chart.
+Check for normal growth and/or significant changes in weight, as these may reflect
+changes in blood glucose control.
+Advise the person to always wear or carry some form of diabetes identification, such as
+a:
+MedicAlert® bracelet, necklace, or watch (available from www.medicalert.org.uk
+(http://www.medicalert.org.uk/)).
+Diabetes identity card or wristband (available from www.diabetes.org.uk
+(https://www.diabetes.org.uk/)).
+Basis for recommendation
+Show
+What are the treatment targets for children and young 
+2 diabetes?
+The recommended HbA1c target level for children and young people with type 2
+diabetes is 48 mmol/mol (6.5%) or lower, to minimize the risk of long-term
+complications (/topics/diabetes-type-2/background-information/complications/).
+Agree an individualized lowest achievable HbA1c target with each child or young
+person and family/carers, taking into account factors such as daily activities,
+individual life goals, complications, co-morbidities, and the risk of hypoglycaemia
+(/topics/diabetes-type-2/diagnosis/when-to-suspect-hypoglycaemia/).
+Support them to safely achieve and maintain their individually agreed HbA1c target
+level.
+If the HbA1c level is above the ideal target, explain that any reduction in HbA1c
+reduces the risk of long-term complications.
+Ensure that children and young people with type 2 diabetes are offered measurement
+of their HbA1c level every 3 months.
+Basis for recommendation
+Show
+
+Which antidiabetic drugs are available for children and
+with type 2 diabetes?
+Antidiabetic drug treatment for children and young people with type 2 diabetes should
+be initiated by the multidisciplinary paediatric diabetes team.
+Standard-release metformin should be offered from diagnosis to children and young
+people with type 2 diabetes, and insulin therapy may be needed in some cases. See
+the CKS topic on [SECTION-INSULIN] Insulin in type 2 diabetes (/topics/insulin-therapy-in-type-2-
+diabetes/) for more information.
+Basis for recommendation
+Show
+What lifestyle advice should I give a child or young pers
+diabetes?
+Diet
+Ensure the child or young person has been offered appropriate, individualized, and
+ongoing nutritional advice from a healthcare professional with specific expertise and
+competencies in nutrition.
+Emphasize the importance of a healthy, balanced diet:
+Encourage the child or young person to eat at least 5 portions of fruit and vegetables
+each day.
+Encourage high fibre, low-glycaemic-index sources of carbohydrate (such as fruit,
+vegetables, wholegrains, and pulses), low-fat dairy products, and oily fish.
+Portion sizes should be appropriate for age, stage of growth, and energy
+requirements.
+Advise controlling the intake of foods containing saturated and trans-fatty acids,
+high-sugar drinks, and foods high in salt content.
+Emphasize the importance of meal-time routines and to minimize snacking.
+The Diabetes UK patient resources Weight loss and diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/enjoy-food/eating-with-
+diabetes/whats-your-healthy-weight/lose-weight) and What is a healthy, balanced
+diet for diabetes? (https://www.diabetes.org.uk/guide-to-diabetes/enjoy-food/eating-
+with-diabetes/what-is-a-healthy-balanced-diet) may be helpful.
+Offer dietary advice with other aspects of lifestyle modification, such as exercise
+(/topics/diabetes-type-2/management/management-children-young-
+people/#exercise-physical-activity) and weight loss, as appropriate.
+Exercise and physical activity
+Provide information on regular exercise and physical activity.
+The Diabetes UK patient resource Diabetes and exercise
+(https://www.diabetes.org.uk/guide-to-diabetes/managing-your-
+diabetes/exercise) provides helpful information on the type and duration of
+recommended exercise.
+Aim to minimize time spent being sedentary.
+Advise that regular exercise may lower blood glucose levels, improve cardiovascular
+risk, and reduce excess weight (when combined with a healthy diet
+
+(/topics/diabetes-type-2/management/management-children-young-people/#diet)).
+Provide information on the following (if appropriate):
+The potential interaction of exercise and alcohol. Advise seeking advice from their
+specialist diabetes team if they wish to participate in a sport that may have particular
+risks for people with diabetes.
+The effect of exercise on blood glucose levels when insulin levels are adequate (risk
+of hypoglycaemia (/topics/diabetes-type-2/diagnosis/when-to-suspect-
+hypoglycaemia/)). 
+The effect of exercise on blood glucose levels when the person is hyperglycaemic
+(risk of worsening blood glucose control and ketones in the blood).
+The appropriate adjustments of insulin dosage and/or nutritional intake for exercise
+and post-exercise periods. See the CKS topic on [SECTION-INSULIN] Insulin in type 2 diabetes
+(/topics/insulin-therapy-in-type-2-diabetes/) for more information.
+Alcohol intake
+Provide information on recommended alcohol limits and the potential impact of
+alcohol on diabetes and its treatment.
+Provide information that the legal drinking age in the UK is 18 years and advise on the
+recommended alcohol limits.
+The national charity Drinkaware (website available at www.drinkaware.co.uk
+(https://www.drinkaware.co.uk/)) has useful information on The law on alcohol
+and under 18s (https://www.drinkaware.co.uk/facts/alcohol-and-the-law/the-law-
+on-alcohol-and-under-18s).
+Advise the person to ideally eat a snack that contains carbohydrate before and after
+drinking alcohol. 
+Educate that alcohol may exacerbate or prolong the hypoglycaemic effect of insulin
+therapy.
+The signs of hypoglycaemia (/topics/diabetes-type-2/diagnosis/when-to-suspect-
+hypoglycaemia/) may become less obvious, and delayed hypoglycaemia may
+occur up to several hours after alcohol consumption. See the CKS topic on [SECTION-INSULIN] Insulin
+therapy in type 2 diabetes (/topics/insulin-therapy-in-type-2-diabetes/) for more
+information on the possible presentation and effects of hypoglycaemia. 
+Advise the person to always wear or carry some form of diabetes identification, as
+reduced awareness of hypoglycaemia may be confused with alcohol intoxication,
+such as a:
+MedicAlert® bracelet, necklace, or watch (available from www.medicalert.org.uk
+(http://www.medicalert.org.uk/)).
+Diabetes identity card or wristband (available from www.diabetes.org.uk
+(https://www.diabetes.org.uk/)).
+The Diabetes UK patient resource Alcohol and diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/enjoy-food/what-to-drink-with-
+diabetes/alcohol-and-diabetes) may be helpful.
+Smoking and drug misuse
+Provide information on the impact of smoking on diabetes and its complications, such
+as cardiovascular disease.
+Advise on smoking cessation, if appropriate. See the CKS topic on Smoking
+cessation (/topics/smoking-cessation/) for more information.
+Advise young people who are non-smokers never to start smoking.
+
+Provide information on the risks of drug misuse and the possible effects on blood
+glucose control.
+The Diabetes UK patient resource Recreational drugs and diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/young-adults/drugs) may be helpful.
+Basis for recommendation
+Show
+How should I manage a child or young person with a su
+hyperglycaemic emergency?
+Be aware that diabetic ketoacidosis (/topics/diabetes-type-2/diagnosis/when-to-
+suspect-hyperglycaemic-emergencies-dka-hhs/) (DKA) is more common in people
+with type 1 diabetes, but can occur in people with type 2 diabetes, and may present
+with a normal or near normal blood glucose level. Hyperosmolar hyperglycaemic state
+(/topics/diabetes-type-2/diagnosis/when-to-suspect-hyperglycaemic-emergencies-
+dka-hhs/) (HHS) typically presents without significant blood or urinary ketones on
+testing.
+Arrange emergency admission to a hospital with acute paediatric facilities, for
+confirmation of the diagnosis and emergency treatment.
+After the child or young person has recovered from an episode of DKA or HHS:
+Discuss the precipitating factors (/topics/diabetes-type-2/diagnosis/when-to-
+suspect-hyperglycaemic-emergencies-dka-hhs/#precipitating-factors) that may
+have led to the episode. Consider the possibility of non-adherence to treatment,
+particularly if there is a history of recurrent DKA.
+Provide information and advice about how to manage intercurrent illness and 'sick-
+day rules', to reduce the risk of future episodes. See the section on Managing
+intercurrent illness (/topics/diabetes-type-2/management/management-children-
+young-people/#managing-intercurrent-illness) for more information.
+Basis for recommendation
+Show
+How should I manage intercurrent illness in a child or y
+with type 2 diabetes?
+If a child or young person with type 2 diabetes is unwell, consider the need to arrange
+hospital admission or seek specialist advice, depending on clinical judgement, taking
+into account the person's age, co-morbidities, risk of complications, and the presence
+of hyperglycaemia and/or ketosis.
+Arrange immediate hospital admission if:
+There is an immediate risk of diabetic ketoacidosis (/topics/diabetes-type-
+2/diagnosis/when-to-suspect-hyperglycaemic-emergencies-dka-hhs/) (DKA), such
+as ketonaemia (1.5–2.9 mmol/L) with or without hyperglycaemia, and the child cannot
+eat or drink.
+There is an immediate risk of hyperosmolar hyperglycaemic state (/topics/diabetes-
+type-2/diagnosis/when-to-suspect-hyperglycaemic-emergencies-dka-hhs/) (HHS).
+There is suspected acute kidney injury (AKI) that cannot be managed in primary care.
+See the CKS topic on Acute kidney injury (/topics/acute-kidney-injury/) for more
+
+information.
+A person treated with insulin does not show signs of clinical improvement with insulin
+treatment. See the CKS topic on [SECTION-INSULIN] Insulin therapy in type 2 diabetes (/topics/insulin-
+therapy-in-type-2-diabetes/).
+Consider arranging hospital admission or seeking urgent specialist advice if:
+The underlying condition is unclear.
+The child is dehydrated or at risk of dehydration.
+Vomiting persists beyond 2 hours (particularly in young children).
+The child is younger than 3 years of age or has a co-existing medical condition.
+The person and their family/carers are unable to keep the blood glucose level above
+3.5 mmol/L.
+The person and their family/carers are exhausted, for example due to repeated night-
+time waking.
+If admission is not needed and the child or young person can be managed in primary
+care:
+Ensure that the person or family/carers has written contact details of their specialist
+diabetes team.
+Assess the child and manage any intercurrent illness(es), as appropriate.
+Provide the person or family/carers with clear, individualized advice on 'sick-day
+rules' (/topics/diabetes-type-2/management/management-children-young-
+people/#sick-day-rules) to manage diabetes during episodes of intercurrent illness or
+hyperglycaemia, and reinforce the advice regularly.
+Advise that intercurrent illness may affect blood glucose control, and there is a risk
+for worsening hyperglycaemia even if dietary intake is reduced.
+Ensure the child has sick day foods and drinks supplies readily accessible at home,
+including:
+Easily digestible foods and sugary drinks (to provide energy and to prevent further
+ketosis).
+Over-the-counter oral rehydration therapy (ORT) sachets (to prevent dehydration).
+Glucose tablets or oral gel (to prevent hypoglycaemia).
+Equipment for monitoring blood glucose and ketones (if appropriate). 
+Additional supplies of insulin (if appropriate).
+A glucagon kit (if appropriate).
+Note: see the CKS topic on [SECTION-INSULIN] Insulin therapy in type 2 diabetes (/topics/insulin-
+therapy-in-type-2-diabetes/) for information on blood glucose and ketone
+monitoring meters, glucose oral gels, and other accessories.
+'Sick-day rules'
+Reinforce 'sick-day rules' advice on managing episodes of intercurrent illness, which
+should have been provided by the child's specialist diabetes team.
+If on insulin therapy, do not stop treatment. See the CKS topic on [SECTION-INSULIN] Insulin therapy in
+type 2 diabetes (/topics/insulin-therapy-in-type-2-diabetes/) for more information.
+Advise the dose of insulin may need to be altered during periods of illness. Seek
+advice from the specialist diabetes team if there is uncertainty on how to adjust
+insulin doses.
+Consider the need for blood ketone monitoring (/topics/diabetes-type-
+2/diagnosis/when-to-suspect-hyperglycaemic-emergencies-dka-hhs/), depending
+on advice from the specialist diabetes team.
+This should be checked regularly, for example at least every 3–4 hours including
+through the night and advice given to record the results.
+
+If the blood ketone level is greater than 3 mmol/L, the person or family/carers
+should seek immediate medical advice. See the section on When to suspect
+hyperglycaemic emergencies (DKA and HHS) (/topics/diabetes-type-
+2/diagnosis/when-to-suspect-hyperglycaemic-emergencies-dka-hhs/) for more
+information.
+Advise to maintain their normal meal pattern (including fluids and carbohydrate
+intake) where possible if appetite is reduced.
+If unable to eat or vomiting, advise to replace normal meals with carbohydrate-
+containing drinks (such as milk, milkshakes, fruit juices, and sugary drinks).
+If blood glucose levels are high, maintain fluid intake with sugar-free fluids.
+If blood glucose levels are low, encourage regular intake of sugary fluids.
+Advise to seek urgent medical advice if the child:
+Is unable to eat or drink, is dehydrated or at risk of dehydration.
+Has persistent vomiting.
+Has hypoglycaemia (/topics/diabetes-type-2/diagnosis/when-to-suspect-
+hypoglycaemia/) that cannot be managed in primary care.
+The Diabetes UK information Diabetes when you're unwell
+(https://www.diabetes.org.uk/guide-to-diabetes/life-with-diabetes/illness) may be
+helpful.
+[Down, 2020 (/topics/diabetes-type-2/references/)]
+Basis for recommendation
+Show
+How should I screen for and manage complications in c
+young people with type 2 diabetes?
+Retinopathy
+Ensure that from the age of 12 years, all children with type 2 diabetes attend for
+diabetic eye screening, as part of the NHS retinopathy screening programme.
+Children should attend for an eye examination by an optometrist every 2 years until the
+age of 12 years.
+Children should be referred to the local retinopathy screening programme prior to
+their twelfth birthday, to ensure that they are seen from 12 years of age.
+Consider referring children who are younger than 12 years to an ophthalmologist for
+retinal examination, if blood glucose control is suboptimal.
+Explain that retinal screening aims to reduce the risk of sight loss by the early detection
+and treatment, if needed, of sight-threatening retinopathy. Improving blood glucose
+control will reduce the risk of any background retinopathy detected progressing to
+significant diabetic retinopathy.
+The Diabetes UK patient resource Diabetic eye screening
+(https://www.diabetes.org.uk/guide-to-diabetes/managing-your-diabetes/diabetic-
+eye-screening) may be helpful.
+Foot problems
+For children with type 2 diabetes who are younger than 12 years of age, explain the
+importance of regular foot care and give basic foot care advice:
+
+Explain the need to check daily the entire surface of both feet, including areas
+between the toes. The Diabetes UK patient resource Diabetes and foot problems
+(https://www.diabetes.org.uk/guide-to-diabetes/complications/feet) may be helpful.
+Foot emergencies and who to contact.
+Footwear advice, including to avoid shoes that are too tight, have rough edges, or
+uneven seams; to avoid tight-fitting socks and change socks daily.
+Nail-cutting advice.
+How to recognize foot ulcers and pre-ulcerative signs.
+For young people with type 2 diabetes aged between 12–17 years, ensure that the
+specialist diabetes team arrange a foot check at least once a year, or sooner if any foot
+problems arise.
+If a diabetic foot problem is found or suspected, referral should be arranged to an
+appropriate specialist.
+Diabetic kidney disease
+Ensure all children and young people with type 2 diabetes have annual screening for
+diabetic kidney disease.
+To assess for diabetic kidney disease in children:
+Arrange an early morning first-void urine sample if possible, for assessment of
+microalbuminuria by estimation of the albumin:creatinine ratio (ACR).
+Note: a random urine sample may be used, but this is associated with an increased
+risk of false positive results.
+If the initial urine ACR is 3–30 mg/mmol, confirm the result by repeating the test on
+two further occasions, using early morning first-void urine samples, before
+arranging further investigation or referral.
+If the urine ACR is 30 mg/mmol or more, arrange further investigation or referral.
+Liaise with the child's specialist diabetic team or paediatric nephrologist if there is
+any uncertainty about managing results.
+Advise that if microalbuminuria (urine ACR is 3–30 mg/mmol) is detected, improving
+blood glucose control should reduce the risk of progression to significant diabetic
+kidney disease.
+The Diabetes UK patient resource Diabetic nephropathy (kidney disease)
+(https://www.diabetes.org.uk/guide-to-
+diabetes/complications/kidneys_nephropathy) may be helpful.
+Hypertension
+Ensure that all children and young people with type 2 diabetes are screened for
+hypertension at diagnosis and then annually.
+When measuring blood pressure in a child or young person:
+Use a cuff of the correct size for the person.
+If repeated resting blood pressure measurements are greater than the 95th percentile
+for age, sex, and height, confirm a diagnosis of hypertension using 24-hour
+ambulatory blood pressure monitoring (ABPM) before further investigation and
+specialist treatment.
+Seek specialist advice if antihypertensive drug treatment is being considered.
+Advise that if hypertension is detected, early specialist treatment should reduce the
+risk of complications.
+The Diabetes UK patient resource Diabetes and blood pressure
+(https://www.diabetes.org.uk/guide-to-diabetes/managing-your-diabetes/blood-
+
+pressure) may be helpful.
+Dyslipidaemia
+Ensure that all children and young people with type 2 diabetes are screened for
+dyslipidaemia at diagnosis once blood glucose control is achieved, and then annually.
+When screening for dyslipidaemia in a child or young person:
+Ensure that total cholesterol, high-density lipoprotein (HDL) cholesterol, non-HDL
+cholesterol, and triglyceride concentrations are measured.
+Confirm dyslipidaemia using a repeat sample (fasting or non-fasting) before deciding
+on further management.
+Seek specialist advice if lipid-lowering drug treatment is being considered.
+Advise that if dyslipidaemia is detected, early specialist treatment should reduce the
+risk of complications.
+The Diabetes UK patient resource Cholesterol and diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/enjoy-food/eating-with-
+diabetes/managing-other-medical-conditions/cholesterol-and-diabetes) may be
+helpful.
+Basis for recommendation
+Show
+How should I support the transition from paediatric to 
+services?
+Explain to young people with type 2 diabetes who are preparing for transition to adult
+services that some aspects of diabetes care will change at transition, such as clinic
+time and location, and their diabetes specialist team.
+Be aware that a deterioration in blood glucose control may be seen in young people
+due to a variety of factors including:
+Endocrine changes leading to increased insulin resistance.
+Erratic meal and exercise patterns. See the section on Lifestyle advice
+(/topics/diabetes-type-2/management/management-children-young-
+people/#lifestyle-advice) for more information.
+Poor adherence to treatment regimens.
+Eating disorders. See the CKS topic on Eating disorders (/topics/eating-disorders/)
+for more information.
+Hazardous and risk-taking behaviours. See the section on Lifestyle advice
+(/topics/diabetes-type-2/management/management-children-young-
+people/#lifestyle-advice) for more information.
+The Diabetes UK patient resources Talking to your teenager about diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/your-child-and-diabetes/top-teen-
+tips) and Transitioning into adult diabetes clinics (https://www.diabetes.org.uk/guide-
+to-diabetes/young-adults/moving-clinics) may be helpful.
+Basis for recommendation
+Show
+
+The content on the NICE Clinical Knowledge Summaries site (CKS) is the copyright ofClarity Informatics Limited (trading
+as Agilio Software Primary Care) (https://agiliosoftware.com/primary-care/). By using CKS, you agree to the licence set
+out in theCKS End User Licence Agreement (https://www.nice.org.uk/terms-and-conditions/cks-end-user-licence-
+agreement).
+©NICE (National Institute for Health and Care Excellence)2025. All rights reserved. Subject toNotice of rights
+(https://www.nice.org.uk/terms-and-conditions#notice-of-rights).

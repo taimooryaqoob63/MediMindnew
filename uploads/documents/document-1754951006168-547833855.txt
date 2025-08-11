@@ -1,0 +1,57 @@
+Diabetes - type 2:
+What are the risk factors?
+Last revised in March 2025
+Risk factors for type 2 diabetes include:
+Obesity and inactivity
+People who are overweight or obese (especially with central obesity) and/or have
+inactive lifestyles are at increased risk for developing type 2 diabetes, as overeating
+and inactivity can exacerbate insulin resistance. Obesity accounts for 80–85% of the
+overall risk for developing type 2 diabetes [Diabetes UK, 2019a (/topics/diabetes-
+type-2/references/)]. See the CKS topic on Obesity (/topics/obesity/) for more
+information.
+Family history
+People with a family history of diabetes are 2–6 times more likely to have diabetes
+than people without a family history. The risk of developing type 2 diabetes is about
+15% if one parent has type 2 diabetes, and 75% if both parents have type 2 diabetes
+[Diabetes UK, 2020 (/topics/diabetes-type-2/references/)].
+Ethnicity
+People of Asian, African, and Afro-Caribbean ethnicity are 2–4 times more likely to
+develop type 2 diabetes than white people [Diabetes UK, 2020 (/topics/diabetes-
+type-2/references/)].
+History of gestational diabetes
+Women with a history of gestational diabetes have a seven-fold increased risk for
+developing type 2 diabetes later in life. Children born to mothers with gestational
+diabetes have a six-fold increased risk for developing type 2 diabetes.
+Diet
+A low-fibre, high glycaemic index (GI) diet may increase the risk of being overweight
+or obese. High-GI foods contain carbohydrates that are broken down quickly and
+cause a rapid increase in blood glucose levels, such as sugary foods and drinks,
+white rice, white bread, and potatoes.
+Drug treatments
+Statins, corticosteroids, and combined treatment with a thiazide diuretic plus a beta-
+blocker, can increase the risk for developing hyperglycaemia and type 2 diabetes.
+Polycystic ovary syndrome
+This increases the risk of non-diabetic hyperglycaemia and type 2 diabetes. See the
+CKS topic on Polycystic ovary syndrome (/topics/polycystic-ovary-syndrome/) for
+more information.
+Metabolic syndrome
+[SECTION-INSULIN] Insulin resistance is commonly associated with the metabolic syndrome, defined as a
+combination of raised blood pressure, dyslipidaemia, fatty liver disease, central
+obesity, and a tendency to develop thrombosis. See the CKS topics on Hypertension
+(/topics/hypertension/), Lipid modification - CVD prevention (/topics/lipid-
+modification-cvd-prevention/), Non-alcoholic fatty liver disease (NAFLD)
+(/topics/non-alcoholic-fatty-liver-disease-nafld/), and Obesity (/topics/obesity/) for
+more information.
+Low birth weight for gestational age
+
+The content on the NICE Clinical Knowledge Summaries site (CKS) is the copyright ofClarity Informatics Limited (trading
+as Agilio Software Primary Care) (https://agiliosoftware.com/primary-care/). By using CKS, you agree to the licence set
+out in theCKS End User Licence Agreement (https://www.nice.org.uk/terms-and-conditions/cks-end-user-licence-
+agreement).There is some evidence that preterm birth before 35 weeks of gestation is associated
+with an increased risk for type 2 diabetes developing in adult life [Kajantie et al, 2010
+(/topics/diabetes-type-2/references/)].
+[Candler, 2018a (/topics/diabetes-type-2/references/); Zeitler, 2018 (/topics/diabetes-
+type-2/references/); Diabetes UK, 2020 (/topics/diabetes-type-2/references/); NICE,
+2020a (/topics/diabetes-type-2/references/)]
+©NICE (National Institute for Health and Care Excellence)2025. All rights reserved. Subject toNotice of rights
+(https://www.nice.org.uk/terms-and-conditions#notice-of-rights).

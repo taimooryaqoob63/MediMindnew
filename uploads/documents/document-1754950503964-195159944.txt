@@ -1,0 +1,46 @@
+Diabetes - type 2:
+What is it?
+Last revised in March 2025
+Diabetes mellitus is a group of metabolic disorders in which persistent
+hyperglycaemia (random plasma glucose more than 11.1 mmol/L) is caused by
+deficient insulin secretion, resistance to the action of insulin, or both [Mayer-Davis,
+2018 (/topics/diabetes-type-2/references/)][WHO, 2019 (/topics/diabetes-type-
+2/references/)].
+[SECTION-INSULIN] Insulin deficiency and insulin resistance lead to the abnormalities of carbohydrate,
+fat, and protein metabolism that are characteristic of diabetes mellitus [Mayer-Davis,
+2018 (/topics/diabetes-type-2/references/)].
+Diabetes mellitus is classified as [Mayer-Davis, 2018 (/topics/diabetes-type-
+2/references/)][Zeitler, 2018 (/topics/diabetes-type-2/references/)][WHO, 2019
+(/topics/diabetes-type-2/references/)][NICE, 2020a (/topics/diabetes-type-
+2/references/)]:
+Type 1 diabetes — an absolute insulin deficiency causes persistent hyperglycaemia
+(insulin activity is normal). See the CKS topic on Diabetes - type 1 (/topics/diabetes-
+type-1/) for more information.
+Type 2 diabetes — insulin resistance and a relative insulin deficiency result in
+persistent hyperglycaemia. 
+Gestational diabetes — hyperglycaemia develops during pregnancy and usually
+resolves after delivery, although the woman is at increased risk for overt type 2
+diabetes in the future.
+Other specific types of diabetes, including:
+Monogenic diabetes (caused by specific gene mutations, some affecting
+pancreatic beta-cell function, others affecting insulin action). The previously
+known 'maturity-onset diabetes of the young' presents with an autosomal
+dominant family history of diabetes, with typically mild, non-ketotic disease
+presenting in adolescence or early adulthood.
+Secondary to conditions or diseases of the exocrine pancreas, such as
+pancreatitis, malignancy, trauma or surgery, cystic fibrosis, or haemochromatosis,
+for example.
+Endocrine disorders, such as acromegaly, Cushing's syndrome, hyperthyroidism,
+or phaeochromocytoma.
+Drug- or chemical-induced, such as following corticosteroid treatment.
+The term 'type 2 diabetes' has replaced the terms 'non-insulin-dependent diabetes
+mellitus (NIDDM)' and 'adult-onset diabetes', as people with type 2 diabetes may
+require insulin, and type 2 diabetes is increasingly being diagnosed in children and
+young people.
+
+The content on the NICE Clinical Knowledge Summaries site (CKS) is the copyright ofClarity Informatics Limited (trading
+as Agilio Software Primary Care) (https://agiliosoftware.com/primary-care/). By using CKS, you agree to the licence set
+out in theCKS End User Licence Agreement (https://www.nice.org.uk/terms-and-conditions/cks-end-user-licence-
+agreement).
+©NICE (National Institute for Health and Care Excellence)2025. All rights reserved. Subject toNotice of rights
+(https://www.nice.org.uk/terms-and-conditions#notice-of-rights).

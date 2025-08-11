@@ -1,0 +1,841 @@
+Diabetes - type 2:
+Scenario: Management - adults
+Last revised in March 2025
+From age 18 years onwards.
+What initial information and advice should I offer an ad
+diabetes?
+Ensure that the person has an individualized care plan, taking into account their age,
+preferences, co-morbidities, and risk of adverse effects from polypharmacy and their
+likelihood of benefiting from long-term interventions.
+Offer referral to a structured group education programme such as the DESMOND
+(Diabetes Education for Self-Management for Ongoing and Newly Diagnosed)
+programme, for the person and their family/carers.
+This should be offered at or around the time of diagnosis, with annual reinforcement
+and review.
+Advise that the website www.desmond.nhs.uk (https://www.desmond.nhs.uk/) may
+have useful information.
+Ensure that the person and their family/carers know how to contact the specialist
+diabetes team, if appropriate.
+Provide advice on sources of information and support.
+Diabetes UK (website available at www.diabetes.org.uk
+(https://www.diabetes.org.uk/)) — a national charity that provides information,
+support, and advocacy for people with diabetes and their families. It has a
+confidential helpline (0345 123 2399) and hosts an online community for peer
+support, as well as a wide range of education and information patient resources
+(https://www.diabetes.org.uk/professionals/information-support-for-your-
+patients/education-information).
+For detailed information on managing other lifestyle and cultural issues, such as
+driving, fasting, holiday and travel, insurance, and shift work, see the CKS topic
+on [SECTION-INSULIN] Insulin therapy in type 2 diabetes (/topics/insulin-therapy-in-type-2-diabetes/).
+Provide advice on lifestyle measures (/topics/diabetes-type-
+2/management/management-adults/#lifestyle-advice), such as diet, exercise, and
+weight loss, if appropriate.
+Assess for associated anxiety and depression, and manage appropriately. See the CKS
+topics on Generalized anxiety disorder (/topics/generalized-anxiety-disorder/) and
+Depression (/topics/depression/) for more information.
+The Diabetes UK patient resource Diabetes and your emotions
+(https://www.diabetes.org.uk/guide-to-diabetes/emotions) may be helpful.
+Advise about sexual health, contraception, and the importance of pre-pregnancy
+counselling, if appropriate. See the CKS topics on Contraception - assessment
+(/topics/contraception-assessment/) and Pre-conception - advice and management
+(/topics/pre-conception-advice-management/) for more information.
+The Diabetes UK patient resource Planning for a pregnancy when you have diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/life-with-diabetes/pregnancy) may
+be helpful.
+
+Offer immunization against influenza and pneumococcal infection. See the CKS topics
+on Immunizations - seasonal influenza (/topics/immunizations-seasonal-influenza/) and
+Immunizations - pneumococcal (/topics/immunizations-
+pneumococcal/) for more information.
+Advise about entitlement to free NHS prescriptions if the person uses insulin or
+antidiabetic medication. See the Diabetes UK section on Free prescriptions (England)
+(https://www.diabetes.org.uk/guide-to-diabetes/life-with-diabetes/free-prescriptions)
+for more information.
+Advise the person to always wear or carry some form of diabetes identification, such as
+a:
+MedicAlert® bracelet, necklace, or watch (available from www.medicalert.org.uk
+(http://www.medicalert.org.uk/)).
+Diabetes identity card or wristband (available from www.diabetes.org.uk
+(https://www.diabetes.org.uk/)).
+Advise that HbA1c should be measured at 3–6 monthly intervals initially until stable on
+unchanging antidiabetic treatment, and then every 6 months to ensure adequate blood
+glucose control. See the section on Treatment targets (/topics/diabetes-type-
+2/management/management-adults/#treatment-targets) for more information.
+Advise that screening for complications (/topics/diabetes-type-
+2/management/management-adults/#screening-for-managing-complications) will be
+arranged at diagnosis and then annually thereafter.
+Basis for recommendation
+Show
+What are the treatment targets for adults with type 2 d
+Offer lifestyle advice (/topics/diabetes-type-2/management/management-
+adults/#lifestyle-advice) and drug treatment(s) (/topics/diabetes-type-
+2/management/management-adults/#antidiabetic-drugs) to achieve an individualized
+target HbA1c level, to minimize the risk of long-term complications (/topics/diabetes-
+type-2/background-information/complications/), depending on the person's age,
+preferences, risk of adverse effects, and co-morbidities.
+Educate the person about their individual recommended HbA1c target, and encourage
+measures to achieve and maintain it, where possible.
+Lifestyle including diet management — 48 mmol/mol (6.5%).
+Lifestyle including diet combined with a single drug not associated with
+hypoglycaemia (such as metformin) — 48 mmol/mol (6.5%).
+Drug treatment associated with hypoglycaemia (such as a sulfonylurea): 53
+mmol/mol (7.0%).
+Consider using the NICE patient decision aid
+(https://www.nice.org.uk/guidance/ng28/resources/patient-decision-aid-
+2187281197) to support these decisions. 
+Measure HbA1c levels at 3–6 monthly intervals until the HbA1c is stable on unchanging
+treatment, then at 6-monthly intervals.
+If HbA1c levels are not adequately controlled by a single drug and rise to 58 mmol/mol
+(7.5%) or higher:
+Reinforce advice on lifestyle including diet.
+Assess the person's adherence to antidiabetic drug treatment.
+Support the person to aim for an HbA1c level of 53 mmol/mol (7.0%).
+
+Intensify antidiabetic drug treatment, if appropriate. See the section on Antidiabetic
+drugs (/topics/diabetes-type-2/management/management-adults/#antidiabetic-
+drugs) for more information.
+HbA1c targets should be individualized according to the person's duration of diabetes,
+co-morbidities, and age, and may be reduced if:
+There are adverse effects from treatment (such as hypoglycaemia), or treatment is
+affecting the person's quality of life.
+Tight blood glucose control and possible hypoglycaemia may be inappropriate for
+people at risk of falls, those with impaired awareness of hypoglycaemia, and
+people who drive or operate machinery.
+The person is unlikely to achieve longer-term risk-reduction benefits, for example if
+they have significant co-morbidities or a reduced life expectancy.
+If the person achieves an HbA1c level that is lower than their target and there are no
+adverse effects such as hypoglycaemia:
+Encourage them to maintain it.
+Be aware of alternative reasons for a low HbA1c level, such as deteriorating renal
+function or sudden weight loss. See the CKS topic on Chronic kidney disease
+(/topics/chronic-kidney-disease/) for more information.
+Consider stopping any medication that is not effective at review.
+Do not routinely recommend self-monitoring of blood glucose levels.
+Advise the person on the need to self-monitor blood glucose levels if they:
+Are using insulin therapy. See the CKS topic on [SECTION-INSULIN] Insulin therapy in type 2 diabetes
+(/topics/insulin-therapy-in-type-2-diabetes/) for more information.
+Have evidence of hypoglycaemic episodes.
+Are taking a drug that may increase the risk of hypoglycaemia while driving or
+operating machinery (such as a sulfonylurea). 
+Are pregnant or planning a pregnancy. See the CKS topic on Pre-conception -
+advice and management (/topics/pre-conception-advice-management/) for more
+information.
+Note: advise that blood glucose levels may increase with acute intercurrent illness
+or infection. See the section on Managing intercurrent illness (/topics/diabetes-
+type-2/management/management-adults/#managing-intercurrent-illness) for
+more information.
+Provide appropriate advice on driving if the person is self-monitoring blood glucose
+levels.
+See the Driver and Vehicle Licensing Agency (DVLA) document Assessing fitness
+to drive: a guide for medical professionals
+(https://www.gov.uk/government/publications/assessing-fitness-to-drive-a-
+guide-for-medical-professionals) for more information.
+Consider the need for short-term self-monitoring of blood glucose levels:
+When starting treatment with corticosteroids, or
+To confirm suspected hypoglycaemia (/topics/diabetes-type-2/diagnosis/when-
+to-suspect-hypoglycaemia/).
+If routine self-monitoring of blood glucose levels is indicated, review the person at
+least annually to check:
+Self-monitoring skills, the quality and frequency of testing, and the equipment
+used. See the CKS topic on [SECTION-INSULIN] Insulin therapy in type 2 diabetes (/topics/insulin-
+therapy-in-type-2-diabetes/) for information on blood glucose meters, lancets, and
+strips.
+The person knows how to interpret blood glucose results, and what action to take if
+they are too high or too low.
+
+The impact of self-monitoring on the person's quality of life and the continued
+benefit to the person. 
+Basis for recommendation
+Show
+Which antidiabetic drugs are available for adults with t
+If an adult with type 2 diabetes is hyperglycaemic with symptoms (/topics/diabetes-
+type-2/diagnosis/diagnosis-in-adults/), consider the need for immediate insulin
+therapy or treatment with a sulfonylurea depending on specialist advice, and review
+treatment when blood glucose control has been achieved.
+For all other adults, offer individualized antidiabetic treatment depending on the
+person's HbA1c treatment target (/topics/diabetes-type-
+2/management/management-adults/#treatment-targets), age, preferences,
+comorbidities, contraindications, weight, risks and benefits of treatment, and
+polypharmacy. Consider the effectiveness of the medications prescribed in terms of
+metabolic response, cardiovascular and renal protection, safety and
+tolerability. Consider also the need for monitoring, licensed indications, combination of
+medications and cost, choosing the drugs with the lower acquisition cost. 
+Offer standard-release metformin as first-line treatment, unless it is contraindicated.
+Gradually increase the dose of standard-release metformin (/topics/diabetes-type-
+2/prescribing-information/metformin/) over several weeks to minimize the risk of
+adverse effects.
+If there are intolerable gastrointestinal adverse effects, consider a trial of modified-
+release metformin.
+Assess the person's cardiovascular status and risk to determine whether they:
+Have chronic heart failure,
+Have established atherosclerotic cardiovascular disease, or
+Are at high risk of developing cardiovascular disease.
+Based on this cardiovascular risk assessment for the person with type 2 diabetes:
+If they have chronic heart failure or established atherosclerotic cardiovascular
+disease, offer an SGLT-2 inhibitor with proven cardiovascular benefit in addition to
+metformin.
+If they are at high risk of developing cardiovascular disease, consider an SGLT-2
+inhibitor with proven cardiovascular benefit in addition to metformin.
+When starting an adult with type 2 diabetes on dual therapy with metformin and an
+SGLT-2 inhibitor as first-line therapy, introduce the drugs sequentially, starting with
+metformin and checking tolerability. Start the SGLT-2 inhibitor as soon as metformin
+tolerability is confirmed.
+If metformin is contraindicated or not tolerated:
+Offer an SGLT-2 inhibitor to people with chronic heart failure or established
+atherosclerotic cardiovascular disease, and consider offering an SGLT-2 inhibitor to
+people at high risk of developing cardiovascular disease.
+For other people, consider one of the  following as first-line treatment:
+A dipeptidyl peptidase-4 inhibitor (DPP-4 inhibitor (/topics/diabetes-type-
+2/prescribing-information/dpp-4-inhibitors/)).
+Pioglitazone (/topics/diabetes-type-2/prescribing-information/pioglitazone/). 
+A sulfonylurea (/topics/diabetes-type-2/prescribing-information/sulfonylureas/).
+
+A sodium-glucose cotransporter-2 inhibitor (SGLT-2 inhibitor (/topics/diabetes-
+type-2/prescribing-information/sglt-2-inhibitors/)) — this may be considered
+instead of a DPP-4 inhibitor if a sulfonylurea or pioglitazone is not appropriate.
+For adults with type 2 diabetes at any stage after they have started first-line
+treatment:
+If they have or develop chronic heart failure or established atherosclerotic
+cardiovascular disease, offer an SGLT-2 inhibitor with proven cardiovascular benefit
+in addition to current treatment or replace an existing drug with the SGLT-2 inhibitor.
+If they are or become at high risk of developing cardiovascular disease, consider
+adding an SGLT-2 inhibitor with proven cardiovascular benefit to current treatment or
+replacing an existing drug with the SGLT-2 inhibitor.
+Take into account the person's current treatment regimen and preferences and make
+a shared decision about switching treatments or adding an SGLT-2 inhibitor, as
+appropriate.
+If monotherapy is ineffective (/topics/diabetes-type-2/management/management-
+adults/#treatment-targets), consider adding one of the following: 
+A DPP-4 inhibitor. 
+Pioglitazone.
+A sulfonylurea.
+An SGLT-2 inhibitor — this may be considered in people taking metformin if a
+sulfonylurea is contraindicated or not tolerated, or the person is at significant risk of
+hypoglycaemia or its consequences.
+If dual therapy isineffective (/topics/diabetes-type-2/management/management-
+adults/#treatment-targets): 
+For people who can take metformin, consider: 
+Triple therapy by adding a DPP-4 inhibitor, pioglitazone, a sulfonylurea, or an
+SGLT-2 inhibitor (canagliflozin or empagliflozin). Note: dapagliflozin is
+recommended only in combination with metformin and a sulfonylurea, not
+pioglitazone, and ertugliflozin only in combination with metformin and a DPP-4
+inhibitor, if a sulfonylurea or pioglitazone is not appropriate.
+Starting insulin-based treatment. See the CKS topic on [SECTION-INSULIN] Insulin therapy in type 2
+diabetes (/topics/insulin-therapy-in-type-2-diabetes/) for more information.
+For people in whom metformin is contraindicated or not tolerated, consider starting
+insulin-based treatment. See the CKS topic on [SECTION-INSULIN] Insulin therapy in type 2 diabetes
+(/topics/insulin-therapy-in-type-2-diabetes/) for more information.
+If triple therapy isineffective (/topics/diabetes-type-2/management/management-
+adults/#treatment-targets),not tolerated, or contraindicated:
+Consider switching one drug for a glucagon-like peptide-1 receptor agonist (GLP-1
+receptor agonist (/topics/diabetes-type-2/prescribing-information/glp-1-receptor-
+agonists/)) for people with:
+A body mass index (BMI) of 35 kg/m or higher (adjust accordingly for people from
+black, Asian, and other minority ethnic groups) and specific psychological or other
+medical conditions associated with obesity, or
+A BMI lower than 35 kg/m, and insulin therapy would have significant
+occupational implications, or weight loss would benefit other significant obesity-
+related comorbidities.
+Note: a GLP-1 receptor agonist should only be continued if the person has shown a
+reduction of at least 11 mmol/mol [1.0%] in HbA1c and a weight loss of at least 3% of
+initial body weight in 6 months.
+For people on insulin-based treatment, only offer combination therapy with a GLP-1
+receptor agonist plus insulin after taking specialist advice, and with ongoing support2
+from a consultant-led multidisciplinary team.
+Note: if a GLP-1 receptor agonist is added to insulin or an insulin secretagogue
+(sulfonylurea or meglitinide), consider reducing the dose of the latter agents to
+reduce the risk of hypoglycaemia (/topics/diabetes-type-2/diagnosis/when-to-
+suspect-hypoglycaemia/). If a DPP-4 inhibitor is being taken, it should be
+discontinued on starting a GLP-1 receptor agonist, as the combination does not
+provide additional blood glucose control.
+Basis for recommendation
+Show
+What lifestyle advice should I give to adults with type 2
+Diet
+Offer appropriate, individualized, and ongoing nutritional advice from a healthcare
+professional with specific expertise and competencies in nutrition.
+Emphasize the importance of a healthy, balanced diet:
+Encourage high fibre, low-glycaemic-index sources of carbohydrate (such as fruit,
+vegetables, wholegrains, and pulses), low-fat dairy products, and oily fish.
+Advise to control the intake of foods containing saturated and trans-fatty acids, high-
+sugar drinks, and foods high in salt content.
+Individualize recommendations for carbohydrate and alcohol intake, and regular meal
+patterns, to reduce the risk of hypoglycaemia (/topics/diabetes-type-
+2/diagnosis/when-to-suspect-hypoglycaemia/), especially in people being treated
+with insulin or a sulfonylurea (/topics/diabetes-type-2/prescribing-
+information/sulfonylureas/). See the CKS topic on [SECTION-INSULIN] Insulin therapy in type 2 diabetes
+(/topics/insulin-therapy-in-type-2-diabetes/) for more information.
+Advise that limited substitution of sucrose-containing foods for other carbohydrate in
+the meal plan is allowed, but care should be taken to avoid excess energy intake.
+Discourage the use of foods marketed specifically for people with diabetes.
+The Diabetes UK patient resources Weight loss and diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/enjoy-food/eating-with-
+diabetes/whats-your-healthy-weight/lose-weight) and What is a healthy, balanced
+diet for diabetes? (https://www.diabetes.org.uk/guide-to-diabetes/enjoy-food/eating-
+with-diabetes/what-is-a-healthy-balanced-diet) may be helpful.
+Integrate dietary advice with other aspects of lifestyle modification, such as exercise
+and weight loss, as appropriate.
+If the person is overweight or obese, set an initial body weight loss target of 5–10%
+(smaller weight losses may still be beneficial). See the CKS topic on Obesity
+(/topics/obesity/) for further information on weight management.
+Exercise and physical activity
+Provide information on regular exercise and physical activity.
+The Diabetes UK patient resource Diabetes and exercise
+(https://www.diabetes.org.uk/guide-to-diabetes/managing-your-diabetes/exercise)
+provides helpful information on the type and duration of recommended exercise.
+Aim to minimize time spent being sedentary.
+
+Advise that regular exercise may lower blood glucose levels, improve cardiovascular
+risk, and reduce excess weight (when combined with a healthy diet
+(/topics/diabetes-type-2/management/management-adults/#diet)). See the CKS
+topic on Obesity (/topics/obesity/) for more information.
+Provide information on the following (if appropriate):
+The potential interaction of exercise and alcohol.
+The effect of exercise on blood glucose levels when insulin levels are adequate (risk
+of hypoglycaemia (/topics/diabetes-type-2/diagnosis/when-to-suspect-
+hypoglycaemia/)). 
+The effect of exercise on blood glucose levels when the person is hyperglycaemic
+(risk of worsening blood glucose control and ketones in the blood).
+The appropriate adjustments of insulin dosage and/or nutritional intake for exercise
+and post-exercise periods. See the CKS topic on [SECTION-INSULIN] Insulin in type 2 diabetes
+(/topics/insulin-therapy-in-type-2-diabetes/) for more information.
+Alcohol intake
+Provide information on recommended alcohol limits and the potential impact of
+alcohol on diabetes and its treatment.
+Advise on the recommended alcohol limits. See CKS topic on Alcohol - problem
+drinking (/topics/alcohol-problem-drinking/) for more information.
+Advise the person to ideally eat a snack that contains carbohydrate before and after
+drinking alcohol. 
+Educate that alcohol may exacerbate or prolong the hypoglycaemic effect of
+antidiabetic drugs (/topics/diabetes-type-2/management/management-
+adults/#antidiabetic-drugs).
+The signs of hypoglycaemia (/topics/diabetes-type-2/diagnosis/when-to-suspect-
+hypoglycaemia/) may become less obvious, and delayed hypoglycaemia may
+occur up to several hours after alcohol consumption. See the CKS topic on [SECTION-INSULIN] Insulin
+therapy in type 2 diabetes (/topics/insulin-therapy-in-type-2-diabetes/) for more
+information on the possible presentation and effects of hypoglycaemia. 
+Advise the person to always wear or carry some form of diabetes identification, as
+reduced awareness of hypoglycaemia may be confused with alcohol intoxication,
+such as a:
+MedicAlert® bracelet, necklace, or watch (available from www.medicalert.org.uk
+(http://www.medicalert.org.uk/)).
+Diabetes identity card or wristband (available from www.diabetes.org.uk
+(https://www.diabetes.org.uk/)).
+The Diabetes UK patient resource Alcohol and diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/enjoy-food/what-to-drink-with-
+diabetes/alcohol-and-diabetes) may be helpful.
+Smoking and drug misuse
+Provide information on the impact of smoking on diabetes and its complications, such
+as cardiovascular disease.
+Advise on smoking cessation, if appropriate. See the CKS topic on Smoking
+cessation (/topics/smoking-cessation/) for more information. Reinforce this advice
+annually for people who currently do not plan to stop smoking, and at all review
+appointments if there is a prospect of the person stopping. 
+Advise young adult non-smokers never to start smoking.
+
+Provide information on the risks of drug misuse and the possible effects on blood
+glucose control.
+The Diabetes UK patient resource Recreational drugs and diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/young-adults/drugs) may be helpful.
+Periodontitis
+Advise adults with type 2 diabetes at their annual review:
+That they are at higher risk of periodontitis.
+That if they get periodontitis, managing it can improve their blood glucose control
+and can reduce their risk of hyperglycaemia.
+To have regular oral health reviews (their oral healthcare or dental team will tell them
+how often this is required). 
+For adults with type 2 diabetes who have been diagnosed with periodontitis by an oral
+healthcare or dental team, they should be advised to attend appointments to manage
+and treat their periodontitis (at a frequency based on their oral health needs).
+Basis for recommendation
+Show
+How should I manage an adult with a suspected hyperg
+emergency?
+Be aware that diabetic ketoacidosis (/topics/diabetes-type-2/diagnosis/when-to-
+suspect-hyperglycaemic-emergencies-dka-hhs/) (DKA) is more common in people
+with type 1 diabetes, but can occur in people with type 2 diabetes, and may present
+with a normal or near normal blood glucose level. Hyperosmolar hyperglycaemic state
+(/topics/diabetes-type-2/diagnosis/when-to-suspect-hyperglycaemic-emergencies-
+dka-hhs/) (HHS) typically presents without significant blood or urinary ketones on
+testing.
+Arrange emergency admission for confirmation of the diagnosis and emergency
+treatment.
+After the person has recovered from an episode of DKA or HHS:
+Discuss the precipitating factors (/topics/diabetes-type-2/diagnosis/when-to-
+suspect-hyperglycaemic-emergencies-dka-hhs/#precipitating-factors) that may
+have led to the episode. Consider the possibility of non-adherence to treatment,
+particularly if there is a history of recurrent DKA.
+Provide information and advice about how to manage intercurrent illness and 'sick
+day rules', to reduce the risk of future episodes. See the section on Managing
+intercurrent illness (/topics/diabetes-type-2/management/management-
+adults/#managing-intercurrent-illness) for more information.
+Basis for recommendation
+Show
+
+How should I manage intercurrent illness in an adult w
+diabetes?
+If an adult with type 2 diabetes is unwell, consider the need to arrange hospital
+admission or seek specialist advice, depending on clinical judgement, taking into
+account the person's age, co-morbidities, risk of complications, and the presence of
+hyperglycaemia and/or ketosis.
+Arrange immediate hospital admission if:
+There is an immediate risk of diabetic ketoacidosis (/topics/diabetes-type-
+2/diagnosis/when-to-suspect-hyperglycaemic-emergencies-dka-hhs/) (DKA), such
+as moderate ketonuria (2+ on urine dipstick) or ketonaemia (1.5–2.9 mmol/L) with or
+without hyperglycaemia, and the person cannot eat or drink.
+There is an immediate risk of hyperosmolar hyperglycaemic state (/topics/diabetes-
+type-2/diagnosis/when-to-suspect-hyperglycaemic-emergencies-dka-hhs/) (HHS).
+There is suspected acute kidney injury (AKI) that cannot be managed in primary care.
+See the CKS topic on Acute kidney injury (/topics/acute-kidney-injury/) for more
+information.
+A person treated with insulin does not show signs of clinical improvement with insulin
+treatment. See the CKS topic on [SECTION-INSULIN] Insulin therapy in type 2 diabetes (/topics/insulin-
+therapy-in-type-2-diabetes/).
+Consider arranging hospital admission or seeking urgent specialist advice if:
+The underlying condition is unclear.
+The person is dehydrated or at risk of dehydration.
+Vomiting persists beyond 2 hours.
+The person and their family/carers are unable to keep the blood glucose level above
+3.5 mmol/L.
+The person and their family/carers are exhausted, for example due to repeated night-
+time waking.
+If admission is not needed and the person can be managed in primary care:
+Ensure that the person has written contact details of their specialist diabetes team,
+where appropriate.
+Assess the person and manage any intercurrent illness(es), as appropriate.
+Advise on the need to temporarily stop some drug treatments during periods of acute
+illness. See the section on 'Sick-day rules' (/topics/diabetes-type-
+2/management/management-adults/#sick-day-rules) for detailed information.
+Provide the person with clear, individualized advice on 'sick-day rules'
+(/topics/diabetes-type-2/management/management-adults/#sick-day-rules) to
+manage diabetes during episodes of intercurrent illness or hyperglycaemia, and
+reinforce the advice regularly.
+Advise that intercurrent illness may affect blood glucose control, and there is a risk
+for worsening hyperglycaemia even if dietary intake is reduced.
+Ensure the person has sick day foods and drinks supplies readily accessible at home,
+including:
+Easily digestible foods and sugary drinks (to provide energy and to prevent further
+ketosis).
+Over-the-counter oral rehydration therapy (ORT) sachets (to prevent dehydration).
+Glucose tablets or oral gel (to prevent hypoglycaemia).
+Equipment for self-monitoring of blood glucose and ketones (if appropriate). 
+Additional supplies of insulin (if appropriate).
+A glucagon kit (if appropriate).
+
+Note: see the CKS topic on [SECTION-INSULIN] Insulin therapy in type 2 diabetes (/topics/insulin-
+therapy-in-type-2-diabetes/) for information on blood glucose and ketone
+monitoring meters, glucose oral gels, and other accessories.
+'Sick-day rules'
+Provide 'sick-day rules' advice on managing episodes of intercurrent illness.
+Advise to temporarily stop some drug treatments during acute illness. Medication
+may be restarted once the person is feeling better and eating and drinking for 24–48
+hours, unless there is concern about renal function.
+On angiotensin-converting enzyme (ACE) inhibitors, angiotensin II receptor
+antagonists (AIIRAs), diuretics, or nonsteroidal anti-inflammatory drugs (NSAIDs)
+— stop treatment if there is a risk of dehydration, to reduce the risk of acute
+kidney injury (AKI).
+On metformin (/topics/diabetes-type-2/prescribing-information/metformin/) —
+stop treatment if there is a risk of dehydration, to reduce the risk of lactic acidosis.
+On sulfonylureas (/topics/diabetes-type-2/prescribing-
+information/sulfonylureas/) — may increase the risk of hypoglycaemia, particularly
+if dietary intake is reduced.
+On SGLT-2 inhibitors (/topics/diabetes-type-2/prescribing-information/sglt-2-
+inhibitors/) — check for ketones (/topics/diabetes-type-2/diagnosis/when-to-
+suspect-hyperglycaemic-emergencies-dka-hhs/) and stop treatment if acutely
+unwell and/or at risk of dehydration, due to the risk of euglycaemic DKA.
+On GLP-1 receptor agonists (/topics/diabetes-type-2/prescribing-information/glp-
+1-receptor-agonists/) — stop treatment if there is a risk of dehydration, to reduce
+the risk of AKI. 
+If on insulin therapy, do not stop treatment. See the CKS topic on [SECTION-INSULIN] Insulin therapy in
+type 2 diabetes (/topics/insulin-therapy-in-type-2-diabetes/) for more information.
+Advise the dose of insulin may need to be altered during periods of illness. Seek
+advice from the specialist diabetes team if there is uncertainty on how to adjust
+insulin doses.
+If self-monitoring (/topics/diabetes-type-2/management/management-
+adults/#treatment-targets) of blood glucose levels is indicated (for example on insulin
+therapy), advise:
+An increase in monitoring frequency may be needed, such as at least every 3–4
+hours including through the night and advice to record the results.
+[SECTION-INSULIN] Insulin doses may need to be adjusted, depending on the results.
+To continue to self-monitor blood glucose levels carefully when feeling better, until
+they are back to baseline.
+Seek urgent medical advice if blood glucose levels remain uncontrolled.
+Consider the need for blood or urinary ketone monitoring (/topics/diabetes-type-
+2/diagnosis/when-to-suspect-hyperglycaemic-emergencies-dka-hhs/).
+This should be checked regularly, for example at least every 3–4 hours including
+through the night, and record the results.
+If the urine ketone level is greater than 2+, or blood ketone level is greater than 3
+mmol/L, the person should seek immediate medical advice. See the section on
+When to suspect hyperglycaemic emergencies (DKA and HHS) (/topics/diabetes-
+type-2/diagnosis/when-to-suspect-hyperglycaemic-emergencies-dka-hhs/) for
+more information.
+Advise to maintain their normal meal pattern (including fluids and carbohydrate
+intake) where possible if appetite is reduced.
+
+If unable to eat or vomiting, advise to replace normal meals with carbohydrate-
+containing drinks (such as milk, milkshakes, fruit juices, and sugary drinks).
+If blood glucose levels are high, maintain fluid intake with sugar-free fluids.
+If blood glucose levels are low, encourage regular intake of sugary fluids.
+Advise to seek urgent medical advice if the person:
+Is unable to eat or drink, is dehydrated or at risk of dehydration.
+Has persistent vomiting.
+Has hypoglycaemia (/topics/diabetes-type-2/diagnosis/when-to-suspect-
+hypoglycaemia/) that cannot be managed in primary care.
+The Diabetes UK information Diabetes when you're unwell
+(https://www.diabetes.org.uk/guide-to-diabetes/life-with-diabetes/illness) may be
+helpful.
+[Down, 2020 (/topics/diabetes-type-2/references/)]
+Basis for recommendation
+Show
+How should I screen for and manage complications in a
+diabetes?
+Retinopathy
+Ensure that all adults with type 2 diabetes attend for diabetic eye screening (at the
+time of diagnosis and at an appropriate time interval thereafter) as part of the NHS
+retinopathy screening programme.
+Diabetic eye screening will be offered at diagnosis and:
+Every 2 years for people at low risk of sight loss (no identified diabetic retinopathy on
+two successive screening tests).
+At least annually for all other people with diabetes.
+Explain that retinal screening aims to reduce the risk of sight loss by the early
+detection and treatment, if needed, of sight-threatening retinopathy.
+The Diabetes UK patient resource Diabetic eye screening
+(https://www.diabetes.org.uk/guide-to-diabetes/managing-your-diabetes/diabetic-
+eye-screening) may be helpful.
+Arrange emergency assessment by ophthalmology if there is:
+Sudden loss of vision. 
+Rubeosis iridis (formation of abnormal blood vessels on the anterior iris). 
+Pre-retinal or vitreous haemorrhage. 
+Suspected retinal detachment. See the CKS topic on Retinal detachment
+(/topics/retinal-detachment/) for more information.
+Arrange an urgent referral to an ophthalmologist if there is a large sudden,
+unexplained reduction in visual acuity.
+Foot problems
+Ensure that people with type 2 diabetes have a foot check in primary care at diagnosis
+and at least once a year thereafter, or sooner if any foot problems arise.
+
+Give information on the risk of developing a diabetic foot problem at diagnosis, during
+reviews, and if foot problems arise, including:
+Basic foot care advice and the importance of foot care, including the need to check
+daily the entire surface of both feet, including areas between the toes. The Diabetes
+UK patient resource Diabetes and foot problems (https://www.diabetes.org.uk/guide-
+to-diabetes/complications/feet) may be helpful.
+Foot emergencies and who to contact.
+Footwear advice, including to avoid shoes that are too tight, have rough edges, or
+uneven seams; to avoid tight-fitting socks; and to change socks daily.
+Nail-cutting advice.
+The person's current individual risk of developing a foot problem, and how to
+recognize foot ulcers and pre-ulcerative signs.
+Ask about risk factors for developing foot complications:
+Previous foot ulcer or lower limb amputation, peripheral arterial disease, and end-
+stage renal disease (ESRD). See the CKS topics on Peripheral arterial disease
+(/topics/peripheral-arterial-disease/) and Chronic kidney disease (/topics/chronic-
+kidney-disease/) for more information.
+Symptoms of peripheral neuropathy (/topics/diabetes-type-2/background-
+information/complications/).
+Symptoms of peripheral arterial disease (claudication or rest pain).
+Foot care, including personal care and nail cutting.
+Smoking history.
+Examine both feet — remove their shoes, socks, bandages and dressings, and
+examine both feet for evidence of the following risk factors:
+Neuropathy — use a 10 g monofilament as part of a foot sensory examination.
+Limb ischaemia — use ankle brachial pressure index (ABPI) and interpret results
+carefully because calcified arteries may falsely elevate results. See the CKS topic
+on Peripheral arterial disease (/topics/peripheral-arterial-disease/) for more
+information.
+Ulceration — may be neuropathic (most commonly affecting plantar surface or areas
+overlying a bony deformity); neuroischaemic or ischaemic (most commonly affecting
+the tips of toes or lateral border of the foot).
+Callus.
+Infection and/or inflammation (redness, warmth, induration, and pain/tenderness) or
+purulent discharge. See the CKS topics on Paronychia - acute (/topics/paronychia-
+acute/) and Cellulitis - acute (/topics/cellulitis-acute/) for more information.
+Note: typical findings may be reduced due to the presence of neuropathy and/or
+ischaemia.
+Deformity (such as claw or hammer toes), large bony prominences, limited joint
+mobility.
+Gangrene.
+Charcot arthropathy — an acute, localized inflammatory condition that may lead to
+varying degrees and patterns of bone destruction, subluxation, dislocation, and
+deformity.
+Footwear — ill-fitting, inadequate, or lack of.
+If there is evidence of foot deformity and/or abnormal loading of the foot (for
+example callus formation), consider referral to podiatry for footwear advice and
+possible orthoses, specialist footwear, or splints.
+Foot hygiene — improperly cut toenails, thickened or ingrown nails, unwashed feet,
+superficial fungal infection, and unclean socks. See the CKS topics on Fungal skin
+
+infection - foot (/topics/fungal-skin-infection-foot/) and Fungal nail infection
+(/topics/fungal-nail-infection/) for more information.
+Assess the person's current risk of developing a diabetic foot problem or needing an
+amputation using the following risk stratification:
+Low risk:
+No risk factors present except callus alone.
+Moderate risk:
+Deformity, or
+Neuropathy, or
+Peripheral arterial disease. 
+High risk:
+Previous ulceration, or
+Previous amputation, or
+On renal replacement therapy, or
+Neuropathy and peripheral arterial disease together, or
+Neuropathy in combination with callus and/or deformity, or
+Peripheral arterial disease in combination with callus and/or deformity.
+Active foot problem:
+Ulceration, or
+Infection, or
+Chronic limb-threatening ischaemia, or
+Gangrene, or
+Suspicion of an acute Charcot arthropathy, or an unexplained hot, swollen foot
+with a change in colour, with or without pain. 
+Manage the person's risk of developing a diabetic foot problem:
+For people at low risk:
+Continue to carry out annual foot assessments at their annual diabetes review. 
+Emphasize the importance of good foot care.
+Advise them that they could progress to moderate or high risk.
+For people at moderate risk — arrange referral to the foot protection service to be
+seen within 6–8 weeks.
+For people at high risk — arrange referral to the foot protection service to be seen
+within 2–4 weeks.
+For people with a limb-threatening or life-threatening diabetic foot problem, refer
+immediately to acute services, and inform the multidisciplinary foot care service
+(according to local protocols and pathways) so that they can be assessed and an
+individualized treatment plan put in place. Examples of limb-threatening and life-
+threatening diabetic foot problems include:
+Ulceration with fever or any signs of sepsis.
+Ulceration with limb ischaemia.
+Clinical concern that there is a deep-seated soft tissue or bone infection (with or
+without ulceration).
+Gangrene (with or without ulceration).
+For all other active diabetic foot problems, refer the person within 1 working day to
+the multidisciplinary foot care service or foot protection service (according to local
+protocols and pathways) for triage within 1 further working day. 
+Depending on the person's risk of developing a diabetic foot problem, carry out
+reassessments at the following intervals:
+Annually — for people who are at low risk, as part of their annual diabetes review. 
+
+Frequently (for example every 3–6 months) — for people who are at moderate risk. 
+More frequently (for example every 1–2 months) — for people who are at high risk, if
+there is no immediate concern. 
+Very frequently (for example every 1–2 weeks) — for people who are at high risk, if
+there is immediate concern. 
+Consider more frequent reassessments for people who are at moderate or high risk,
+and for people who are unable to check their own feet.
+Diabetic kidney disease
+Ensure all adults with type 2 diabetes have annual screening for diabetic kidney
+disease.
+See the sections on [SECTION-DIAGNOSIS] Diagnosis (/topics/chronic-kidney-
+disease/diagnosis/diagnosis/), Assessment (/topics/chronic-kidney-
+disease/diagnosis/assessment/), and Management (/topics/chronic-kidney-
+disease/management/management-of-chronic-kidney-disease/#management-in-
+primary-care) in the CKS topic on Chronic kidney disease (/topics/chronic-kidney-
+disease/) for more information. 
+Cardiovascular risk factors
+Ensure all people with type 2 diabetes have their cardiovascular risk factors assessed
+at least annually, including:
+Smoking status — offer advice on smoking cessation, if needed. See the CKS topic
+on Smoking cessation (/topics/smoking-cessation/) for more information.
+Blood glucose control. See the section on Treatment targets (/topics/diabetes-type-
+2/management/management-adults/#treatment-targets) for more information.
+Blood pressure. See the CKS topic on Hypertension (/topics/hypertension/) for more
+information on diagnosing hypertension, and the section on Antihypertensive
+treatment (/topics/diabetes-type-2/management/management-
+adults/#antihypertensive-treatment) for more information on management.
+Albuminuria. See the section on Diabetic kidney disease (/topics/diabetes-type-
+2/management/management-adults/#diabetic-kidney-disease) for more information.
+Full lipid profile (total cholesterol, high-density lipoprotein [HDL] cholesterol, low-
+density lipoprotein [LDL] cholesterol, and triglycerides). See the section on Lipid
+modification (/topics/diabetes-type-2/management/management-adults/#lipid-
+modification) for more information.
+Family history of cardiovascular disease (CVD).
+Measure height, weight, and waist circumference, and calculate the body mass index
+(BMI). Offer management for people who are overweight or obese. See the CKS topic
+on Obesity (/topics/obesity/) for more information.
+Ensure people with CVD risks factors are managed appropriately. See the section on
+Lifestyle advice (/topics/diabetes-type-2/management/management-adults/#lifestyle-
+advice) and the CKS topic on CVD risk assessment and management (/topics/cvd-risk-
+assessment-management/) for more information.
+The Diabetes UK patient resource Diabetes and heart disease
+(https://www.diabetes.org.uk/guide-to-
+diabetes/complications/cardiovascular_disease) may be helpful.
+Peripheral and autonomic neuropathy
+Screen for symptoms of peripheral neuropathy by asking about:
+
+Painful neuropathy symptoms of numbness, burning or shooting pain, tingling and/or
+paraesthesia of the hands and/or feet, typically in a stocking and glove distribution,
+often at night, which may be relieved by activity.
+Painful neuropathy of the foot may initially affect the toes and outer edges of the
+feet.
+If suspected, see the CKS topic on Neuropathic pain - drug treatment
+(/topics/neuropathic-pain-drug-treatment/) for more information on management
+options.
+There may be associated motor neuropathy, such as muscle weakness, wasting,
+cramps and/or twitching, which may cause eventual deformity.
+If there is hand involvement, it may affect fine motor skills over time.
+If there is foot involvement, consider referral to podiatry for footwear advice and
+possible orthoses, specialist footwear, or splints. See the section on Foot problems
+(/topics/diabetes-type-2/management/management-adults/#foot-problems) for
+more information on screening for peripheral neuropathy of the feet.
+The Diabetes UK patient resource Diabetic neuropathy
+(https://www.diabetes.org.uk/guide-to-diabetes/complications/nerves_neuropathy)
+may be helpful.
+Assess for symptoms or signs suggesting autonomic neuropathy, which can affect
+multiple systems and typically has a gradual, progressive onset:
+Postural hypotension (may be defined as a drop in systolic blood pressure of more
+than 30 mmHg when changing from a lying to a standing position, without any
+increase in heart rate).
+Ask about drug treatment with tricyclic antidepressants or antihypertensive drugs
+that may contribute to symptoms.
+Consider arranging referral to the specialist diabetes team if symptoms are
+troublesome and affecting daily functioning.
+'Diabetic gastroparesis' suggested by delayed gastric emptying, bloating, nausea,
+and post-prandial vomiting.
+Advise a small-particle-size diet (mashed or pureed food) for symptom relief of
+delayed gastric emptying. Consider arranging referral to a gastroenterologist or
+the specialist diabetes team for consideration of treatment with a prokinetic drug.
+Lower gastrointestinal involvement may cause lower abdominal pain, unexplained
+diarrhoea (may be nocturnal), and faecal incontinence.
+Unexplained urinary symptoms such as hesitancy, reduced frequency, inadequate
+bladder emptying, and urinary retention, if other possible causes have been
+excluded. See the CKS topics on LUTS in men (/topics/luts-in-men/), Urinary tract
+infection (lower) - men (/topics/urinary-tract-infection-lower-men/), and Urinary tract
+infection (lower) - women (/topics/urinary-tract-infection-lower-women/) for more
+information.
+If suspected, consider arranging referral to the specialist diabetes team or urology
+for advice on management.
+Sexual dysfunction, erectile dysfunction, and/or retrograde ejaculation.
+See the CKS topic on Erectile dysfunction (/topics/erectile-dysfunction/) for more
+information on diagnosis and management.
+The Diabetes UK patient resources Diabetes and sexual problems - in women
+(https://www.diabetes.org.uk/guide-to-diabetes/complications/sexual-problems-
+women) and Diabetes and sexual problems - in men
+(https://www.diabetes.org.uk/guide-to-diabetes/complications/sexual-problems-
+men) may be helpful.
+Sweating abnormalities, such as reduced sweating in a stocking and glove
+distribution.
+
+Impaired awareness of hypoglycaemia (/topics/diabetes-type-2/diagnosis/when-to-
+suspect-hypoglycaemia/).
+If suspected, arrange referral to the specialist diabetes team for advice on
+management.
+The Diabetes UK patient resource What is a hypo?
+(https://www.diabetes.org.uk/guide-to-diabetes/complications/hypos) may be
+helpful.
+Basis for recommendation
+Show
+How should I manage cardiovascular risk in an adult wi
+diabetes?
+Antihypertensive treatment
+If the person is already on antihypertensive drug treatment:
+Reinforce the importance of lifestyle advice (/topics/diabetes-type-
+2/management/management-adults/#lifestyle-advice).
+Review blood pressure control and drug treatments used. See the CKS topic on
+Hypertension (/topics/hypertension/) for more information on monitoring blood pressure
+and drug treatment options.
+Amend treatment if there is uncontrolled blood pressure and/or drug treatment is not
+appropriate due to microvascular or metabolic complications (/topics/diabetes-type-
+2/background-information/complications/).
+Aim to maintain blood pressure below the following targets, depending on the person's
+age, risks and benefits of treatment, and co-morbidities (including frailty and
+multimorbidity):
+For adults with a urine albumin:creatinine ratio (ACR) less than 70 mg/mmol, aim for a
+clinic systolic blood pressure less than 140 mmHg (target range 120 to 139 mmHg)
+and a clinic diastolic blood pressure less than 90 mmHg.
+For adults with an ACR of 70 mg/mmol or more, aim for a clinic systolic blood
+pressure less than 130 mmHg (target range 120 to 129 mmHg) and a clinic diastolic
+blood pressure less than 80 mmHg.
+In adults aged 80 or more, whatever the ACR, aim for a clinic systolic blood pressure
+less than 150 mmHg (target range 140 to 149 mmHg) and a clinic diastolic blood
+pressure less than 90 mmHg.
+The Diabetes UK patient resource Diabetes and blood pressure
+(https://www.diabetes.org.uk/guide-to-diabetes/managing-your-diabetes/blood-
+pressure) may be helpful.
+If the person has newly diagnosed hypertension:
+Reinforce the importance of lifestyle advice (/topics/diabetes-type-
+2/management/management-adults/#lifestyle-advice).
+Confirm a diagnosis of hypertension in a person with clinic blood pressure of 140/90
+mmHg or higher and ABPM daytime average or HBPM average of 135/85 mmHg or
+higher.
+Measure standing as well as seated blood pressure.
+Classify the person's stage of hypertension.
+
+Assess whether antihypertensive treatment is needed, depending on the stage of
+hypertension, person's age, estimated 10-year cardiovascular risk, evidence of target
+organ damage, and co-morbidities (including frailty or multimorbidity).
+See the CKS topic on Hypertension (/topics/hypertension/) for more information on
+stages of hypertension.
+If antihypertensive drug treatment is indicated:
+Assess the person's treatment goals and preferences and explain the risks and
+benefits of drug treatment. See the CKS topic on Hypertension
+(/topics/hypertension/) for more information on drug treatment options.
+Offer a generic angiotensin-converting enzyme (ACE) inhibitor or angiotensin-II
+receptor antagonist (AIIRA) to all adults (of any age or ethnic origin).
+For adults of black African or African-Caribbean origin, consider an AIIRA in
+preference to an ACE inhibitor.
+If an ACE inhibitor is not tolerated, offer an AIIRA.
+Do not combine an ACE inhibitor with an AIIRA to treat hypertension.
+Offer a calcium-channel blocker (CCB) or thiazide-like diuretic in addition to an ACE
+inhibitor or AIIRA, if hypertension is not controlled by monotherapy. 
+Offer a combination of an ACE inhibitor or AIIRA, a CCB and a thiazide-like diuretic if
+hypertension remains uncontrolled.  
+If hypertension is not controlled with optimal tolerated doses of an ACE inhibitor or an
+AIIRA, plus a CCB and a thiazide-like diuretic:
+Before considering further treatment, confirm elevated clinic blood pressure
+measurements using ABPM or HBPM, assess for postural hypotension, and
+discuss adherence with treatment. 
+Consider adding a fourth antihypertensive drug, or seek specialist advice, for
+people with confirmed resistant hypertension. See the CKS topic on Hypertension
+(/topics/hypertension/) for more information.
+Seek specialist advice if blood pressure remains uncontrolled with optimal
+tolerated doses of four antihypertensive drugs.
+The Diabetes UK patient resource Diabetes and blood pressure
+(https://www.diabetes.org.uk/guide-to-diabetes/managing-your-diabetes/blood-
+pressure) may be helpful.
+Lipid modification
+If an adult with type 2 diabetes does not have established cardiovascular
+disease(CVD), offer atorvastatin 20 mg once daily for primary prevention of CVD if:
+ The person is aged 84 years and younger, and their estimated 10-year risk of
+developing CVD is 10% or more.
+See the CKS topic on CVD risk assessment and management (/topics/cvd-risk-
+assessment-management/) for more information on assessing CVD risk and using
+the QRISK assessment tool.
+The person is 85 years of age or older, taking into account the person's preferences,
+benefits and risks of treatment, and co-morbidities (including frailty and
+multimorbidity).
+The person has a diagnosis of chronic kidney disease (CKD).
+See the CKS topic on Chronic kidney disease (/topics/chronic-kidney-disease/) for
+more information.
+Note: see the CKS topic on Lipid modification - CVD prevention (/topics/lipid-
+modification-cvd-prevention/) for detailed information on baseline blood tests,
+initiating statin treatment, and monitoring.
+
+The content on the NICE Clinical Knowledge Summaries site (CKS) is the copyright ofClarity Informatics Limited (trading
+as Agilio Software Primary Care) (https://agiliosoftware.com/primary-care/). By using CKS, you agree to the licence set
+out in theCKS End User Licence Agreement (https://www.nice.org.uk/terms-and-conditions/cks-end-user-licence-
+agreement).If an adult with type 2 diabetes has established CVD, offer atorvastatin 80 mg once
+daily for secondary prevention of CVD.
+See the CKS topics on Angina (/topics/angina/), Stroke and TIA (/topics/stroke-tia/),
+and Peripheral arterial disease (/topics/peripheral-arterial-disease/) for more
+information.
+Note: see the CKS topic on Lipid modification - CVD prevention (/topics/lipid-
+modification-cvd-prevention/) for detailed information on baseline blood tests,
+initiating statin treatment, and monitoring.
+Aim for a greater than 40% reduction in non-HDL cholesterol.
+Consider up-titration of the atorvastatin dose to achieve this target, if appropriate,
+depending on clinical judgement. See the CKS topic on Lipid modification - CVD
+prevention (/topics/lipid-modification-cvd-prevention/) for more information.
+The Diabetes UK patient resource Cholesterol and diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes/enjoy-food/eating-with-
+diabetes/managing-other-medical-conditions/cholesterol-and-diabetes) may be
+helpful.
+Antiplatelet treatment
+Do not routinely offer antiplatelet treatment (aspirin or clopidogrel) for the primary
+prevention of cardiovascular disease (CVD) in adults with type 2 diabetes.
+See the CKS topic on Antiplatelet treatment (/topics/antiplatelet-treatment/) for more
+information on the primary and secondary prevention of CVD in adults with type 2
+diabetes.
+Basis for recommendation
+Show
+©NICE (National Institute for Health and Care Excellence)2025. All rights reserved. Subject toNotice of rights
+(https://www.nice.org.uk/terms-and-conditions#notice-of-rights).

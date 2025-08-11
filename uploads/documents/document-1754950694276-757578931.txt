@@ -1,0 +1,2351 @@
+Toolkit
+Diabetes
+CARE GUIDELINESFOUNTAINS INTEGRATED CARE HOMES SERVICE
+Supporting Staff 
+in The Excellence 
+of Diabetes Care
+
+2 3
+FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM1.0. INTRODUCTION INTRODUCTION 
+FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES[SECTION-FOREWORD] Foreword
+Acknowledgements
+1.1. Scope of the document
+1.2. Key documents to support care staff in the management of residents with diabetes
+1.3. Incidence of diabetes in care home residents
+1.4 Why controlling diabetes is important
+2.1. Understanding diabetes
+2.2. Types of diabetes
+2.3. Screening for diabetes
+3.1. Type 2 Diabetes Medications
+3.2. [SECTION-INSULIN] Insulin
+3.3. [SECTION-INSULIN] Insulin administration and storage 
+3.4. Needle size
+4.1. Nutrition & Diabetes
+4.2. Carbohydrates
+4.3. Approaches to reduce added sugar in residents’ diet
+4.4. Diabetic residents identified as overweight or obese
+4.5. Palliative Care
+5.1. HbA1c targets? 
+5.2. HbA1c & Frailty
+5.3. Review of HbA1c
+6.1. How often should we be monitoring
+6.2. Emergency blood glucose monitoring
+6.3. Type 1 diabetes and blood glucose monitoring
+6.4. Blood glucose meters
+6.5. Calibration and quality assurance of meters
+6.6. What staff should carry out blood glucose monitoring? 
+6.7. Guidance for residents performing their own blood glucose monitoring
+6.8. Consent
+6.9. Blood glucose targets2.0. WHAT IS DIABETES?
+3.0. MEDICATIONS
+4.0. DIET AND DIABETES
+5.0. BLOOD GLUCOSE CONTROL & HBA1C
+6.0. BLOOD GLUCOSE MONITORING7.1 Supporting a resident living with dementia and diabetes
+7.2. Person-centred care
+7.3. Education
+7.4. Communication and connection
+7.5. Emotional support
+7.6. Practical support
+8.1. Essentials of foot care
+8.2. Toe nail cutting
+7.3. Diabetic foot problems & urgent care
+9.1. Signs & symptoms of hypoglycaemia
+9.2. What causes hypoglycaemia? 
+9.3. How to treat hypoglycaemia
+9.4. Swallowing difficulties
+9.5. Using a hypo box
+10.1. Signs & Symptoms of hyperglycaemia
+10.2. How to treat hyperglycaemia
+10.3. Emergency high blood glucose levels
+Appendix 1 – Resident diabetes passport care plan template
+Appendix 2 – Hypo Kits
+Appendix 3 – How to treat a hypo
+Appendix 4 – Sick day rules (Type 2 Diabetes) 
+Appendix 5 – Sick day rules (Type 1 Diabetes) 
+Appendix 6 – Foot Care
+Appendix 7 – [SECTION-INSULIN] Insulin Safety
+Appendix 8 – Audit checklist
+Figure 1 – Sites used for insulin injections
+Figure 2 – How to roll and invert an insulin pen
+Figure 3 – Examples of hypo boxesX
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+XX
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+XX
+X
+X
+X
+X
+X
+X
+XContents
+1.0. INTRODUCTION7.0. DIABETES AND DEMENTIA
+8.0. DIABETES AND FOOT CARE
+9.0. MANAGEMENT OF HYPOGLYCAEMIA (LOW BLOOD GLUCOSE)
+10.0. MANAGEMENT OF HYPERGLYCAEMIA (HIGH BLOOD GLUCOSE)
+11.0. COMPLICATIONS AND ANNUAL DIABETES REVIEW
+12.0. SUPPORTING A RESIDENT WHO ARE LIVING WITH DEMENTIA AND DIABETES
+13.0. STAFF ROLES & RESPONSIBILITIES
+14.0. USEFUL RESOURCES
+15.0. REFERENCES
+APPENDICES
+LIST OF FIGURES
+1.0. INTRODUCTION INTRODUCTION 
+ 4“Within a care home environment 
+where advancing age, chronic 
+disease, frailty and disability 
+concentrate among residents; 
+diabetes imposes an extra health 
+burden that stretches the capacity 
+and skills of many care staff beyond 
+their ability and it is no wonder that 
+hospital admissions result”
+Professor Allan Sinclair[SECTION-FOREWORD] Foreword
+Over the last decade, there have been many great advances in 
+diabetes care. These have been supported by multiple national 
+initiatives and various evidence-based guidelines, including 
+the National Institute for Health and Clinical Excellence (NICE), 
+the National Service Framework for Diabetes and not least the 
+inclusion of diabetes in the Quality and Outcomes Framework 
+in Primary Care. 
+In spite of this, improvement in caring for residents with 
+diabetes in care home settings has not been as forthcoming. 
+It is important to recognise that all adults living with diabetes 
+deserve to receive the same standard of care whether they live 
+in their own home or a residential/nursing care setting. The 
+available evidence suggests that although some good clinical 
+practice exists, many care providers do not have adequate 
+training provision for staff or follow good practice guidelines 
+or accountability for the quality-of-care residents with diabetes 
+receive.
+Diabetes in Care Homes (Diabetes UK, 2010) revealed a lack 
+of screening for diabetes on admission (less than a quarter of 
+homes) to care homes and only one third screen for diabetes 
+annually. The findings estimate that the number of residents 
+living with undiagnosed diabetes may be at least 13,500 in the 
+UK. If we combine this with the number currently diagnosed, 
+there is a significant number of people whose diabetes 
+care needs are not being met due to a lack of staff training, 
+awareness and screening. It is estimated, a resident with 
+diabetes is admitted to a hospital every 25 minutes and unless 
+measures are put in place to address these issues, by 2051, one 
+resident with diabetes from a care home will be admitted every 
+10 minutes.
+The Northwest Coast Diabetes Health Inequalities Programme 
+recognised that the standards of care might vary between 
+different populations and communities, therefore focus should 
+be aimed towards improving care for those groups likely to 
+experience greater diabetes health inequalities by essentially 
+supporting improvement, delivery and standards in diabetes 
+care. These guidelines have been developed with the objective 
+of improving exactly those standards of care for all care homes 
+within the Fountains Integrated Care Home Service.
+Joseph McGoldrick
+Joseph McGoldrick
+FICHS Diabetes Project Manager 
+Registered Dietitian
+Healthbox CIC
+1.0. INTRODUCTION 
+ FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM
+ 7Acknowledgements
+Thank you to our funders, North West Coast Diabetes Health 
+Inequalities Programme for forward thinking innovation to 
+support our care homes, their staff and most importantly their 
+residents in the provision of excellence in diabetes care. 
+Equally, I would like to thank the hard work of Karen Leong, 
+Diabetes Specialist Nurse at Wirral University Teaching Hospital 
+for producing the comprehensive Wirral Care Homes Policy 
+Document, an invaluable resource, which these guidelines were 
+adapted from.
+I would love to take the credit for the remarkable creative 
+design and artwork of these guidelines and toolkit, however 
+that would be spectacularly undeserved. Eternal thanks to the 
+Healthbox CIC artistic wizard, Chris Boswell who is the creative 
+genius behind this final document.
+To Dr Jeevan Crasta, clinical lead at Fountains Integrated Care 
+Home Service (FICHS) for his fantastic feedback, enthusiasm 
+and support for our project.
+A special thanks to the managers and staff of the care homes 
+within the FICHS, whom without your input, feedback and 
+support, this project would not get off the ground.
+Finally, thank you to my mentor Georgie Charnley, for her 
+unwavering support and guidance, I couldn’t do it without you.
+Thank you all and best wishes
+Joseph McGoldrick• To provide all FICHS care homes with a policy document 
+which offers evidence-based guidelines for all staff to 
+reference.
+• To preserve a high degree of quality of life without 
+exposing residents to needless and inappropriate medical 
+and/or therapeutic interventions.
+• To facilitate diabetes training to all FICH staff and 
+designate a key worker as ‘diabetes champion who is 
+responsible for maintaining high standards of diabetes 
+care.
+• To facilitate the provision of adequate support and 
+opportunity to enable residents to manage their own 
+diabetes where this is feasible.
+• To ensure that residents living with diabetes have bespoke 
+diabetes passports, care plans and follow-up specialist 
+care which is easily accessible depending on clinical need.
+• To achieve an optimum level of metabolic control with 
+particular attention paid to frailty which ameliorates the 
+malaise and lethargy of hyperglycaemia; substantially 
+reduces the risk of hypoglycaemia in those residents 
+taking sulphonylurea or insulin, and optimises the utmost 
+level of physical and cognitive function.
+• To reduce the complications and hospital admissions 
+associated with diabetes.
+Care home residents have the right to the same high level of 
+safe, evidence-based diabetes care, regardless of whether they 
+live in their own home or care home (Diabetes UK, 2010).PROJECT AND GUIDELINE AIMS:1.0. 
+[SECTION-INTRODUCTION] Introduction
+1.1. Scope of this document
+1.2. Key supporting documents in the management of diabetes in the care home setting
+1.3. Incidence of diabetes in residential and nursing homes
+1.4. Why diabetes care is important1.0. INTRODUCTION 
+
+1.0. INTRODUCTION INTRODUCTION 
+1.0. INTRODUCTION  
+9 FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES
+Care homes should have a diabetes 
+policy available for all appropriate 
+care staff to reference, which outlines 
+best-practice diabetes care and meets 
+evidence-based standards – Care Quality 
+Commission (CQC), 2015.Residents living with diabetes, should 
+have a person-centred care plan 
+developed with the resident, family/
+carers, GP and/or appropriate specialist 
+healthcare provider e.g., Diabetes 
+Specialist Nurse (DSN) or Consultant – 
+Diabetes UK, 2013.It is recommended that at least one 
+member (depending on the size of 
+the home) of staff is designated as a 
+‘Diabetes Key Worker’ or ‘Diabetes 
+Champion’ who is responsible for 
+diabetes management and maintaining 
+a high standard of diabetes care for 
+residents. The member of staff would 
+also regularly attend updated diabetes 
+training sessions - IDF, 2013 & IDOP , 
+2014.1.1. Scope of 
+this document1.2. Key supporting documents in the management 
+of diabetes in the care home setting
+This is a supporting document to assist care home staff in the 
+routine management of residents with diabetes. It may also 
+be used as a training reference/guide to educate new and/or 
+existing staff in their development of diabetes knowledge. The 
+information provided in this policy is supported by evidence-
+based literature and best practice. A consultation process was 
+undertaken with care homes within the Fountains Integrated 
+Care Home Service (FICHS) in the development of this 
+document to provide context to the level of support required 
+for care staff. It was important that this was a collaborative effort 
+in order to meet the needs of staff and residents.
+Embedded in the policy (Appendix 8), is an audit checklist, to 
+be used for auditing standards of diabetes care in your home. 
+We recommend that an audit is performed a minimum of 
+once a year. If any areas are identified which require change/
+improvement, a follow up audit should occur within a month.  Diabetes UK – Diabetes in care homes 
+awareness, screening, training (2010).
+National Institute for Health and Care Excellence 
+(NICE), 2015b. Type 1 diabetes in adults: 
+diagnosis and management. NICE guideline 
+[NG17].                       England-wide Care Home Diabetes 
+Audit Executive [SECTION-SUMMARY] Summary, spring 2014.
+National Institute for Health and Care Excellence 
+(NICE), 2015a. Type 2 diabetes in adults: 
+management. NICE guideline [NG28]. IMPORTANT DOCUMENTS
+8KEY RECOMMENDATIONS
+Diabetes UK – Good clinical practice 
+guidelines for care home
+residents with diabetes (2010).
+Available at:
+www.diabetes.org.uk/resourc-
+es-s3/2017-09/Care-homes-0110_0.pdf?_
+ga=2.238422405.468428599.1505127410-
+1295258485.1505127410  
+Available at:
+www.nice.org.uk/guidance/ng28/chapter/1-
+Recommendations#blood-glucosemanagement-2 Available at:
+www.diabetes.org.uk/re-
+sources-s3/2017-09/Care_
+homes_report2010_0.pdf?_
+ga=2.238422405.468428599.1505127410-
+1295258485.1505127410  
+Available at:
+www.nice.org.uk/guidance/ng17 Available at:
+http://diabetesfrail.org/wp-con-
+tent/uploads/2014/10/Eng-
+land-wide-Care-Home-Diabetes-Audit.pdf 1.0. INTRODUCTION 1.0. INTRODUCTION 
+
+10 11 FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES1.0. INTRODUCTION 1.0. INTRODUCTION 
+FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM
+1.3. Incidence of diabetes in 
+residential and nursing homes
+1.4. Why diabetes
+care is importantIn 2013, The International Diabetes Federation 
+recognised that the incidence of Type 2 Diabetes 
+increases with age and Diabetes doubles the risk 
+of admission to a care home. Therefore, with an 
+increasing aging population in care settings, comes 
+the need for high quality care to safely manage their 
+condition (Diabetes UK, 2010).
+Approximately 1-in-4 residents may have diabetes 
+in the care home setting and the same number may 
+have undiagnosed diabetes. Often the diagnosis may 
+be missed or undiagnosed when symptoms are non-
+specific or attributed to age, especially in residents 
+with dementia, learning difficulties/disabilities and 
+mental health needs. The opportunities for early 
+intervention may be missed with delayed/missed 
+diagnosis. Moreover, with existing co-morbidities 
+and related treatments, diabetes in older adults is 
+potentially more complex.
+• Kidney disease – diabetes is the single-most cause of end-
+stage kidney disease requiring dialysis or transplant.
+• Cardiovascular disease – heart failure being the most 
+common and fatal complication.
+• Retinopathy - People with diabetes have nearly a 50% 
+increased risk of developing glaucoma, especially if they 
+also have high blood pressure, and up to a threefold 
+increased risk of developing cataracts, both of which can 
+also lead to blindness.
+• Diabetic neuropathy - if poorly controlled, can damage 
+the nerves, muscles, sweat glands and circulation in the 
+feet and legs leading to foot ulcers and amputations. 
+Diabetes is the most common cause of lower limb 
+amputations with over 135 amputations a week amongst 
+people with diabetes. Many amputations are preceded 
+by foot ulceration caused by a combination of impaired 
+circulation and nerve damage.
+The complications associated with residents living with diabetes 
+include an increased risk of:
+• Heart attack & Stroke
+• Pressure Ulcer/Delayed Wound Healing
+• Chest/Urine & Skin Infections
+• Stroke
+• Reduced Cognitive and Physical Function
+• Hospital Admission/Readmission
+Also, with impaired cognitive function or increased levels of 
+pain and depression, may infer an inability to self-manage or 
+report symptoms, such as those associated with hypoglycaemia.Diabetes is considered to be the fastest rising health concern 
+we face in the UK, with approximately 4 million people 
+diagnosed, and a new diagnosis every 2 minutes (Diabetes 
+UK, 2016). Good management of blood glucose levels can 
+reduce the associated complications, however, when poor 
+management occurs, serious adverse events may ensue, 
+including:
+(Diabetes UK: Facts and Stats (2015)
+Available at: https://www.diabetes.org.uk/professionals/
+position-statements-reports/statistics 
+
+13 FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES 122.0. WHAT IS DIABETES? 2.0. WHAT IS DIABETES?
+2.0. 
+What is Diabetes?
+2.1. Understanding Diabetes
+2.2. Types of Diabetes
+2.3. Screening for Diabetes
+2.1. Understanding 
+Diabetes
+KEY POINTS
+Diabetes is a complex chronic metabolic disorder, 
+characterised by raised blood glucose levels, either 
+caused by the pancreas inability to produce insulin 
+(Type 1 Diabetes); or insufficient insulin is produced for 
+the bodies needs (Type 2 Diabetes); or the insulin that 
+is produced does not work effectively (Type 2 Diabetes 
+- insulin resistance).
+In healthy glucose homeostasis, the hormone insulin 
+is produced by the beta cells of the pancreas, which is 
+released after ingesting food and blood glucose levels 
+rise.
+Glucose regulation is sometimes described as a lock 
+and key mechanism. [SECTION-INSULIN] Insulin (key) attaches itself to the 
+cell wall (lock) to unlock the cells, allowing glucose to 
+be transported from the blood and into the cell where 
+it can be used as fuel for energy in the body.When this mechanism breaks down in both Type 1 and 2 
+Diabetes, the body is unable to control blood glucose levels 
+and unless lifestyle and/or medication interventions are 
+implemented, blood glucose will remain dysregulated.
+If blood glucose levels remain chronically high (hyperglycaemia), 
+over time this can cause damage to cells, blood vessels and 
+organs, leading to complications.
+These may include:
+• Damage to the eyes, which can cause visual problems 
+(retinopathy) and sometimes blindness
+• Damage to the kidneys (nephropathy)
+• Damage to the nerves including those supplying the legs, 
+feet, stomach, kidneys and the organs within the body 
+(neuropathy)
+• Damage to the heart, blood vessels and brain which can 
+lead to heart attacks and strokes (cardiovascular)
+People with Type 2 diabetes are at a very high risk of 
+developing cardiovascular problems such as heart attacks and 
+strokes. It is estimated that 75% of people with diabetes die 
+because of cardiovascular complications. In addition, the life 
+expectancy of people with diabetes may be reduced by up to 
+15 years.
+(National Institute for Health and Care Excellence [NICE], 
+(2011) diabetes in adults quality standards (QS6). 
+www.nice.org.uk/guidance/qs6/chapter/introduction
+Retrieved from: Diabetes UK 2021
+www.diabetes.org.uk/diabetes-the-basicsDiabetes develops when glucose can’t enter the body cells to 
+be used as fuel. This happens because either:
+In the case of Type 1 
+diabetes, there is no key 
+(insulin) to unlock the door 
+to the cells.Or, in the case of Type 2 
+iabetes, the key (insulin) is 
+unable to unlock the door 
+properly.
+and/or the key (insulin) is 
+there but the lock doesn’t 
+work properly.
+
+14 15 FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM2.0. WHAT IS DIABETES?
+2.2 Types of Diabetes
+There are several types of diabetes. For the purposes of these 
+guidelines, the two main types discussed are Type 1 diabetes 
+and Type 2 diabetes and will be the focus. Type 2 diabetes is 
+more prevalent in older adults; therefore, it is likely that there 
+will be higher numbers of people in care homes with this type 
+of diabetes. Both Type 1 and Type 2 diabetes have distinct 
+differences and characteristics, these are summarised in the 
+table below.
+The table illustrates that Type 1 Diabetes tends to have an 
+earlier onset and occurs in people under 40. Type 1 Diabetes 
+accounts for approximately 10% of all diabetes cases in the UK 
+and is characterised by no insulin production by the pancreas, 
+therefore individuals will require lifelong regular insulin 
+injections/pumps to manage their blood glucose levels.
+In Type 2 Diabetes, onset mostly occurs in adults over 40; 
+however, there are increasing cases of children developing 
+this type of diabetes. Type 2 Diabetes is most prevalent in 
+the care home setting and probably the most likely for you to 
+encounter. At diagnosis, individuals with Type 2 Diabetes are 
+encouraged to make changes to their diet and lifestyle in order 
+to control their blood glucose levels. In addition, depending on their HbA1c levels, people may be prescribed a first-line oral 
+medication called Metformin. This is often succeeded by further 
+medications depending on the progression of the condition. If 
+oral medications do not control blood glucose levels, residents 
+may need to be started on an insulin regimen. If a resident 
+progress to insulin, this does not change their diagnosis to Type 
+1 Diabetic, but rather they are an ‘insulin-dependent Type 2 
+Diabetic’
+Regardless of the type of diabetes our residents are living with, 
+they are at risk of developing associated complications, which 
+may be life-threatening. Therefore, it is important that each 
+resident has a regularly reviewed, person-centred care plan to 
+best manage their condition.2.0. WHAT IS DIABETES?
+KEY POINTS
+• Diabetes is a long-term, complex condition characterised 
+by high blood glucose levels and several associated 
+complications
+• Type 2 diabetes is more prevalent in care homes
+• A diagnosis of diabetes MUST be documented in the 
+resident’s diabetes passport/care plan and notes
+• Residents MUST be screened for diabetes on admission to 
+the home and at two yearly intervals, please discuss with 
+the resident’s GP
+2.3. Screening for Diabetes
+Compared with the general population, there is 
+a higher incidence of diabetes and undiagnosed 
+diabetes in the care home setting; therefore, it is 
+recommended that residents should be screened for 
+diabetes on admission and every 2 years thereafter by 
+the GP (IDF, 2013 & Diabetes UK, 2010).
+NB. It is important that this is discussed with the FICHS 
+GP and the date and frequency is documented in the 
+residents’ care plan/diabetes passport (see appendix 
+1) and case notes. In addition, care staff should be 
+aware of the signs and symptoms of diabetes, as 
+some residents may present with these but not have a 
+formal diagnosis. Also, it is important to recognise that 
+residents may not be able to articulate (depending on 
+progression of dementia) signs and symptoms, making 
+the awareness of care staff even more pertinent.
+These include:
+• Increased thirst
+• Passing more urine than normal, especially at 
+night
+• Blurred vision
+• Recurrent infections, especially genital thrush
+• Cuts and wounds may take longer to heal
+• Tiredness and sleeping more than normal
+• Weight loss
+Please alert the FICHS GP if any of the above 
+symptoms are present and the resident is not known to 
+have diabetes so that screening can then take place.
+Figure 1: Differences between Type 1 and Type 2 diabetes. Retrieved from: www.diabetesinhealthcare.co.ukTYPE 1 DIABETES TYPE 2 DIABETES
+[SECTION-INSULIN] InsulinThe body doesn’t produce any
+insulin as the insulin-producing
+cells have been destroyedThe body can still produce some insulin, but not 
+enough and/or the insulin doesn’t work properly 
+(insulin resistance)
+Onset Symptoms develop quickly Symptoms tend to develop slowly
+AgeDevelops at any age but usually before the  
+age of 40Usually appears in people over the age of 40 
+but generally about 10 years earlier in people of 
+Black and South Asian ethnicity
+PrevalenceAccounts for approximately 10%
+of all people with diabetesAccounts for approximately 90% of all people 
+with diabetes
+TreatmentTreated by taking insulin (either by
+injection or pump), a healthy diet
+and regular physical activityTreated with healthy diet and regular
+physical activity. Medications, including
+insulin, may also be required
+
+17 FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES3.0. MEDICATIONS  
+3.0. 
+Medications
+3.1. Type 2 Diabetes Medications
+3.2. [SECTION-INSULIN] Insulin
+3.3. [SECTION-INSULIN] Insulin administration & storage
+3.4. Needle size
+163.0. MEDICATIONS 
+3.1. Type 2
+Diabetes MedicationsThe following medications are used in Type 2 diabetes to lower 
+and control the blood glucose levels. You may be aware of your 
+residents who are on some of these medications:
+Medications such as gliclazide, and other tablets within this class of drugs (sulphonylureas), can increase the resident’s risk of 
+hypoglycaemia. If residents are on insulin this can also increase a resident’s risk of hypoglycaemia. These residents will need to be 
+monitored more closely for signs of hypoglycaemia and treated appropriately (see section 8, treating hypoglycaemia).  If residents are 
+experiencing episodes of hypoglycaemia, please ensure these are promptly treated and contact the resident’s GP or other specialist 
+health care provider e.g., Consultant or Diabetes Specialist Nurse to review the resident. The resident’s medications will also need to 
+be reviewed and may need to be adjusted and the underlying cause of hypoglycaemia identified.NAME & CLASS OF 
+MEDICATIONOTHER BRAND 
+NAMESHOW THE DRUG WORKSPOTENTIAL SIDE 
+EFFECTSWHEN TO GIVE
+metformin  
+(biguanides)Glucophage, 
+SukkartoReduces glucose 
+production from 
+the liver, increases 
+insulin sensitivityNausea, vomiting, 
+abdominal bloating, 
+diarrhoeaTo be given with 
+food. Doses usually 
+split and given 2-3 
+times daily with 
+meals
+Gliclazide,  
+Glimepiride,  
+Glipizide  
+(Sulphonylureas)**Diamicron,  
+AmarylIncreases insulin 
+production from the 
+pancreasWeight gain, 
+nausea, 
+hypoglycaemiaPreferably give with 
+food once or twice 
+daily depending on 
+dose
+Pioglitazone  
+(Thiazolidinedione) Actos Reduces insulin 
+resistance,  
+increases insulin 
+sensitivityWeight gain, fluid 
+retention, increased 
+risk bone fractures 
+in women, 
+associated risks with 
+bladder cancerOnce daily
+Repaglanide,  
+Nateglanide  
+(prandial glucose 
+regulators) **Prandin,  
+StarlixStimulates insulin 
+secretion from the 
+pancreasHypoglycaemia, 
+nausea, vomiting, 
+abdominal painWithin 30 minutes 
+before main meal
+Sitagliptin,  
+Saxagliptin,  
+Alogliptin  
+(dpp4 inhibitors)Januvia, 
+Onglyza,  
+VipidiaIncreases insulin 
+secretion in relation 
+to foodHypoglycaemia  
+if used with  
+sulphonylurea 
+medicationsOnce daily
+Dapaglifozin,  
+Canagliflozin  
+(sglt2 inhibitors)Forxiga,  
+InvokanaStops the kidney 
+reabsorbing glucose. 
+This is then excreted 
+from the body in the  
+urineGenital thrush, 
+urine infections, low 
+blood pressureOnce daily
+Exenatide,  
+Liraglutide (glp1 
+mimetic injections)Bydureon,  
+VictozaGiven as injections. 
+Increases insulin 
+secretion and slows 
+gastric emptyingNausea, abdominal 
+bloating/
+discomfort, reduced 
+appetiteOnce weekly or once 
+daily depending on 
+which medication 
+used
+Figure 2 – Different types of medications used to control blood glucose levels in Type 2 Diabetes.
+NB. The medications marked with a double Asterix sign (**) have a higher risk of hypoglycaemia for residents who may be 
+prescribed these.
+
+19 FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM 18BACKMEDICATIONS 3.0. MEDICATIONS 3.0. 
+3.2. [SECTION-INSULIN] Insulin
+[SECTION-INSULIN] Insulin is a hormone which lowers blood glucose levels and is used for people with Type 1 diabetes as their body does not produce 
+insulin. It is also used in people with Type 2 diabetes in addition to their other diabetes medications. There are different types of 
+insulin, some of which are identified in the table below. Some of your residents may be on these different types of insulin.3.3 [SECTION-INSULIN] Insulin Administration 
+& Storage
+Figure 1 – illustration of appropriate insulin injection 
+sites. NB. When administering insulin injections ensure 
+the injection sites are rotated. Do not give the insulin 
+in the same area in that site every day.NAME OF 
+INSULINCOLOUR OF 
+INSULINDURATION 
+OF ACTIONWHEN TO BE GIVEN
+Lantus 
+(long-acting 
+insulin)Clear Lasts approximately 
+24 hoursGiven once daily, same time each day but doesn’t need to 
+be given with food.
+Levemir 
+(long-acting 
+insulin)Clear Lasts 20-24 hours 
+approximatelyUsually given once a day. Can also be given twice a day, 
+same time(s) each day. Doesn’t need to be given with food.
+Humalog 
+(rapid acting 
+insulin)Clear Lasts approximately 
+3-5 hoursGiven with food, just as food is about to be eaten. Can be 
+given at the very end of the meal but only if advised to do 
+so by GP or diabetes specialist team.
+Novorapid 
+(rapid acting 
+insulin)Clear Lasts approximately 
+3-5 hoursGiven with food, just as food is about to be eaten. Can be 
+given at the very end of the meal but only if advised to do 
+so by GP or diabetes specialist team.
+Apidra 
+(rapid acting 
+insulin)Clear Lasts approximately 
+3-5 hoursGiven with food, just as food is about to be eaten.  Can be 
+given at the very end of the meal but only if advised to do 
+so by the GP or diabetes specialist team.
+Novomix 30 
+(mixed insulin)Cloudy Each injection lasts 
+10-16 hours  
+approximatelyGiven twice daily with breakfast and evening meal. Give as 
+food about to be eaten. Has to be mixed prior to injecting.
+Humalog 
+Mix 25 
+(mixed insulin)Clear Each injection lasts 
+10-16 hours  
+approximatelyGiven twice daily with breakfast and evening meal. Give as 
+food about to be eaten. Has to be mixed prior to injecting.
+Humulin m3 
+(mixed insulin) Cloudy Each injection lasts 
+up to 12 hours  
+approximatelyGiven twice daily with breakfast and evening meal. Give 30 
+minutes before food. Has to be mixed prior to injecting.
+Insuman comb  
+15, 25, 50 
+(mixed insulin)Cloudy Each injection lasts 
+between 11-20  
+hours approximatelyGiven twice daily with breakfast and evening meal. Give 30 
+minutes before food. Has to be mixed prior to injecting.
+Figure 3 – Different types of insulin used to control blood glucose levels for individuals who are insulin-dependent.FRONT
+• Correct information! You MUST ensure the correct insulin is 
+used and corresponding insulin pen device, by checking the 
+resident’s identification is confirmed as correct and that the 
+insulin is in date. 
+• Once in use the insulin should be kept at room temperature for 
+up to 30 days, or as per manufacturer’s instructions, not in the 
+fridge. Only unused insulin pens or vials should be kept in the 
+fridge and away from the freezer compartment. 
+• Ensure a new insulin needle is used for each injection. DO NOT 
+leave the needle on the pen after use, dispose of this in the 
+sharps bin. 
+• Ensure the insulin pen is primed before each use – dial 2 units 
+on the pen and dispel the units into the sink (known as the ‘air 
+shot’). Look for a bead of insulin at the end of the pen.  If this is 
+missing, repeat the 2 unit ‘air shot’. If after repeated priming no 
+insulin is seen at the end of the pen DO NOT use the pen.
+• If residents are on a mixed or cloudy insulin ensure the insulin is 
+mixed prior to use. Gently invert the pen for 10 times and roll 
+the pen for 10 times until the insulin looks white not cloudy. DO 
+NOT shake the insulin as this will affect the insulin molecules. 
+• Check the resident’s injection sites at regular intervals for any 
+lumpy areas. You may need to palpate the injection sites with 
+your hands as the lumps may be underneath the skin. If there 
+are any lumpy areas do not inject into these and avoid this area. 
+• Ensure the insulin is given at the appropriate times. For rapid 
+acting and mixed insulin these need to be given with meals. 
+• DO NOT UNDER ANY CIRCUMSTANCES withdraw insulin 
+from a pre-filled insulin pen or insulin cartridge with a syringe. 
+This can have fatal consequences for the resident. [SECTION-INSULIN] Insulin may 
+only be withdrawn from an insulin vial using an appropriate 
+prescribed insulin syringe and needle, and only as directed by 
+the GP or diabetes specialist team.KEY POINTS
+Please ensure to consider the following points when administering 
+insulin injections: 
+How to roll (A) and invert (B) the insulin pen prior to use. Do not 
+vigorously shake the insulin. Figure 2 – Technique to roll and invert 
+insulin pens.
+A BNOTE: AWAITING STEVE TO
+TAKEN PICTURES
+
+20 FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM
+3.4 Needle Size
+A 4mm pen needle is recommended as the safest needle to use 
+when giving insulin injections as this reduces the risk of giving 
+the insulin via an intramuscular injection. In obese residents, a 
+5mm needle may be acceptable. DO NOT reuse needles, these 
+are meant for single use only. Dispose of insulin needles in a 
+prescribed sharps bin.MEDICATIONS 3.0. 
+Residents who require insulin injections are at a higher risk 
+of having a hypoglycaemic event. These residents will need 
+to have their blood glucose levels monitored more closely. If 
+residents on insulin are having hypoglycaemic events, please 
+contact the GP as soon as possible to review the resident’s 
+medication. The insulin doses may need to be adjusted.
+KEY MESSAGESTHINGS TO REMEMBER
+• A variety of medications are available to manage blood 
+glucose levels for use in residents with diabetes.
+• Residents with Type 1 diabetes will be on regular daily 
+insulin injections.
+• Residents with Type 2 diabetes may be on oral 
+medications and insulin injections.
+• Medications including insulin and gliclazide tablets 
+will increase a resident’s risk of hypoglycaemia. These 
+residents will require closer monitoring of their blood 
+glucose levels.
+• Ensure all staff are aware of which residents are on these 
+high-risk medications.
+• A needle size of between 4mm and 5mm is advocated for 
+insulin injections. Do not reuse needles.
+• Ensure the insulin is given at the correct time – this may 
+not necessarily coincide with the drug rounds.
+• NEVER withdraw insulin from a pre-filled insulin pen 
+or insulin cartridge, use the corresponding insulin pen 
+provided.
+214.0. 
+Diet & Diabetes
+4.1. Nutrition & Diabetes
+4.2. Carbohydrate
+4.3. Approaches to reduce added sugar in residents’ diet
+4.4. Diabetic residents identified as overweight or obese
+4.5. Malnutrition
+4.6. Palliative Care4.0. DIET & DIABETES
+
+FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM 22 234.0. DIET & DIABETES
+ 4.0. DIET & DIABETES
+4.1 Nutrition & Diabetes
+A suitable, individualised nutrition care plan is important to 
+managing a resident’s diabetes. Please ensure a well-balanced 
+diet with proportional quantities of macronutrients (Fat, Protein 
+& Carbohydrates) rich in micronutrients (vitamins, minerals, 
+fibre) and adequate fluids are provided.
+KEY POINTS
+• Regular meals - tailor meal patterns to each resident’s 
+needs. If a resident is on insulin or sulphonylurea tablets 
+(e.g., gliclazide) regular carbohydrate-containing meals 
+are important to avoid hypoglycaemia and meal times 
+should coincide with administration of these medications
+• Include high fibre, low GI (slow releasing), wholegrain 
+carbohydrates
+• Ensure there is a consistent amount of carbohydrate at 
+each meal
+• Limit sugar and sugary foods (but no need for a ‘sugar 
+free’ diet)
+• There is no need for ‘Diabetic’ foods, they are often 
+expensive, have no additional nutritional benefit and often 
+high in fat
+• Include more vegetables and fruit
+• Include more beans and lentils
+• Reduce overall fat intake• Include dairy products (or alternative fortified/enriched 
+dairy free products) such as milk, cheese, yoghurt
+• Oily fish – aim for at least two portions of fish per week, 
+with at least one portion being oily fish (e.g., salmon, 
+pilchards, sardines, mackerel) as they are beneficial for 
+reducing cardiovascular disease risk factors
+• Limit salt and processed foods due to the impact on 
+blood pressure
+• Limit high saturated/trans fat foods such as cakes, biscuits, 
+chocolate, etc
+• Encourage alcohol in moderation
+• Promote physical activity as functional status allows
+• Ensure adequate amounts of fluid are given
+• Recommendations for carbohydrate, alcohol and meal 
+patterns should be tailored to the needs of each resident 
+with the aim of reducing hypoglycaemia risk in residents 
+treated with sulphonylureas or insulin (NICE, 2015a)
+Diabetes UK Nutrition Working Group 2011; IDF 2013; TREND-UK & Institute of Diabetes for Older People (IDOP) 2013; National 
+Institute for Health and Care Excellence (NICE) 2015a.STARCH
+Bread, pasta, pulses (peas, beans, 
+lentils), flour, some found in vegetables, 
+particularly root vegetablesADDED SUGAR
+Sugar sweetened beverages, table 
+sugar, sweets, jelly, chocolate, cakes* 
+biscuits* puddings*NATURAL SUGARS
+Fruit (fresh, frozen, tinned) fruit juice, 
+milk, yoghurt, fromage frais4.2 Carbohydrates
+All carbohydrates are broken down to release the sugar glucose 
+for use as energy. If consumed in excess, can cause high 
+blood glucose levels. If too little carbohydrates are eaten by 
+residents who are prescribed insulin or sulphonylurea tablets 
+(e.g., gliclazide) hypoglycaemia can ensue. Reducing the risk of 
+hypoglycaemia should be a particular aim for these residents 
+(NICE, 2015a). 
+The portion of carbohydrate consumed is the key component 
+affecting blood glucose levels (American Diabetes Association 
+(ADA), 2004a, 2004b; Diabetes UK Nutrition Working Group, 
+2011) i.e., the greater the serving of starch and sugar containing 
+foods and drinks consumed, the higher the blood glucose 
+levels will rise. It is important to note, most foods comprising 
+carbohydrate from starch or natural sugars also offer the body 
+with other important nutrients such as vitamins, minerals, 
+fibre, protein; however, the majority of foods/drinks containing 
+added sugars are low in nutrients and have a negative impact 
+on dental health (Scientific Advisory Committee on Nutrition 
+(SACN) 2015). Consequently, while people with diabetes 
+can include some sugar containing foods in place of other 
+carbohydrates, as part of a balanced diet (Diabetes UK 
+Nutrition Working Group, 2011; IDF, 2013), everyone (with/
+without diabetes) is advised to reduce the intake of added 
+sugars (SACN, 2015) and caution should be exercised to avoid 
+excess energy intake (NICE, 2015a).
+CARBOHYDRATES ARE FOUND IN THE FOLLOWING FOODS AND DRINKS
+*Also contains starch e.g., flour
+
+25 FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES 24 FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM4.0. DIET & DIABETES 4.0. DIET & DIABETES
+4.3 Approaches to 
+reduce added sugar in 
+residents’ diet
+• Consider offering sugar-free, no added sugar or diet 
+squashes/fizzy drinks instead of full sugar varieties.
+• Avoid/limit adding sugar to hot drinks, consider offering 
+sweeteners as a replacement.
+• When baking/cooking, reduce the amount of sugar 
+added, frequently the quantity specified in a recipe can 
+be halved without having a negative impact on the final 
+product. Also, some recipes lend themselves well to 
+sweeteners as a substitute.
+• Reduce portion sizes/frequency of sugar sweetened 
+products
+There is no need for a ‘special diabetic diet’ (TREND-UK, 2010; 
+IDOP , 2013) or ‘diabetic foods’ (Diabetes UK, 2010; Diabetes UK 
+Nutrition Working Group, 2011; NICE, 2015a). Diabetic foods 
+provide no benefit to individuals with diabetes. They may still 
+affect blood glucose levels, often contain just as much fat and 
+energy as the regular varieties, often have a laxative effect and 
+are more expensive (Diabetes UK, 2010; Diabetes UK Nutrition 
+Working Group, 2011).
+The most important factor is to make sure portions of starchy 
+and natural sugar containing foods are not excessive. When 
+offering carbohydrates, encourage slower release (lower 
+Glycaemic index (GI)) (NICE, 2015a) as they may have an 
+additional benefit for blood glucose levels (Brand-Miller et 
+al., 2003; ADA, 2004a, 2004b; Opperman et al., 2004; Thomas 
+& Elliott, 2009; Thomas & Elliott, 2010; Diabetes UK Nutrition 
+Working Group, 2011). Most slower releasing carbohydrates are 
+less processed and higher in fibre.Examples of low GI slow releasing carbohydrates include:
+• Vegetables/salad vegetables
+• Most fruits
+• Pulses (peas, beans, lentils)
+• Oats (e.g., porridge, natural muesli, oat-based bread), 
+All-Bran
+• Grainy/seeded/stone ground bread
+• New potatoes, sweet potato (with skin on) 
+• Pasta (wholegrain versions are lower GI)
+• Basmati or easy cook rice (wholegrain versions are the 
+best choice) 
+Serving size of carbohydrate foods is still the biggest factor 
+affecting blood glucose levels (Diabetes UK Nutrition Working 
+Group, 2011). Regular nutritional screening of residents by care 
+home staff with appropriate skills and training is also important 
+to identify malnutrition – (Care Quality Commission (CQC), 
+2014; NICE, 2006; 2012) For homes in the FICHS, it is important 
+to follow the MUST care pathway and implement all relevant 
+steps. Keep food record charts to monitor carbohydrate intake, 
+primarily when reviewed in combination with blood glucose 
+records for any residents who have their levels monitored.4.4. Diabetic residents 
+identified as 
+overweight or obese
+Losing weight is the biggest predictor for reducing the risk 
+of developing Type 2 Diabetes in those who are at high risk 
+(Hamman et al., 2006; Diabetes UK Nutrition Working Group, 
+2011) and should be the primary diabetes management 
+strategy in those with Type 2 diabetes who are overweight/
+obese (Diabetes UK Nutrition Working Group, 2011). Residents 
+who are functionally independent should be supported to 
+achieve a healthy body weight (IDF, 2013).
+An initial aim of 5-10% weight loss is recommended (NICE, 
+2015a), and is associated with a reduced risk of developing 
+Type 2 diabetes (Diabetes UK Nutrition Working Group, 2011), 
+reduction in blood pressure (Feldstein et al., 2008; Diabetes UK 
+Nutrition Working Group, 2011), cholesterol levels, improved 
+blood glucose levels and reduction in mortality (Williamson 
+et al., 2000). Weight loss should be achieved through long 
+term lifestyle changes (ideally changes to diet and increase in 
+physical activity levels where possible). Specific goals should 
+be identified and negotiated as part of the care planning 
+process. An initial weight loss target of 5-10% is advised. 
+Lower amounts of weight loss may still be of benefit and in the 
+longer-term greater weight loss to achieve a healthy weight will 
+have benefits (NICE, 2015a). The focus for weight management 
+should be on total energy intake rather than on the source 
+of energy in the diet as there is insufficient evidence for best 
+dietary approach (Franz et al., 2010; Diabetes UK Nutrition 
+Working Group, 2011; Wheeler et al., 2011; Ajala et al., 2013).
+Dietary changes may include:
+• A reduction in portion sizes, particularly of high fat/
+sugar processed foods (e.g., cakes, biscuits, crisps, etc.) 
+and starchy foods at meals (bread, rice, potatoes, pasta, 
+cereal). Use of a smaller plate can facilitate this
+• Increased vegetable/salad portions (low in calories and 
+high in fibre)
+• Reduction in snacking. (In rare circumstances a diabetes 
+specialist may advise that a resident requires snacks to 
+prevent hypoglycaemia if on certain insulin regimens).
+If snacks are included encourage lower calorie and 
+carbohydrate options e.g., salad vegetables cut into 
+batons; single handful fruit; small serving of yoghurt; plain 
+biscuit e.g., cracker, Nice, Rich Tea, Marie
+• Reducing intake of high fat and refined carbohydrate/
+sugar foods such as cakes, chocolate, biscuits, puddings, 
+crisps, sugary drinks, sweets, etc
+• Reducing added sugar intake (see above)
+
+27 26 FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM4.0. DIET & DIABETES 4.0. DIET & DIABETES
+4.6. Palliative Care 4.5. Malnutrition
+Avoidance of hypoglycaemia and symptoms of hyperglycaemia 
+are priority for residents with diabetes receiving palliative 
+care. Dietary provision, which is non-invasive and optimises 
+nutritional and fluid intake, should be a priority (Diabetes 
+UK Nutrition Working Group, 2011). Nutrition should be 
+personalised to the resident’s overall condition, not focused 
+solely on their diabetes (Diabetes UK, 2013a; 2013b). If palliative 
+care residents request ‘sugary’ foods these should be provided, 
+with diabetes medication being adjusted as required (Diabetes 
+UK, 2013b).Malnutrition is common in older adults, particularly in care 
+settings (British Association of Parenteral and Enteral Nutrition 
+(BAPEN), 2015) and diabetes is known to increase the risk of 
+under-nutrition (Diabetes UK Nutrition Working Group, 2010).
+Malnutrition is associated with longer and more frequent 
+hospital admissions, increased mortality, pressure ulcers, 
+delirium, and depression. Possible causes of malnutrition 
+include:
+• Poor appetite
+• Altered taste and smell
+• Swallowing difficulties
+• Oral and dental problems (It is estimated that people 
+with diabetes can be up to approximately three times 
+more likely to develop gum disease than people without 
+diabetes). Functional impairments
+• Low mood
+• Reduced cognition
+For residents who are malnourished or who are at risk of 
+malnutrition, healthy eating changes may be unsuitable 
+as they may result in weight loss. All care home residents 
+should be screened for malnutrition, by a member of staff 
+with appropriate skills and training, on admission and at 
+regular (monthly) intervals, with more frequent monitoring if 
+malnutrition risk is identified (BAPEN, 2003; NICE, 2006). Their 
+screening results and goals of nutrition should be documented 
+and communicated in writing between care settings (NICE, 
+2012). The Malnutrition Universal Screening Tool (MUST) 
+is widely recommended for nutritional screening (BAPEN, 
+2003). See Cheshire West MUST Care Pathway for further 
+information.Nutrition support should be considered in residents who are 
+identified as malnourished or at risk of malnutrition:
+• Less than 18.5kg/m2
+• Unintentional weight loss greater than 10% in the past 3-6 
+months
+• BMI less than 20kg/m2 and unintentional weight loss 
+greater than 5% in the past 3-6 months (NICE, 2006)
+Residents identified as being malnourished or at risk of 
+malnutrition can be identified by MUST score 1 or 2 or above 
+and should be managed in line with MUST protocol (BAPEN, 
+2003), including implementation of a ‘Food First’ (high calorie 
+and protein) diet.
+This includes:
+• High calorie, higher protein foods and nourishing drinks
+• Fortify usual foods
+• Encourage smaller more frequent meals and snacks
+• Change food texture if required
+• Provide nutritious drinks between meals
+• Calm, distraction free environment to eat in
+Sugar does not raise blood glucose levels more than the 
+equivalent amount of starchy carbohydrate and, in most 
+situations standard nutrition support protocols should be 
+followed and adjustment of diabetes medication prioritised 
+over dietary restriction (Diabetes UK Nutrition Working Group, 
+2011), with a diabetes review requested. If there are concerns 
+about raised blood glucose levels there should be a focus on 
+fats/proteins (cream, cheese, butter, oils) rather than sugars for 
+fortification as this will reduce the impact on
+blood glucose levels.NUTRITION & DIABETES KEY POINTS:
+• There is no ‘special diet for diabetes’ – this should be 
+balanced and varied.
+• Residents on insulin and sulphonylurea medications 
+(including gliclazide) should have regular meals and doses 
+optimised to avoid hypoglycaemia.
+• There is no need for ‘diabetic foods’ – these can have a 
+laxative effect and are expensive.
+• Carbohydrates have the biggest impact on resident’s 
+blood glucose levels – these all break down in the 
+stomach to form glucose.
+• Carbohydrate portion sizes are one of the biggest factors 
+affecting blood glucose levels.
+• For homes in the FICHS, nutritional screening should be 
+implemented using the MUST care pathway on admission 
+to the home and at least monthly intervals.
+• For residents receiving palliative care it is important to 
+avoid hypoglycaemia and symptomatic hyperglycaemia. 
+Diet should be tailored to the resident’s overall condition, 
+not just their diabetes.
+ FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES5.0. Blood Glucose 
+control & HbA1C
+In order to minimise osmotic symptoms and prevent associated 
+complications, it is recommended that reasonable blood 
+glucose control should be promoted (NICE clinical guideline 
+[NG28], 2015a). However, tight diabetes control is not usually 
+recommended in the care home setting, this should be 
+assessed using a person-centred approach.
+• A snapshot of diabetes control can be measured by a 
+non-fasting blood test called HbA1c, offering information 
+about what the diabetes control has been like for the 
+previous 2-3 months
+• It is recommended that in adults with Type 2 diabetes, 
+HbA1c is measured at 3-6 monthly intervals until this is 
+stable and the resident’s treatments are not being altered. 
+Once the HbA1c is stable and the resident’s medications 
+are no longer being altered this test can be checked 
+every 6 months (NICE, 2015a). Please discuss this with 
+the resident’s FICHS GP and document in the diabetes 
+passport/care plan how frequently the HbA1c should be 
+checked and the date when this is due to be taken• For adults with Type 1 diabetes, it is recommended that 
+the HbA1c is checked every 3-6 months (NICE clinical 
+guideline (NG17), 2015b). Again, this should be discussed 
+with the FICHS GP , documented in the resident’s 
+diabetes passport/care plan. Please ensure staff know 
+the frequency and date when the blood test is due to be 
+taken
+• For the care of residents with diabetes at end of life, 
+information relating to diabetes control can be found 
+in the following Diabetes UK document. Please follow 
+this link: www.diabetes.org.uk/professionals/position-
+statements-reports/diagnosis-ongoing-management-
+monitoring/end-of-life-care 5.0. 
+Blood Glucose 
+control & HbA1C
+5.1. HbA1c targets 
+5.2. HbA1c and Frailty
+5.3. Review of HbA1
+285.0. BLOOD GLUCOSE CONTROL & HBA1C 5.0. BLOOD GLUCOSE CONTROL & HBA1C 
+FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES5.0. BLOOD GLUCOSE CONTROL & HBA1C 
+305.0. BLOOD GLUCOSE CONTROL & HBA1C 
+5.1. HbA1c targets 5.2. Review of HbA1c
+Historically, HbA1c targets were expressed as a percentage, 
+however results are now represented in mmol/mol. In adults, 
+HbA1c targets are set between 48 and 53mmol/mol, however 
+it has been recommended that these targets may be too tight 
+for frail, older adults with Type 2 Diabetes and a more relaxed 
+HbA1c target should be considered for these individuals (NICE 
+clinical guideline (NG28), 2015a).
+For adults with Type 1 diabetes the national target for HbA1c is 
+set at 48mmol/mol or lower (NICE, 2015b). This target, however, 
+should be individualised for each person, taking into account 
+their daily activities, the likelihood of complications, other 
+conditions that the person may have and whether they have a 
+history of hypoglycaemia (NICE, 2015b).The HbA1c target for each resident should be reviewed 
+at least once a year as part of their annual diabetes 
+review, by the FICHS GP with specific attention given 
+to frailty, optimisation of medications, nutrition and 
+functional assessment.
+A report of the resident’s HbA1c result should be made 
+available to the care home staff and a record kept in 
+the resident’s diabetes passport/care plan and medical 
+notes. This will enable the care staff to take a more 
+active role in the resident’s diabetes management.
+Please discuss and confirm what the HbA1c target is 
+for each resident with the FICHS GP and document in 
+the resident’s diabetes passport/care and ensure all 
+relevant staff are aware.
+KEY POINTS:
+• HbA1c is a blood test which measures the resident’s 
+diabetes control for the last 2-3 months
+• It is recommended that HbA1c is measured every 3-6 
+months for residents with Type 2 diabetes if this is not 
+stable and the resident’s treatments are being altered. 
+Once the HbA1c is stable this can be measured every 6 
+months. Please confirm the frequency with the GP and 
+document in the resident’s care plan
+• For residents with Type 1 diabetes the HbA1c should be 
+measured every 3-6 months
+• A report of the HbA1c result should be made available 
+to care home staff so they can be actively involved in the 
+resident’s diabetes management
+• The HbA1c target should be individualised for each 
+resident and documented in their care plan and notes.
+• The HbA1c target should be reviewed at least once a 
+year at the annual review by the resident’s GP or other 
+specialist health care provider
+• Understand that frailty is a serious but avoidable 
+complication of diabetes
+• Tailor goals of care and HbA1c targets with measures of 
+frailty status
+• Take specific actions to improve patient outcomes – 
+practical intervention should be taken in the management 
+of older adults with diabetes and frailty
+
+32 33
+FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES5.0. BLOOD GLUCOSE CONTROL & HBA1C 5.0. BLOOD GLUCOSE CONTROL & HBA1C 
+5.3. HbA1c & Frailty
+DIABETES AND FRAILTY
+Emerging evidence suggests frailty and sarcopenia (age-related 
+lean muscle loss characterised by loss of power) are recognised 
+as new complications of diabetes in older adults (Sinclair, 2017); 
+and, Type 2 Diabetes has been identified as a risk factor for 
+the development of frailty and sarcopenia. Therefore, priority 
+should be given to strategize how to implement preventative 
+measures to reduce these risk factors in residents with diabetes. 
+Since regular physical activity and optimising nutrition are key 
+aspects in reducing risk, implementation of these should be 
+prioritised in our residents’ care plan and may have significant 
+advantages in delaying or preventing these associated 
+complications. 
+In 2017, The National Collaborative Stakeholder on Frailty 
+in Diabetes published a position statement to provide a 
+framework for action in managing older adults with diabetes 
+and frailty (Sinclair et al., 2017). The document highlights five 
+key messages to address the issues of frailty in diabetes:1. Understand that frailty is a serious but avoidable 
+complication of diabetes 
+Diabetes increases the risk of the development of frailty, 
+which is associated with hypertension, renal impairment 
+and dementia. Diabetes may decrease mobility and restrict 
+activities of daily living (ADL) by approximately 50-80%, 
+which increases with age (Wong, 2013).
+2. Be aware of the shortfalls of current international 
+guidance 
+Several well received international guidelines have been 
+developed, however have been criticised for being 
+developed for specialist interventions, which lack practical 
+translation to varied primary care settings. The evidence 
+has been reviewed, to provide realistic glycaemic targets 
+which align with specific categories of frailty (Strain, 2018).
+3. Use simple methods to detect frailty and assess 
+functional status 
+The Electronic Frailty Index (EFI), together with a 4-meter 
+gait score and a timed get-up-and-go test are invaluable 
+tools in the assessment of frailty in primary care.
+4. Tailor goals of care with measures of frailty status 
+It was acknowledged that there are increasing concerns 
+of polypharmacy in older adults with diabetes which 
+increases the personal and public burden (GP , ambulance 
+call outs and hospitalisations) of hypoglycaemia and 
+the lack of individualised targets for frail older adults. A 
+consensus view recommends few diabetic individuals aged 
+70 years and over benefit from intensive blood glucose 
+targets of less than 53 mmol/mol, as available evidence 
+does not support these targets. Whereas, a more relaxed 
+target range of between 53-58mmol/mol for reasonable 
+functionality; 64mmol/mol for moderate to severe frailty 
+and a HbA1c target of 70mmol/mol for severe frailty 
+(Strain, 2018).5. Take specific actions to improve patient outcomes. 
+Practical action should be taken in the management of 
+older adults with diabetes and frailty:
+• Older adults with diabetes over the age of 65 should be 
+assessed for frailty and severity using EFI tool, together 
+with a 4-meter gait score and a timed get-up-and-go test
+• HbA1c targets should be safe, sensible and appropriate – 
+with the aim of keeping residents free of adverse events, 
+maintain optimal quality of life, well-being and functional 
+status
+• Residents with diabetes and frailty should have their 
+medications reviewed regularly and a de-escalation 
+approach adopted where appropriate
+• Even though there are no restrictions on glucose lowering 
+agents in frail older adults with diabetes, care should 
+be taken when assessing the need for longer-acting 
+sulfonylureas, complex insulin regimens, undernutrition, 
+residents in care homes and severe frailty, all of which 
+increase the risk of hypoglycaemia
+• Thiazolidinediones (pioglitazone) and SGLT-2 inhibitors 
+should be limited in moderate-to-severe frailty due to 
+the adverse side-effects of unintentional weight loss, 
+dehydration and possible amputations (NICE, 2018). In 
+addition, GLP-1 receptor agonists may cause unintentional 
+weight loss and anorexia, therefore great caution should 
+be exercised
+• The FICHS in collaboration with care homes and the wider 
+diabetes service should consider implementation of the 
+frailty diabetes pathway to address frailty, multimorbidity 
+and cognitive impairment for diabetes residents
+• Care staff and healthcare professionals who are involved 
+in the management of diabetic residents should receive 
+training to upskill in the area of frailty and functional 
+status to deliver optimal care
+1.0. 1.0. INTRODUCTION INTRODUCTION 
+FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES
+ 34FRAILTY
+Is an adverse health condition, characterised by susceptibility 
+to physical or psychological stressors due to reduced 
+physiological reserve which affect multiple organ systems that 
+confers a limited capacity to maintain homeostasis. One of 
+the conceptual models which form the assessment of frailty 
+by clinicians requires a person to meet at least three of the 
+following criteria (Fried, 2001):
+• Upper and lower extremity weakness
+• Poor exercise tolerance
+• Exhaustion
+• Weight loss
+Key: eFI=electronic frailty index; SGLT-2=sodium-glucose co-transporter-2; GLP-1=glucagon-like polypeptide-1FRAILTYDE-ESCALATION THRESHOLD TREATMENT TARGET
+THRESHOLDSUGGESTED 
+INTERVETNIONTARGET INTERVENTON
+Fit older adult 
+with diabetes53 mmol/molEvaluate long-acting 
+sulfonylurea and insulin 
+therapy that may cause 
+hypoglycaemia. Consider 
+appropriate dosage in the 
+setting of renal function.58 mmol/molAvoid initiating new 
+agents that may cause 
+hypoglycaemia or 
+exaggerate weight loss.
+Moderate-
+severe frailty 
+with diabetes58 mmol/molDiscontinue any 
+sulfonylurea if HbA1c 
+below threshold. Avoid 
+TZDs because of the 
+risk of heart failure. 
+Cautious use of insulin 
+and metformin mindful of 
+renal function.64 mmol/molDPP-4 inhibitors and 
+longer-acting insulins 
+have demonstrated safety. 
+TZDs may increase risk 
+of heart failure. SGLT-2 
+inhibitors may provide 
+additional benefit in 
+people with heart failure 
+but also exacerbate 
+symptoms of diabetes.
+Very severe 
+frailty64 mmol/molWithdraw sulfonylureas 
+and short-acting insulins 
+because of risk of 
+hypoglycaemia. Review 
+timings and suitability of 
+NPH insulin with regard 
+to risk of hypoglycaemia. 
+Therapies that promote 
+weight loss may 
+exacerbate sarcopenia.70 mmol/molDPP-4 inhibitors at renally 
+appropriate dose for 
+those close to target. 
+Consider once-daily 
+morning NPH insulin or 
+analogue alternatives if 
+symptomatic nocturnal 
+hyperglycaemia. 
+Educate carers and 
+relatives regarding risk of 
+hypoglycaemia.
+Diabetes UK Nutrition Working Group 2011; IDF 2013; TREND-UK & Institute of Diabetes for Older People (IDOP) 2013; 
+National Institute for Health and Care Excellence (NICE) 2015a.
+Diabetes UK Nutrition Working Group 2011; IDF 2013; TREND-UK & Institute of Diabetes for Older People (IDOP) 2013; 
+National Institute for Health and Care Excellence (NICE) 2015a.
+FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES
+ 366.0. BLOOD GLUCOSE MONITORING 6.0. BLOOD GLUCOSE MONITORING
+6.0. Blood glucose 
+monitoring
+All residents with diabetes must have their condition monitored. 
+This may be done by the FICHS GP , district nurse or hospital 
+diabetes team. Independent residents may be advised to self-
+monitor their own blood glucose levels.
+The National Institute for Health and Care Excellence (NICE) 
+guidelines recommend, in certain circumstances, people living 
+with diabetes will be required to self-monitor their own blood 
+glucose levels (NICE, 2015a; NICE, 2015b). Although, in the 
+care home setting this may not always be practical or realistic 
+and only a small proportion of residents will have the capacity 
+and/or practical skills to monitor their own blood glucose levels 
+(BGLs). The majority of residents will require support from 
+appropriately trained staff to monitor their BGLs. It is important 
+to confirm and document (in diabetes passport/care plan) the 
+frequency of monitoring with the residents FICHs GP .
+A resident will need to have their BGLs (if they cannot do it 
+themselves) by an appropriately trained member of staff for:
+1. Residents with Type 1 diabetes
+2. Residents with Type 2 diabetes if any of the following 
+criteria are met:
+• If the person is on insulin
+• If the person is on a group of medications called 
+sulphonylureas (example – gliclazide) as these can 
+cause hypoglycaemia (hypos)
+• If there is evidence that the person has been having 
+hypoglycaemic events (hypos) or there is evidence that 
+a hypoglycaemic event is occurring
+• When starting treatments such as oral or intravenous 
+steroids, short term monitoring of the blood glucose 
+levels by care home staff may be appropriate
+• If the diabetes control (HbA1c) is suboptimal and 
+medications have been started or adjusted to improve 
+this, short term monitoring by care home staff may 
+be recommended by the resident’s GP or diabetes 
+specialist health care provider6.0. 
+Blood glucose 
+monitoring
+6.1. How often should we be monitoring
+6.2. Emergency blood glucose monitoring 
+6.3. Type 1 diabetes and blood glucose monitoring
+6.4. Blood glucose meters
+6.5. Calibration and quality assurance of meters
+6.6. What staff should carry out blood glucose monitoring? 
+6.7. Guidance for residents performing their own blood glucose monitoring
+6.8. Consent
+6.9. Blood glucose targetsSAFETY
+• Residents who need to have their BGLs monitored MUST 
+HAVE their own blood glucose monitor and lancet device 
+and these SHOULD NOT BE shared between residents 
+and individual lancets MUST NOT be shared between 
+residents after use. Single-use disposable lancets (discuss 
+this with FICHs GP) should ideally be used when carrying 
+out a blood glucose check
+• Blood glucose testing lancets and insulin needles are 
+classified as sharps and considered clinical waste, 
+therefore must be disposed of in a prescribed sharps bin 
+and not regular domestic waste – advice can be sought 
+from prescribing pharmacists on collection and disposal of 
+used sharps bins
+• Thorough hand washing is important prior to blood 
+glucose testing. Please wash hands with soap and water 
+and DO NOT use alcohol agents or wipes to cleanse prior 
+to testing as this may produce a false reading
+FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM
+ 396.0. BLOOD GLUCOSE MONITORING 6.0. BLOOD GLUCOSE MONITORING
+6.1. How often should 
+we be monitoring?6.3. Type 1 diabetes 
+and blood glucose 
+monitoring
+6.2. Emergency blood 
+glucose monitoring How often to monitor BGLs is specific to the resident living 
+with diabetes, this should be assessed and determined by 
+either the FICHs GP or specialist diabetes healthcare provider 
+i.e., Consultant Diabetologist, Diabetes Specialist Nurse 
+(DSN). These recommendations should be documented in 
+the residents diabetes passport and medical care notes. Staff 
+responsible for monitoring BGLs should be made aware of 
+the frequency as documented in the diabetes passport.
+Follow this link for NICE guidelines about blood 
+glucose monitoring in residents with Type 2 diabetes 
+https://www.nice.org.uk/guidance/ng28/chapter/
+Recommendations#blood-glucose-management-2 
+For NICE guidance about blood glucose monitoring in 
+residents with Type 1 diabetes please follow this link: 
+https://www.nice.org.uk/guidance/ng17/chapter/
+Recommendations#blood-glucose-management Residents with type 1 diabetes may need to have their BGLs 
+monitored more regularly (NICE, 2015b). Where residents do 
+not have the capacity or physical capability to perform blood 
+glucose monitoring independently, appropriately trained care 
+home staff will be responsible for checking BGLs in-line with the 
+residents diabetes passport. In addition, if a resident with type 
+1 diabetes records a reading of >15mmols, it is recommended 
+that ketones are also checked, either with a blood glucose 
+monitor with a ketone function or using a urine test. When 
+blood glucose levels are very high, ketones are produced when 
+the body metabolises fat as a source of energy (see section 10).
+KEY POINT
+Please document within each resident’s care plan the method to 
+be used for ketone testing if required and any equipment to be 
+used (e.g., ketone meter and specified meter, or urine test).
+Follow this link for NICE guidelines on Type 1 diabetes for 
+further advice on blood glucose management: 
+www.nice.org.uk/guidance/ng17/chapter/1-
+Recommendations#blood-glucose-management-2  
+If a resident is experiencing the signs and symptoms of 
+hypoglycaemia (low blood glucose), become acutely unwell, 
+semi-conscious/unresponsive – see section 9; it may be 
+necessary to check BGLs, regardless of the frequency outlined 
+in the residents’ diabetes passport. Where hypoglycaemia is 
+suspected BGLs MUST be checked.
+KEY POINT
+If residents are on medications such as insulin or tablets 
+including gliclazide these can cause hypoglycaemia. Where a 
+care home has a resident living with diabetes on any of these 
+medications, there MUST be a minimum of one member 
+of staff available who has been assessed as competent and 
+appropriately trained to check BGLs in an emergency.
+
+40 41
+FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES6.0. BLOOD GLUCOSE MONITORING BLOOD GLUCOSE MONITORING 6.0. 
+6.5. Calibration and 
+quality assurance  
+of meters6.6. What staff should 
+carry out blood 
+glucose monitoring? 
+It is recommended that blood glucose meters are calibrated 
+using a quality control test which should be performed using 
+the manufacturers’ specified quality control solution. This test 
+should be performed regularly, usually at least once a month, in 
+accordance with the manufacturers’ instructions
+and the results of the test are documented. 
+Prior to use please ensure the control solution is gently shaken 
+to ensure this is mixed well. Please store the control solution 
+as per manufacturer’s instructions and note the expiry date, 
+ensuring all staff who are responsible for meter calibration are 
+aware of this.
+General recommendations for calibrating a meter and 
+performing a quality control test include:
+• When a meter is new, check prior to use
+• When a new pot of test strips has been prescribed. Strips 
+should be tested prior to use with residents and at least 
+once a month if the strips are not used again within a 
+month of opening
+• If a blood glucose reading is taken and this looks 
+abnormal and out of range for that resident
+Each meter company will provide their own control solution for 
+use with their corresponding meters. The expiry date for each 
+manufacturer’s control solutions will differ. Please consult the 
+manufacturer’s instructions and DO NOT use a control solution 
+if this has expired. 
+NB. What to do if the quality control test is not accurate.
+If a meter is not reading within the range specified for a control 
+solution test this may mean the meter could be faulty and 
+should not be used. Please contact the resident’s GP , Practice 
+Nurse, hospital diabetes team or Diabetes Specialist Nurse 
+to obtain a new meter. Alternatively ensure a supply of spare 
+meters are kept within the home for use in such circumstances.
+Please keep a record of when a quality control test has been 
+performed for each meter and the result of the test.It is recommended that each care home should clearly define 
+who is responsible for monitoring BGLs (Diabetes UK, 2010); 
+however, in nursing home settings, it is advised registered 
+nurses should be designated to carry out blood glucose 
+monitoring (Diabetes UK, 2010).
+Each care home should ensure that any member of staff 
+undertaking blood glucose monitoring must have completed 
+appropriate training to carry out the procedure and be assessed 
+by a designated registered practitioner (Community Specialist 
+Registered Nurse or Diabetes Specialist Nurse) that they are 
+competent to do so.
+Before performing blood glucose monitoring, all members of 
+staff (whether registered or otherwise) should have a sound 
+knowledge base of diabetes. In addition, staff should receive 
+adequate training on blood glucose monitoring using the 
+specific meter used in their place of employment and know how 
+to interpret the reading(s) recorded and the appropriate action 
+to be taken (Diabetes UK, 2010). NB. Scope of practice.
+• Members of staff who are non-registered practitioners 
+e.g. carer/senior carer/support worker/health care 
+assistant must work within their scope of practice and are 
+responsible for their actions and/or omissions. If a care 
+home requires a non-registered member of staff must 
+receive appropriate blood glucose monitoring training 
+and demonstrate competence in the procedure and have 
+regular (typically annually) reassessment of competence 
+by a registered practitioner e.g. DSN or community 
+specialist nurse
+• Where it is necessary for an unregistered member of staff 
+to monitor blood glucose levels, an agreement should be 
+reached with the care home manager and a designated 
+registered practitioner e.g. DSN or community specialist 
+nurse to assess the member of staff and sign them off 
+as competent. The competency assessment should be 
+recorded and filed as evidence
+• Any blood glucose measurements taken by unregistered 
+staff must be given to a duty nurse at the time taken and 
+the reading recorded in the appropriate documentation
+• Record keeping – clear, standardised and appropriate 
+documentation must be maintained when recording any 
+blood glucose measurements (Diabetes UK, 2010)
+
+FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES43
+ 426.0. BLOOD GLUCOSE MONITORING 6.0. BLOOD GLUCOSE MONITORING
+6.7. Guidance for 
+residents performing 
+their own blood 
+glucose monitoring6.8. Consent
+6.9. Blood glucose 
+targetsWhere a resident has the physical ability and capacity to 
+monitor their own blood glucose levels and it is appropriate 
+for them to do so, this may be encouraged; however, in the 
+care home setting this will be a small proportion of residents 
+(Diabetes UK, 2010). If a resident is independently monitoring 
+their blood glucose levels, a structured assessment should 
+be carried out at least annually and can be combined with 
+the residents annual diabetes review and should include the 
+following:
+• The person’s self-monitoring skills
+• The quality and frequency of testing
+• Checking that the person knows how to interpret the 
+blood glucose results and what action to take
+• The impact on the person’s quality of life
+• The continued benefit to the person
+• The equipment used i.e., the meter
+(Retrieved from: www.nice.org.uk/guidance/ng28/chapter/1-
+Recommendations#blood-glucose-management-2)  As blood glucose monitoring is an invasive procedure it is 
+recommended that verbal/written consent should be obtained 
+from the resident to perform this test. If there is doubt over 
+the person’s ability to provide valid consent then The Mental 
+Capacity Act (2005) and the health care professionals code of 
+professional practice should be followed. Please liaise with 
+the resident’s FICHS GP or social services for further advice if 
+required.
+KEY POINT
+• Residents living with Type 1 diabetes and a small 
+proportion of Type 2 diabetics will need to have their 
+blood glucose levels monitored. For residents who cannot 
+independently monitor, care home staff will need to 
+perform this procedure
+• Residents who require their blood glucose levels to be 
+monitored by care home staff should have their own 
+blood glucose meter and lancet device – these should 
+not be shared, or single use disposable lancets should be 
+used
+• Only blood glucose meters which comply with ISO 
+standards (2013) should be used
+• Meters should be calibrated regularly as per 
+manufacturer’s instructions
+• The targets for blood glucose readings should be 
+determined on an individualised basis and documented in 
+the resident’s care plan and notes
+• For residents who are on insulin or sulphonylurea 
+medications, including gliclazide, at least one member of 
+staff in each home must be trained and assessed as being 
+competent to check a resident’s blood glucose in an 
+emergency situationTargets for blood glucose levels should be individualised for 
+each resident by the FICHS GP or diabetes specialist health 
+care provider and discussed/agreed with the resident. Targets 
+should be clearly documented in the residents diabetes 
+passport/care plan and communicated to the staff responsible 
+for their care. 
+When setting blood glucose targets for residents’, safety and 
+well-being are a priority, therefore avoiding symptoms of 
+hypoglycaemia and hyperglycaemia should be at the forefront.
+A fasting blood glucose level is a reading taken first thing in 
+the morning when waking and before eating carbohydrate 
+containing food/fluid. It is recommended this level should 
+not be below 6 mmol for residents in the care home setting 
+(Diabetes UK, 2010), as this is considered too low for frail older 
+adults with diabetes and may increase their risk of falls and 
+hypoglycaemia.
+
+7.1. Communication 
+and connection
+With the progression of dementia, language skills and 
+vocabulary may diminish. As a consequence, communication 
+can become increasingly challenging and frustrating for the 
+person living with dementia. Often they find it difficult to 
+express themselves clearly and/or understand what others say.
+Consider adapting your communication style by adapting the 
+following strategies to help residents cope with these changes:
+• Face the person and position yourself at eye level.
+• Stay still when talking, and in the person’s line of vision.
+• Avoid competing noises, turn off the TV or radio or turn 
+down the volume.
+• Remain calm, talk in a gentle, matter-of-fact way.
+• Allow plenty of time for what you have said to be 
+understood and do not rush a response.
+• Keep sentences short and simple when discussing or 
+explaining something.
+• Try not to interrupt the person when they are speaking.
+• Give people time to come up with a word or thought.
+• Invite residents to participate rather than instruct them to 
+do things.
+• Avoid ordering the person around or argue.
+• Use orienting names whenever you can, such as ‘Your son 
+John’.
+• Respect the person’s rights and wishes. Having dementia 
+does not mean a person is incapable of speaking for 
+themselves.
+• Consider the person’s literacy level when giving them 
+written information.
+• Consider using a telephone interpreter, if this might be 
+helpful.
+457.0. DIABETES AND DEMENTIA
+447.0. DIABETES AND DEMENTIA
+7.0. 
+Diabetes and 
+Dementia
+7.1 Supporting a resident living with dementia and diabetes
+7.2. Person-centred care
+7.3. Communication and connection
+7.4. Emotional support
+7.5. Practical support
+VISION PROBLEMS
+Poorly controlled diabetes can lead to  damage to eyesight, 
+therefore vision problems are common in people with diabetes. 
+Problems caused by poor vision can be mistaken for signs of 
+dementia. For example, vision problems can lead to confusion 
+or disorientation. It is important to find out if the resident you 
+are supporting has problems with vision and what strategies 
+are in place to manage this. The resident should have their 
+eyesight checked regularly as part of their annual review by 
+an optometrist or ophthalmologist. In addition to glasses, the 
+person may benefit from other devices such as magnifiers, large 
+print diaries, medicine dispensers and talking clocks.
+
+46 47
+FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES7.0. DIABETES AND DEMENTIA 7.0. DIABETES AND DEMENTIA
+EARLY DIABETES DIAGNOSIS IS 
+IMPORTANT IN DEMENTIA
+People living with dementia may be unable to recognise the 
+signs and symptoms of diabetes, which can be compounded 
+further by an inability to articulate the presenting symptoms. 
+Often, infections such as urinary tract infections and thrush are 
+the only signs residents have diabetes.
+People with diabetes are encouraged to manage the condition 
+themselves so diagnosing dementia in people who have 
+diabetes will lead to difficulties with self-management and 
+adherence with medication, including giving themselves insulin 
+injections safely. Having both conditions may mean agreeing to 
+higher targets for blood glucose and blood pressure to keep 
+people safe, and help the person and their family to make 
+sensible decisions about the future.
+Diagnosing diabetes early in residents who have dementia will 
+ensure they receive regular review and management of the risk 
+factors that can lead to developing diabetes complications, 
+therefore are identified quickly and treated as required. If 
+necessary, medications can be started to relieve the symptoms 
+of high blood glucose which will improve quality of life (e.g. 
+reduce tiredness, frequency of urination, thirst) and avoid 
+hospital admissions for very high blood glucose levels.HYPOGLYCAEMIA AND DEMENTIA
+People with dementia may not be able to recognise symptoms 
+of hypoglycaemia (see section 9), therefore care staff need to 
+be vigilant. If hypoglycaemia is not treated, the person may 
+fall, lose consciousness, choke and can trigger a stroke or heart 
+attack. 
+Agree safe blood glucose targets which aim to avoid 
+symptomatic high blood glucose levels (hyperglycaemia) 
+but avoid low blood glucose levels (hypoglycaemia). Oral 
+medications which cause hypoglycaemia (sulphonylureas) 
+should be avoided where possible. Ensure regular meals and 
+snacks are provided for people who use insulin.
+DIABETES CARE IN DEMENTIA
+People living with diabetes for several years may be skilled 
+at managing their own insulin injections and monitoring 
+blood glucose levels, however, the onset of dementia may 
+compromise these skills. People with dementia who develop 
+diabetes may appear to have a worsening of their dementia 
+because of the diabetes symptoms.7.2 Supporting a 
+resident living with 
+dementia and diabetesDementia is an umbrella term for people suffering 
+from a range of neurological disorders which result in 
+cognitive impairment, memory loss and compromised 
+motor skills. There are more than 100 types of 
+dementia, the most common being Alzheimers, 
+however people will also be familiar with vascular 
+dementia, Parkinson’s Disease (PD) and Lewy body 
+dementia. It is a progressive disease where the 
+condition worsens over time and the person may 
+struggle with Activities of Daily Living (ADLs), become 
+disorientated and have difficulty managing social 
+situations. Signs and symptoms of dementia vary from 
+person to person and usually get worse over time. 
+Early symptoms include forgetfulness, repetitiveness, 
+short-term memory loss, and difficulty in finding the 
+right words.
+LINK BETWEEN DIABETES AND DEMENTIA
+There is a doubling of risk associated for people living with 
+diabetes developing dementia. Whereas people without 
+diabetes, there risk is approximately 1 in 10. The reasons for this 
+are not fully understood, however is likely to be multifactorial, 
+including: 
+• High blood glucose levels (hyperglycaemia) can damage 
+the cells and blood vessels in the brain
+• When blood vessels in the brain are damaged, brain cells 
+may not get enough oxygen and nutrients to function 
+properly and may die
+• [SECTION-INSULIN] Insulin resistance causes the body to produce higher 
+levels of insulin to try to keep blood glucose levels within 
+the normal range. The high levels of insulin can cause 
+damage to blood vessels and cells in the brain
+• Diabetes may contribute to the build-up of proteins 
+in the brain associated with Alzheimer’s disease. The 
+research that links diabetes and dementia often does not 
+distinguish between diabetes types and it is not clear 
+if the increased risk of dementia is the same for people 
+with type 1 diabetes. However, since anyone can develop 
+dementia, the information in this toolkit about early 
+symptoms and reducing the risk of dementia may also be 
+helpful when supporting people with type 1 diabetes
+ISSUES FOR PEOPLE WITH DEMENTIA
+WHO DEVELOP DIABETEISSUES FOR PEOPLE WITH DIABETES
+WHO DEVELOP DEMENTIA
+• Developing incontinence as they need to pass urine 
+more often but not able to find the toilet.
+• Increased risk of falls due to more frequent visit to 
+the toilet
+• Increased confusion if blood glucose levels are high 
+and causing dehydration
+• Distress if usual diet changed significantly
+• Distress, wandering, rocking movements, crying if 
+they have pain and are unable to put this into word• Forgetting to take medications regularly
+• Forgetting they have taken medication so at risk of 
+double dosing
+• Forgetting how to do injections
+• Unable to make decisions about interpreting blood 
+glucose results such as adjusting insulin doses or 
+treating hypoglycaemia
+• Missing meals and drinks so at risk of low blood 
+glucose levels and dehydration
+• Forgetting they have eaten and at risk of high 
+glucose levels if they eat again
+FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES
+ 48 FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM7.0. DIABETES AND DEMENTIA 7.0. DIABETES AND DEMENTIA
+7.3 Person-centred care 
+Person-centred care makes sure each person receives care in 
+the way they want to be treated. It places the person at the 
+centre of their own care and also considers the needs of the 
+person’s family and/or carers.
+Principles of person-centred care
+1. Get to know the person beyond their diagnosis
+2. Support the person to set goals, and to plan and make 
+decisions about their care
+3. Be sensitive to values, preferences and expressed needs.
+4. Give complete and accurate information in a way the 
+person understands so they can make choices about their 
+care
+5. Work together to minimise duplication of services and 
+have one key contact at your agency
+In the early stages of dementia, the resident should be fully 
+involved in directing the planning and delivery of their diabetes 
+care. As dementia progresses, the person’s capacity to do this 
+is likely to decrease and another person who has power of 
+attorney or guardianship should be involved to advocate for 
+the person. Speak to the person and, where possible, to their 
+partner or family carer to find out:
+• How the person currently manages their diabetes 
+(including their target blood glucose levels, medicines, 
+recommended diet and physical activity)
+• How dementia affects their diabetes management
+• How you can support independence and quality of life
+• Other information that they wish to share with you to 
+make your job easierPersonality
+• Symptoms of diabetes or the complications of diabetes 
+may be ignored and assumed as personality traits. Loud 
+aggression may be a symptom of low blood glucose for 
+example
+Physical health
+• Toilet training is a skill learnt at an early age and so is 
+not lost initially but the person may have difficulty in 
+completing the tasks with going to the toilet, resulting in 
+apparent incontinence
+Cognitive ability (What can I still do, what do I find 
+difficult)?
+• Support self-care (or care given by their partner) as long 
+as possible (e.g. testing blood glucose, injecting insulin). 
+Review self-care ability regularly
+• Ask the GP to simplify medication regimes and tablet 
+load, preferably once daily
+• Ask the pharmacist about tools to support self-medication 
+such as blister packs. However, these are not helpful in 
+people who have no awareness of time or day
+Biography (life story)
+• Some people may have had diabetes for a long timeImportant points to consider when developing per -
+son-centred care plans for people with diabetes 
+and dementia: Keeping me safe
+• Agree appropriate blood glucose levels with FICHS GP 
+or diabetes specialist team. This should avoid the risk of 
+low blood glucose levels (hypoglycaemia) but also avoid 
+glucose levels being so high that symptoms of high blood 
+glucose affect day to day living (such as tiredness, thirst, 
+frequency of urination)
+• Be vigilant for signs and symptoms of low blood glucose 
+for resident prescribed insulin or medications (e.g. 
+gliclazide) with a risk of hypoglycaemia. Know how to 
+treat hypos, and ensure appropriate treatments are 
+available 
+• If they are still able to inject insulin but are forgetful, the 
+carer can keep it in a locked box until it is needed
+ 507.0. DIABETES AND DEMENTIA 7.0. DIABETES AND DEMENTIA
+Environment
+• Meals should be provided in a calm and distraction 
+free environment – care homes may want to consider 
+protected mealtimes
+• Encourage a nourishing diet that provides sufficient 
+energy and protein to maintain optimal body weight 
+and functional status which fits the person’s usual meal 
+pattern. Smaller portions of items in their familiar diet 
+optimise nutrition, rather  than completely removing 
+foods or making considerable changes to eating patterns
+• Verbal and non-verbal communication: use calm tone 
+when speaking, use short sentences with small amounts of 
+information, make time for the person to answer, maintain 
+eye contact
+Nutrition
+• Residents living with diabetes should eat a healthy 
+balanced diet which includes some starchy carbohydrates 
+at each meal. It is unnecessary to completely avoid simple 
+sugars (e.g. puddings, cakes, sweets, chocolate) from 
+residents’ diet, however caution should be exercised 
+when considering frequency and portion sizes of these 
+foods
+Barriers to healthy eating in people with diabetes 
+and dementia include the following: Nutrition 
+barriers
+• Memory problems – Forget to eat meals or forget that 
+they have already eaten
+• Agnosia – May not recognise food, cutlery, or even those 
+caring for them
+• Dysphasia – Unable to say they are hungry or feel “hypo” 
+(have low blood glucose)
+• Dysphagia – Problems chewing and swallowing
+• Dyspraxia – Can impair people’s ability to prepare food 
+and to use utensils
+• Executive Dysfunction – Impacts on the ability to plan the 
+preparation of food and/or drinks
+Training
+• It is important for care home staff to receive training 
+about diabetes care in dementia. Improving the 
+knowledge base builds respect and trust between care 
+staff and residents. By being more informed, staff are 
+better equipped to provide excellence in diabetes care, 
+support and show understanding. To assist with diabetes 
+care tasks such as checking blood glucose levels, you may 
+need additional training. With better understanding staff 
+can support a resident and their family to understand 
+their condition, which can make them feel more in control, 
+which may lead to a better quality of life. 
+
+7.4. Emotional support
+SUPPORTING RESIDENTS
+Residents with dementia and diabetes may be more at risk of 
+depression and anxiety due to the many challenges associated 
+with living with these conditions. Often there are changes in 
+the dynamics and relationships with the person and their family 
+and friends. People living with diabetes often experience 
+social stigma attached to the condition, with people placing 
+blame believing their condition was self-inflicted by poor 
+lifestyle choices. These factors can have a significant impact on 
+emotional wellbeing. It is important to listen to the resident. 
+If you notice a change in someone’s mood, or if they mention 
+feeling depressed or anxious, encourage them to share their 
+concerns and consider if professional support and counselling 
+may be appropriate.
+If appropriate, consider suggesting diabetes peer support 
+and/or group education. Group education/peer sessions offer 
+advice and support from professionals and people who have 
+lived with the condition for a long time.
+53 527.0. DIABETES AND DEMENTIA 7.0. DIABETES AND DEMENTIA
+
+557.0. DIABETES AND DEMENTIA
+FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES 54 FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM7.0. DIABETES AND DEMENTIA
+7.5. Practical support
+Offering practical support to residents living with dementia 
+and diabetes may be determined by scope of practice and job 
+role. However, expanding your knowledge-base regardless of 
+your role will be helpful for your understanding to share with 
+residents, their family and friends.
+Where appropriate, you should encourage, enable and 
+support residents to self-manage their diabetes. Daily diabetes 
+management will involve a careful balance between food, 
+medication, physical activity and blood glucose monitoring (for 
+insulin/sulfonylurea dependent residents) and symptoms of 
+dementia can make this increasingly difficult.
+Early-onset of dementia, residents may still be able to manage 
+daily tasks by following simple, regular routines by adopting 
+strategies to remember e.g. written reminders, or timed alarms 
+for blood glucose monitoring and or medications. As disease 
+progression ensues, daily self-management may become 
+increasingly challenging and care home staff  may need to 
+support residents with these tasks. 
+When supporting residents to complete daily tasks, make sure 
+to ask their permission to assist them and if possible support 
+them to do it themselves. Remember, even if residents are 
+unable to do the task independently, they can still be involved 
+to a certain degree. For example, with supervision, they may 
+be able to perform their own  finger prick test or observe with 
+discussion.
+It can be difficult for residents with dementia to relinquish their 
+independence and accept support from others. In addition, 
+they may not remember why they need an insulin injection or 
+have their finger prick test and often become fearful of the 
+invasiveness. If resistance occurs with diabetes care, reassure 
+the resident by validating their feelings, keep a calm tone 
+and demeanor and explain what you are doing and why it is 
+important. If the resident becomes agitated or upset, give them 
+space, allow them to calm down before approaching again to 
+complete the task.BLOOD GLUCOSE MONITORING
+Blood glucose levels that are very low (hypoglycaemia - see 
+section 9) or very high (hyperglycaemia - see section 10) may 
+cause further damage to the brain. If a person with diabetes has 
+dementia, they will need increasing support in monitoring and 
+managing their blood glucose levels. A resident with dementia 
+will find it difficult to identify symptoms of high or low blood 
+glucose, furthermore this is compounded by an inability to 
+articulate to care staff if they are experiencing symptoms. Staff 
+supporting a person with dementia and diabetes need to learn 
+how to recognise the signs and symptoms (see relevant sections 
+above) and know what treatment is required. Some residents 
+with diabetes may need to check their blood glucose levels 
+daily or several times a day, particularly if they use insulin. 
+SUPPORTING PHYSICAL ACTIVITY
+Residents with diabetes and dementia should be encouraged 
+and supported to continue physical activity for as long as 
+possible. Where physical activity is encouraged and maintained 
+in the early stages of dementia, it is more likely to be 
+maintained as the condition progresses. Care should be taken 
+if a resident hasn’t been physically active for some time, and 
+their FICHS GP should be consulted prior to implementing any 
+exercise regime. To avoid risk of injury, ensure good supervision 
+is available and that the person wears appropriate clothes. 
+Good foot care is very important for people with diabetes, 
+so the person should wear appropriate footwear for physical 
+activity and should regularly visit a podiatrist. Participation in 
+physical activity will affect the person’s blood glucose level, and 
+if the person uses insulin or sulfonylureas, increasing physical 
+activity may increase their risk of a hypo: 
+• Before doing any physical activity the person’s blood 
+glucose level (for residents on hypo-inducing medications) 
+should be checked
+• If blood glucose is low, they will need to eat something 
+before they start the activity to avoid  hypoglycaemia
+• After finishing the activity, check blood glucose levels 
+again
+• If a hypo does occur, this should be treated promptly
+• Caution should also be taken with physical activity if blood 
+sugar levels are very high (more than 15 mmol/L)
+
+578.0. DIABETES AND FOOT CARE
+568.0. DIABETES AND FOOT CARE
+8.0. 
+Diabetes and 
+foot care
+8.1. Essentials of foot care
+8.2. Toe nail cutting 
+8.3. Diabetic foot problems & urgent care8.1. Diabetes and  
+foot care
+8.2. Toe nail cutting Chronic, poorly controlled blood glucose levels may cause 
+problems with blood supply for residents living with diabetes, 
+placing them at an increased risk of developing complications 
+with their lower limbs, including foot ulcers and amputations.
+(Retrieved from: www.diabetes.org.uk/guide-to-diabetes/
+complications/feet/taking-care-of-your-feet). 
+Diabetes is the most common cause of lower limb amputations 
+and in England there are approximately 135 amputations per 
+week amongst people with diabetes (Diabetes UK, 2015).
+It is important therefore that residents’ feet are checked every 
+day to prevent complications such as ulcers and amputations 
+from developing.
+It is advised that a HCPC (Health and Care Professionals 
+Council) registered Podiatrist perform routine nail treatment 
+regularly, for example nail care, callus and corn treatments. If 
+staff have any concerns about a resident’s nails please discuss 
+with FICHS GP as a referral to one of the hospital podiatrists 
+may be required.
+
+58 59
+FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES
+8.0. DIABETES AND FOOT CARE 8.0. DIABETES AND FOOT CARE
+8.3. Essentials of foot care
+1. Feet washing  
+• Ensure resident’s feet are washed daily with soap and 
+water, unless directed otherwise, and  carefully dried. 
+The temperature of the water should be checked before 
+feet are washed to ensure it is not too hot. Residents with 
+reduced sensation in their feet because of nerve damage 
+may not be able to feel the temperature of the water 
+which may cause damage to the feet and burns to the skin 
+2. Inspect feet  
+• Check feet daily. Remove footwear and socks or 
+stockings/tights and inspect each foot, including the toes 
+and heels
+• Look for any breaks or cuts in the skin. Check for any hard 
+areas of skin or calluses
+• DO NOT use any ‘over the counter’ or chemical 
+treatments for callus removal on residents’ feet with 
+diabetes. Please seek advice from a HCPC (Health and 
+Care Professionals Council) registered podiatrist on how to care for these
+• Check to see if there are any changes in the colour of the 
+skin, i.e., do both feet look the same colour, are there any 
+areas of redness or discolouration
+• Check to see if there are any changes with the 
+temperature of the feet, i.e., does one foot feel cooler or 
+warmer than the other
+3. Sensation in the feet  
+• Ask the resident if they have any pain/discomfort in their 
+feet or any changes in the sensation in the feet, which 
+may be new symptoms, or an existing problem which may 
+be getting worse
+• Be aware that some residents may not have full 
+sensation in their feet if they have nerve damage due to 
+diabetes. These residents are more at risk of developing 
+complications with their feetBelow is a guide identifying what problems to look out for 
+which might indicate residents have problems with the nerves 
+or blood supply to their feet:
+NB. When caring for residents’ feet, look out for the following.
+Damage to resident nerves might be indicated by:
+• Tingling sensation; pins and needles
+• Pain (burning)
+• Sweating less
+• Feet that are red and hot to touch
+• Changes to the shape of your feet
+• Loss of feeling in your feet/legs
+• Hard skin
+Damage to residents’ blood supply might be indicated by:
+• Cramp in your calves (at rest or when walking)
+• Shiny smooth skin
+• Loss of hair on your legs and feet
+• Cold, pale feet
+• Changes in the skin colour of your feet
+• Pain in your foot/feet
+• Swollen feet
+• Wounds or sores that do not heal
+• When caring for your feet, what sort of problems If you notice any of these things, or have any concerns about 
+your feet, tell your GP or diabetes team – do not wait until your 
+annual foot check! 
+ 
+(Retrieved from: www.diabetes-resources-production.s3-eu-
+west-1.amazonaws.com/diabetes-storage/2017-08/What%20
+to%20Expect_A5%20leaflet.pdf) 
+4. Footwear  
+• Make sure that residents DO NOT walk around with bare 
+feet.
+• Ensure their footwear fits correctly. Make sure this is not 
+too tight or too loose, is secure and not going to cause 
+the resident to trip or fall
+• Check that the linings within each item of footwear are 
+not loose or torn as these may cause friction against the 
+resident’s feet
+• If residents have problems getting conventional footwear 
+to fit, please liaise with the resident’s GP or podiatrist as 
+they may need referring to an orthotist for the provision 
+of specialist footwear
+• Avoid using hot water bottles or electric blankets/heat 
+pads on residents’ feet. If they have reduced sensation in 
+their feet due to nerve damage they will not feel if they 
+are burning the skin
+The following steps are recommended as part of everyday foot 
+care for residents with diabetes:
+ 608.0. DIABETES AND FOOT CARE 8.0. DIABETES AND FOOT CARE
+8.3. Diabetic foot 
+problems & urgent care
+If residents have any of the following refer to their FICHS GP 
+immediately as they will need to be seen within 24 hours:
+• Broken area(s) of skin
+• New foot ulcer
+• Hot, red, painful or swollen foot or skin which has become 
+discoloured
+• Sudden reduced sensation or absent foot pulses
+• Sudden onset of severe pain in the leg or foot
+Every resident with diabetes should have an annual check of 
+their feet, either by their GP , Practice Nurse or community 
+podiatrist. If a resident is considered to be at moderate or high 
+risk of developing foot problems by the health care professional 
+who has undertaken the diabetic foot check they will need to 
+be reviewed more frequently. 
+For more information about diabetes and foot care visit the 
+following link www.nice.org.uk/guidance/ng19/ifp/chapter/
+About-this-information.  
+In addition, further details about diabetic foot problems are 
+also available from NICE guideline NG19 (2015c).  
+Please follow this link to access NICE guideline NG19 (2015c): 
+www.nice.org.uk/guidance/ng19The following recommendations are taken from Diabetes 
+UK and include details about what should be included in the 
+diabetic foot check:
+CHECK LIST
+An annual foot check should involve the following:
+1. You should be asked to remove any footwear, including 
+socks/stockings
+2. Your feet should be examined – including looking for 
+corns, calluses and changes in shape
+3. Your feet should be tested for numbness or changes in 
+sensation (neuropathy) with a tuning fork or a fine plastic 
+strand called a monofilament
+4. You should be asked questions about your feet and 
+diabetes management, including:
+5. Have you noticed any problems or changes (e.g., cuts, 
+blisters, broken skin or corns)?
+• Have you had any previous foot problems or wounds?
+• Have you experienced any pain or discomfort?
+• How often do you check your feet, and what do you look 
+for?
+• Do you have any cramp-like pains when walking?
+• How well are you managing your diabetes?
+6. our footwear should also be examined to make sure it is 
+not causing any problems to your feet.
+7. At the end of the foot check, you should be told the 
+results and level of risk of foot problems.
+8. You should be given information about what your level of 
+risk means and what to do next, including:
+• Advice about how to care for your feet - according to your 
+level of risk
+• An agreed management/treatment plan
+• Emergency contact details
+• Referral to Foot Protection Service when appropriate 
+Retrieved from: https://www.diabetes.org.uk/
+resources-s3/2017-09/What-to-expect-at-annual-foot-check.
+pdf 
+KEY POINTS:
+• Residents with diabetes are at risk of developing foot 
+problems, including foot ulcers which can lead to 
+amputations
+• Check the resident’s feet daily without socks/tights for any 
+changes/complications
+• Residents with diabetes should have an annual diabetic 
+foot check with a registered health care professional 
+(usually a Practice Nurse or Community Specialist Nurse)
+• To avoid complications, residents with diabetes should not 
+walk around with bare feet
+FOUNTAINS INTEGRATED CARE HOMES SERVICE DIABETES CARE GUIDELINES
+9.0. MANAGEMENT OF HYPOGL YCAEMIA (LOW BLOOD GLUCOSE) 9.0. MANAGEMENT OF HYPOGL YCAEMIA (LOW BLOOD GLUCOSE)
+629.0. 
+Management of 
+hypoglycaemia (low blood glucose)
+9.1. Signs & symptoms of hypoglycaemia
+9.2. What causes hypoglycaemia? 
+9.3. How to treat hypoglycaemia
+9.4. Swallowing difficulties
+9.5. Using a hypo box9.0. Management of hypoglycaemia 
+(low blood glucose)
+Hypoglycaemia or a ‘hypo’ means a 
+low blood glucose level of 4mmols or 
+less (we use the term ‘four is the floor’). 
+This is too low to provide sufficient 
+energy for some of the body’s functions  
+(Diabetes UK, 2010 & IDF, 2013).
+In older adults, hypoglycaemia can often 
+be more difficult to spot. Residents 
+sometimes lose their awareness that 
+they are having a hypoglycaemic 
+episode. If a hypo goes undetected, 
+it may have fatal consequences. 
+Hypoglycaemia is one of the most 
+important complications which care 
+home staff need to be vigilant for that 
+can affect older adults with diabetes 
+(IDOP , 2014).Healthcare professionals caring for 
+older adults with diabetes should assess 
+each resident’s risk of hypoglycaemia 
+individually and document this in their 
+diabetes passpot/care plan, including a 
+recommended blood glucose range to 
+minimise the risk of developing hypos 
+(IDF, 2013). This is particularly important 
+for residents who are on insulin or 
+medications including sulphonylureas 
+such as gliclazide (IDF,2013).
+In addition, it is recommended that 
+blood glucose levels below 6mmols 
+should be avoided to minimise the risk 
+of developing hypos (Diabetes UK, 2010 
+& IDF, 2013).A HbA1c of less than 53mmol/mol 
+should be used as a flag of possible 
+overtreatment with medications and a 
+review of the resident’s medicines may 
+be required by the FICHS GP (IDF, 2013).
+In the event of a severe hypoglycaemic 
+episode, this should trigger an 
+immediate detailed diabetes review 
+including a structured medicine and 
+dietary review (IDF, 2013). Please contact 
+the resident’s FICHS GP to assess the 
+resident.
+FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM
+ 659.0. MANAGEMENT OF HYPOGL YCAEMIA (LOW BLOOD GLUCOSE)
+(TREND UK (2011) & Diabetes UK – accessed at: www.diabetes.
+org.uk/Guide-to-diabetes/[SECTION-COMPLICATIONS] Complications/Hypos-Hypers) 
+Residents who have been living with diabetes for many 
+years may not always present with the early warning signs of 
+hypoglycaemia listed above. For these residents, symptoms of 
+hypoglycaemia may not present until their blood glucose levels 
+fall to around 3mmols or below and for some, may not have any 
+symptoms of hypoglycaemia at all.
+When a resident shows any early or late symptoms of 
+hypoglycaemia, please check their blood glucose levels immediately. If their reading is below 4mmol, regardless of the 
+presence of symptoms, the resident should receive immediate 
+treatment. 
+NB. Hypoglycaemia will not self-correct and will require 
+appropriate intervention from care home staff to treat. See 
+Section 9.3 for recommended treatments of hypoglycaemia.
+It is suggested that any resident who is treated with insulin 
+or sulphonylurea tablets e.g., gliclazide, should have a 
+hypoglycaemia management plan (IDF, 2013) with details of the 
+individualised target blood glucose levels, monitoring guidance 
+and preferred hypo treatments.
+SHAKING
+SWEATING FEELING TIREDHEADACHES TINGLING IN LIPS AND/OR 
+FINGERS SUDDENLY FEELING  
+VERY HUNGRY
+BLURRED VISION9.1. Signs & symptoms 
+of hypoglycaemia
+Usually when the blood glucose levels start to drop below 
+4mmols, physiological changes occur within the body and 
+symptoms usually start to develop. The following signs 
+and symptoms may be recognised if a resident is having a 
+hypoglycaemic event:9.0. MANAGEMENT OF HYPOGL YCAEMIA (LOW BLOOD GLUCOSE)
+9.2. What causes 
+hypoglycemia? 
+There are several factors which may lead to a hypoglycaemic event, 
+the list below outline some examples:
+• Certain medications including: insulin, gliclazide, nateglanide 
+and repaglinide
+• Tightly controlled diabetes and blood glucose levels.
+• Alcohol
+• Missed or delayed meals
+• Erratic eating
+• Poor/reduced oral nutritional intake
+• People with malabsorption or swallowing issues
+• Insufficient carbohydrate with meals
+• Meals not timed to coincide with glucose lowering therapy 
+e.g., NOT giving insulin injections to coincide with meals (NOT 
+applicable with once daily long-acting insulin such as Lantus or 
+Levemir)
+• Exercise/unusual activity (which can include walking/wandering 
+and other activities offered in care homes).
+• Kidney impairment
+• Liver impairment
+• Cognitive impairment
+• Heat e.g., if the weather is warm or if residents are sitting in a 
+hot room or near a radiator
+It is recommended that a regular review of residents’ medications is 
+undertaken to identify and minimise the use of medicines which can 
+cause hypoglycaemia (Diabetes UK, 2010).
+If residents are having dietary or swallowing problems and 
+experiencing episodes of hypoglycaemia please ensure the 
+appropriate healthcare professional (i.e. dietitian/speech and 
+language therapist/diabetes specialist nurse) are involved in 
+reviewing these residents.INITIAL/EARLY WARNING SIGNS
+FOR FURTHER INFORMATION, PLEASE VISIT WWW.HEALTHBOXCIC.COM
+9.4. Swallowing 
+difficulties
+If a resident is experiencing swallowing difficulties or unable to 
+swallow and has a deteriorating level of consciousness, please 
+DO NOT give any treatments orally. If staff are trained,the 
+resident should be placed in the recovery position and an 
+intramuscular injection of glucagon may be administered. In the 
+event that staff are not trained to administer glucagon, dial 
+999 and ask for urgent paramedic assistance.
+In the event a resident experiences severe hypoglycaemia, 
+this should trigger a comprehensive diabetes review, including 
+structured medicines management and dietary review (IDF, 
+2013). Contact the FICHS GP if a resident has more than one 
+hypoglycaemic episode, to review possible underlying causes 
+and to review medications. I f a resident is prescribed insulin 
+and has had a hypoglycaemic episode, please DO NOT stop 
+administering insulin unless you have been advised to do so 
+by a FICHS GP or specialist health care provider e.g. Diabetes 
+Specialist NUrse or Diabetologist Consultant. The insulin 
+dosage may need to be adjusted rather than discontinued, 
+however always seek specialist advice before altering any 
+regimen.
+679.0. MANAGEMENT OF HYPOGL YCAEMIA (LOW BLOOD GLUCOSE) 9.0. MANAGEMENT OF HYPOGL YCAEMIA (LOW BLOOD GLUCOSE)
+9.3. How to treat 
+hypoglycaemia
+STEP ONE
+It is recommended that 15-20g of fast acting carbohydrates 
+are required to treat a hypoglycaemic event (TREND UK, 2011). 
+Suitable treatments include:
+• 100ml of LucozadeTM ** (see note below)
+• Small NON-DIET fizzy drink (approx. 150ml)
+• 200ml (a small carton) of smooth fresh orange juice, NOT 
+orange cordial or diluted squash drinks
+• Five or six dextrose tablets
+• Four large jelly babies
+• Seven to eight large jelly beans
+• One to two tubes of glucose gel (Glucogel), usually 
+prescribed by GP
+**Check the label of Lucozade for nutritional content of 
+carbohydrate per 100ml. If the label states carbohydrate per 
+100ml, 17.8g gives the resident 100mls of Lucozade. If the 
+label states carbohydrate per 100ml, 8.9g gives the resident 
+200mls of Lucozade (just over half a bottle).
+The above treatments may only be used if the resident can 
+swallow. Please DO NOT give residents any of the above 
+treatments if they cannot swallow or have swallowing difficulties 
+as they may choke. Residents who are known to have 
+swallowing difficulties will need to be referred to the dietetic 
+team if they are at risk of hypoglycaemia to discuss suitable 
+hypo treatments. The choice of hypo treatment for each 
+resident should be documented in their care plan and medical 
+case notes and staff should be aware of this.STEP TWO
+After one of the above recommended treatments has been 
+given, recheck the resident’s blood glucose again after 10-15 
+minutes. If the blood glucose level remains below 4mmols 
+repeat one of the above hypo treatments again but only if the 
+resident can swallow. Recheck the resident’s blood glucose 10-
+15 minutes after each cycle of hypo treatment.
+If a resident has been given several of the above hypo 
+treatments over a 45-minute period and the blood glucose 
+level remains below 4 mmol, please dial 999 and ask for 
+urgent paramedic assistance.
+STEP THREE
+If, however, the resident’s blood glucose does come up above 
+4 mmol within 45 minutes of giving one of the recommended 
+hypo treatments as indicated in Step 1, ensure the resident is 
+then given some starchy food to keep the blood glucose levels 
+stable. Examples of starchy food includes:
+• A banana
+• Half a sandwich or a piece of toast
+• 2 plain biscuits
+If the next meal is due give this to the resident early
+Residents should NOT be given any of the following to treat 
+a hypo:
+• Chocolate
+• Cakes
+• Biscuits
+• Milky sugary drinks or any other foods or drinks which 
+may have a combination of sugar and fat combined within 
+them
+The fat contained within these foods/drinks will prevent the 
+sugar from being released and if these are given this will cause 
+the resident’s blood glucose to continue to fall and the hypo 
+will take longer to treat. This may result in serious consequences 
+and the resident may require admission to hospital.

@@ -1,0 +1,33 @@
+Diabetes - type 1:
+What is it?
+Last revised in December 2024
+The content on the NICE Clinical Knowledge Summaries site (CKS) is the copyright ofClarity Informatics Limited (trading
+as Agilio Software Primary Care) (https://agiliosoftware.com/primary-care/). By using CKS, you agree to the licence set
+out in theCKS End User Licence Agreement (https://www.nice.org.uk/terms-and-conditions/cks-end-user-licence-
+agreement).Diabetes mellitus is a metabolic disorder characterized by persistent hyperglycaemia
+(random plasma glucose more than 11 mmol/L) with disturbances of carbohydrate,
+protein, and fat metabolism resulting from defects in insulin secretion (leading to insulin
+deficiency), insulin action (leading to insulin resistance), or both.
+In type 1 diabetes, an absolute insulin deficiency causes persistent hyperglycaemia.
+The term 'type 1 diabetes' has replaced the older terms 'insulin-dependent diabetes
+mellitus (IDDM)' and 'juvenile-onset diabetes' because the older terms are potentially
+misleading: type 1 diabetes can also develop during adulthood and some people with
+type 2 diabetes are treated with insulin.
+Other types of diabetes include:
+Type 2 diabetes — insulin resistance and a relative insulin deficiency result in
+persistent hyperglycaemia. See the CKS topic on Diabetes - type 2 (/topics/diabetes-
+type-2/) for more information.
+Gestational diabetes — hyperglycaemia develops during pregnancy and usually
+resolves after delivery, although the woman is at increased risk for overt type 2
+diabetes in the future.
+Other specific types of diabetes, including:
+Monogenic diabetes (due to a single gene defect; previously known as 'maturity-
+onset diabetes in the young').
+Diabetes secondary to pathological conditions or diseases (such as pancreatitis,
+trauma, or pancreatic surgery).
+Drug- or chemically-induced diabetes (such as from long-term corticosteroids or
+antipsychotics).
+[NICE, 2016a (/topics/diabetes-type-1/references/); SIGN, 2017 (/topics/diabetes-type-
+1/references/); WHO, 2019 (/topics/diabetes-type-1/references/)]
+©NICE (National Institute for Health and Care Excellence)2025. All rights reserved. Subject toNotice of rights
+(https://www.nice.org.uk/terms-and-conditions#notice-of-rights).
