@@ -1,0 +1,66 @@
+Changes to Implement:
+1.	Regulatory Compliance (Compliance Officer Agent)
+o	In complianceOfficerAgentPrompt.ts, add:
+bash
+CopyEdit
+"You must always cite the relevant NICE, NHS, or CQC guideline. 
+If no citation exists, respond: 'I cannot confirm this information according to current NICE, NHS, or CQC standards.'"
+o	In EnhancedRagOrchestrator, after compliance agent runs:
+ts
+CopyEdit
+if (analysis.queryType === 'clinical' || analysis.queryType === 'educational') {
+  if (complianceConfidence < 0.85) {
+    return { 
+      message: "I cannot provide a compliant answer with sufficient confidence.", 
+      confidence: complianceConfidence 
+    };
+  }
+}
+o	If Compliance Agent flags non-compliance, override all other agents’ outputs.
+________________________________________
+2.	Safety & Emergency Detection
+o	Remove hardcoded emergencyKeywords array.
+o	If possible emergency detected → skip all other processing and trigger emergency protocol.
+________________________________________
+3.	Educational Tone & Accuracy (Learning Facilitator Agent)
+o	Update prompt:
+arduino
+CopyEdit
+"Never provide speculative or anecdotal examples unless explicitly sourced from the knowledge base or authoritative healthcare references."
+o	In orchestrator:
+ts
+CopyEdit
+if (!retrievalResult.hasVerifiedSource) {
+  return { message: "I cannot confirm this from the provided training materials or official guidelines." };
+}
+o	End every Learning Facilitator response with a comprehension check question.
+________________________________________
+4.	Retrieval & Filtering (Enhanced RAG Orchestrator)
+o	Change retrieval scoring formula:
+ts
+CopyEdit
+const retrievalScore = score * 0.8 + relevance * 0.15 + recency * 0.05;
+o	Add minimum similarity filter:
+ts
+CopyEdit
+if (retrievalScore < 0.8) {
+  return { message: "No sufficiently relevant source found to answer your query." };
+}
+o	Remove fallback that allows low-scoring chunks through.
+________________________________________
+5.	Quality Assurance Pipeline
+o	After synthesis:
+ts
+CopyEdit
+if (finalResponse.confidence < 0.85) {
+  return { message: "Confidence is too low to provide a safe and compliant answer." };
+}
+o	Require that compliance and safety checks must pass before output.
+o	Require at least 2 of 3 agents to agree on the final answer before it’s sent to the user.
+________________________________________
+End Result:
+•	Compliance strictness: 9
+•	Safety strictness: 9
+•	Educational strictness: 8.5
+•	Retrieval strictness: 8.5
+•	QA strictness: 9
