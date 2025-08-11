@@ -44,9 +44,11 @@ interface RetrievalResult {
     clickable?: boolean;
     recency: number;
     relevance: number;
+    retrievalScore?: number;
   }>;
   totalRetrieved: number;
   cacheHit: boolean;
+  hasVerifiedSource: boolean;
 }
 
 interface AgentContext {
@@ -58,11 +60,7 @@ interface AgentContext {
 export class EnhancedRagOrchestrator {
   private openai?: OpenAI;
   private maxTokenLimit = 8000;
-  private emergencyKeywords = [
-    'emergency', 'urgent', 'immediate', 'critical', 'severe', 'danger',
-    'unconscious', 'seizure', 'stroke', 'heart attack', 'hypoglycemia',
-    'ketoacidosis', 'diabetic coma', 'blood sugar', 'insulin shock'
-  ];
+  private emergencyKeywords: string[] = [];
 
   constructor() {
     if (process.env.OPENAI_API_KEY) {
@@ -82,7 +80,7 @@ export class EnhancedRagOrchestrator {
     
     try {
       // Step 1: Emergency detection
-      const emergencyCheck = this.checkEmergencyKeywords(query);
+      const emergencyCheck = await this.checkEmergencyKeywords(query);
       if (emergencyCheck.isEmergency) {
         return this.handleEmergencyResponse(emergencyCheck.keywords);
       }
@@ -112,7 +110,19 @@ export class EnhancedRagOrchestrator {
       // Step 6: Agent pruning
       const selectedAgents = this.pruneAgents(analysis);
 
-      // Step 7: Parallel processing
+      // Step 7: Check for verified sources (Learning Facilitator requirement)
+      if (!retrievalResult.hasVerifiedSource && (analysis.queryType === 'clinical' || analysis.queryType === 'educational')) {
+        return {
+          content: "I cannot confirm this from the provided training materials or official guidelines.",
+          confidence: 0,
+          sources: [],
+          usedRAG: false,
+          agentsUsed: ['verification_filter'],
+          responseTime: Date.now() - startTime,
+        };
+      }
+
+      // Step 8: Parallel processing
       const agentResponses = await this.processAgentsInParallel(
         query, 
         retrievalResult, 
@@ -122,22 +132,47 @@ export class EnhancedRagOrchestrator {
         agentContext
       );
 
-      // Step 8: Synthesize response
+      // Step 9: Compliance and safety checks
+      const complianceResult = await this.performComplianceChecks(agentResponses, analysis);
+      if (!complianceResult.passed) {
+        return {
+          content: complianceResult.message,
+          confidence: complianceResult.confidence,
+          sources: [],
+          usedRAG: false,
+          agentsUsed: ['compliance_filter'],
+          responseTime: Date.now() - startTime,
+        };
+      }
+
+      // Step 10: Synthesize response
       const finalResponse = await this.synthesizeFinalResponse(
         agentResponses, 
         analysis, 
         retrievalResult
       );
 
-      // Step 9: Cache if appropriate
+      // Step 11: Final quality assurance
+      if (finalResponse.confidence < 85) {
+        return {
+          content: "Confidence is too low to provide a safe and compliant answer.",
+          confidence: finalResponse.confidence,
+          sources: [],
+          usedRAG: false,
+          agentsUsed: ['qa_filter'],
+          responseTime: Date.now() - startTime,
+        };
+      }
+
+      // Step 12: Cache if appropriate
       if (analysis.queryType === 'faq' || analysis.confidence > 90) {
         await this.cacheResponse(query, finalResponse);
       }
 
-      // Step 10: Update summaries
+      // Step 13: Update summaries
       await this.updateAgentSummaries(user.id, courseId, query, finalResponse, selectedAgents);
 
-      // Step 11: Log analytics
+      // Step 14: Log analytics
       await this.logAnalytics({
         eventType: 'response',
         userId: user.id,
@@ -185,16 +220,37 @@ export class EnhancedRagOrchestrator {
     }
   }
 
-  private checkEmergencyKeywords(query: string): { isEmergency: boolean; keywords: string[] } {
-    const queryLower = query.toLowerCase();
-    const foundKeywords = this.emergencyKeywords.filter(keyword => 
-      queryLower.includes(keyword)
-    );
-    
-    return {
-      isEmergency: foundKeywords.length > 0,
-      keywords: foundKeywords
-    };
+  private async checkEmergencyKeywords(query: string): Promise<{ isEmergency: boolean; keywords: string[] }> {
+    if (!this.openai) {
+      return { isEmergency: false, keywords: [] };
+    }
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{
+          role: "user",
+          content: `Analyze this healthcare query for emergency indicators: "${query}"
+          
+          Return JSON: {"isEmergency": boolean, "keywords": ["keyword1", "keyword2"], "confidence": 0-100}
+          
+          Emergency indicators include: life-threatening symptoms, unconsciousness, severe hypoglycemia, diabetic ketoacidosis, stroke symptoms, heart attack, seizures, severe allergic reactions.`
+        }],
+        response_format: { type: "json_object" },
+        temperature: 0.1,
+        max_tokens: 200,
+      });
+
+      const result = JSON.parse(response.choices[0]?.message?.content || '{"isEmergency": false, "keywords": [], "confidence": 0}');
+      
+      return {
+        isEmergency: result.isEmergency && result.confidence > 80,
+        keywords: result.keywords || []
+      };
+    } catch (error) {
+      console.error('Emergency detection error:', error);
+      return { isEmergency: false, keywords: [] };
+    }
   }
 
   private async handleEmergencyResponse(keywords: string[]): Promise<ChatResponse> {
@@ -365,15 +421,37 @@ Provide JSON response with:
         relevance: this.calculateRelevanceScore(result, analysis),
       }));
 
-      enhancedResults.sort((a, b) => 
-        (b.score * 0.6 + b.relevance * 0.3 + b.recency * 0.1) - 
-        (a.score * 0.6 + a.relevance * 0.3 + a.recency * 0.1)
-      );
+      // Apply new retrieval scoring formula: score * 0.8 + relevance * 0.15 + recency * 0.05
+      const scoredResults = enhancedResults.map(result => ({
+        ...result,
+        retrievalScore: result.score * 0.8 + result.relevance * 0.15 + result.recency * 0.05
+      }));
+
+      // Apply minimum similarity filter - require retrievalScore >= 0.8
+      const filteredResults = scoredResults.filter(result => {
+        if (result.retrievalScore < 0.8) {
+          console.log(`Filtered out result with low score: ${result.retrievalScore} for "${result.title}"`);
+          return false;
+        }
+        return true;
+      });
+
+      if (filteredResults.length === 0) {
+        return {
+          sources: [],
+          totalRetrieved: 0,
+          cacheHit: false,
+          hasVerifiedSource: false
+        };
+      }
+
+      filteredResults.sort((a, b) => b.retrievalScore - a.retrievalScore);
 
       return {
-        sources: enhancedResults,
-        totalRetrieved: enhancedResults.length,
+        sources: filteredResults,
+        totalRetrieved: filteredResults.length,
         cacheHit: false,
+        hasVerifiedSource: filteredResults.length > 0
       };
     } catch (error) {
       console.error('Dynamic retrieval error:', error);
@@ -381,6 +459,7 @@ Provide JSON response with:
         sources: [],
         totalRetrieved: 0,
         cacheHit: false,
+        hasVerifiedSource: false
       };
     }
   }
@@ -468,9 +547,9 @@ Provide JSON response with:
     }
 
     const agentPrompts: Record<string, string> = {
-      medical_specialist: `You are a medical specialist providing evidence-based guidance on diabetes care. Focus on clinical accuracy, medication management, and patient safety.`,
-      compliance_officer: `You are a healthcare compliance officer ensuring adherence to NICE guidelines, NHS standards, and CQC requirements.`,
-      learning_facilitator: `You are an educational specialist helping healthcare workers understand diabetes care concepts.`
+      medical_specialist: `You are a medical specialist providing evidence-based guidance on diabetes care. Focus on clinical accuracy, medication management, and patient safety. Always cite relevant sources.`,
+      compliance_officer: `You are a healthcare compliance officer ensuring adherence to NICE guidelines, NHS standards, and CQC requirements. You must always cite the relevant NICE, NHS, or CQC guideline. If no citation exists, respond: 'I cannot confirm this information according to current NICE, NHS, or CQC standards.'`,
+      learning_facilitator: `You are an educational specialist helping healthcare workers understand diabetes care concepts. Never provide speculative or anecdotal examples unless explicitly sourced from the knowledge base or authoritative healthcare references. End every response with a comprehension check question.`
     };
 
     const systemPrompt = agentPrompts[agentType] || agentPrompts.learning_facilitator;
@@ -592,6 +671,99 @@ Provide JSON response with:
     }
 
     return actions.slice(0, 2);
+  }
+
+  private async performComplianceChecks(
+    agentResponses: EnhancedAgentResponse[],
+    analysis: QueryAnalysis
+  ): Promise<{ passed: boolean; message: string; confidence: number }> {
+    if (!this.openai) {
+      return { passed: true, message: '', confidence: 100 };
+    }
+
+    // Find compliance officer response
+    const complianceAgent = agentResponses.find(r => r.agentName === 'compliance_officer');
+    
+    if ((analysis.queryType === 'clinical' || analysis.queryType === 'educational') && complianceAgent) {
+      // Check if compliance officer found valid citations
+      if (complianceAgent.content.includes('I cannot confirm this information according to current NICE, NHS, or CQC standards')) {
+        return {
+          passed: false,
+          message: "I cannot provide a compliant answer with sufficient confidence.",
+          confidence: complianceAgent.confidence
+        };
+      }
+
+      // Check compliance confidence threshold
+      if (complianceAgent.confidence < 85) {
+        return {
+          passed: false,
+          message: "I cannot provide a compliant answer with sufficient confidence.",
+          confidence: complianceAgent.confidence
+        };
+      }
+    }
+
+    // Require at least 2 of 3 agents to agree (consensus check)
+    if (agentResponses.length >= 2) {
+      const consensusCheck = await this.checkAgentConsensus(agentResponses, analysis);
+      if (!consensusCheck.hasConsensus) {
+        return {
+          passed: false,
+          message: "There is insufficient agreement among our medical experts to provide a confident answer. Please consult with a healthcare professional.",
+          confidence: consensusCheck.confidence
+        };
+      }
+    }
+
+    return { passed: true, message: '', confidence: 100 };
+  }
+
+  private async checkAgentConsensus(
+    agentResponses: EnhancedAgentResponse[],
+    analysis: QueryAnalysis
+  ): Promise<{ hasConsensus: boolean; confidence: number }> {
+    if (agentResponses.length < 2) {
+      return { hasConsensus: true, confidence: agentResponses[0]?.confidence || 0 };
+    }
+
+    try {
+      const agentSummaries = agentResponses.map(r => 
+        `${r.agentName}: ${r.content.substring(0, 300)}... (Confidence: ${r.confidence})`
+      ).join('\n\n');
+
+      const response = await this.openai!.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{
+          role: "user",
+          content: `Analyze these expert responses for consensus on a healthcare query:
+
+${agentSummaries}
+
+Return JSON: {"hasConsensus": boolean, "confidence": 0-100, "reasoning": "brief explanation"}
+
+Consensus requires:
+- At least 2 agents agree on core medical facts
+- No contradictory safety advice
+- Similar confidence levels (within 20 points)
+- No agent flags major concerns`
+        }],
+        response_format: { type: "json_object" },
+        temperature: 0.1,
+        max_tokens: 300,
+      });
+
+      const result = JSON.parse(response.choices[0]?.message?.content || '{"hasConsensus": false, "confidence": 0}');
+      
+      return {
+        hasConsensus: result.hasConsensus,
+        confidence: result.confidence
+      };
+    } catch (error) {
+      console.error('Consensus check error:', error);
+      // Conservative approach: require consensus, default to no consensus on error
+      return { hasConsensus: false, confidence: 0 };
+    }
   }
 
   private async synthesizeFinalResponse(
