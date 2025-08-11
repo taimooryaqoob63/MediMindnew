@@ -47,6 +47,7 @@ export interface IStorage {
 
   // Documents
   getDocuments(): Promise<Document[]>;
+  getAllDocuments(): Promise<Document[]>;
   getDocument(id: string): Promise<Document | undefined>;
   createDocument(document: InsertDocument): Promise<Document>;
   updateDocument(id: string, updates: Partial<InsertDocument>): Promise<Document | undefined>;
@@ -246,6 +247,10 @@ export class DatabaseStorage implements IStorage {
 
   // Documents
   async getDocuments(): Promise<Document[]> {
+    return await db.select().from(documents);
+  }
+
+  async getAllDocuments(): Promise<Document[]> {
     return await db.select().from(documents);
   }
 
@@ -855,6 +860,10 @@ export class MemStorage implements IStorage {
 
   // RAG-related methods (stub implementations for MemStorage)
   async getDocuments(): Promise<Document[]> {
+    return [];
+  }
+
+  async getAllDocuments(): Promise<Document[]> {
     return [];
   }
 

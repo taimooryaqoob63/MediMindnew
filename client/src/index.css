@@ -24,12 +24,20 @@
   --ring: hsl(195, 60%, 42%);
   --radius: 0.5rem;
   
-  /* Custom colors for healthcare theme - matching user requirements */
-  --medical-blue: hsl(202, 60%, 42%); /* #2E86AB */
-  --accent-purple: hsl(318, 48%, 43%); /* #A23B72 */
-  --bg-light: hsl(210, 40%, 98%); /* #F8F9FA */
-  --text-dark: hsl(210, 11%, 15%); /* #212529 */
-  --success-green: hsl(134, 61%, 41%); /* #28A745 */
+  /* Enhanced healthcare theme - calm and professional */
+  --medical-blue: hsl(202, 70%, 45%); /* Primary blue */
+  --medical-blue-light: hsl(202, 60%, 92%); /* Light blue for backgrounds */
+  --medical-blue-dark: hsl(202, 80%, 35%); /* Darker blue for emphasis */
+  --healthcare-green: hsl(142, 76%, 36%); /* Calming green */
+  --healthcare-green-light: hsl(142, 60%, 95%); /* Light green backgrounds */
+  --accent-purple: hsl(250, 45%, 55%); /* Softer purple */
+  --bg-light: hsl(210, 40%, 99%); /* Ultra light background */
+  --bg-chat-user: hsl(202, 70%, 45%); /* User message background */
+  --bg-chat-bot: hsl(0, 0%, 96%); /* Bot message background */
+  --text-dark: hsl(210, 11%, 15%); /* Primary text */
+  --text-muted: hsl(210, 7%, 56%); /* Secondary text */
+  --success-green: hsl(134, 61%, 41%); /* Success states */
+  --border-chat: hsl(210, 20%, 90%); /* Chat borders */
 }
 
 .dark {
@@ -101,6 +109,26 @@
     background-color: var(--success-green);
   }
 
+  .bg-healthcare-green {
+    background-color: var(--healthcare-green);
+  }
+
+  .bg-healthcare-green-light {
+    background-color: var(--healthcare-green-light);
+  }
+
+  .bg-medical-blue-light {
+    background-color: var(--medical-blue-light);
+  }
+
+  .text-healthcare-green {
+    color: var(--healthcare-green);
+  }
+
+  .text-medical-blue {
+    color: var(--medical-blue);
+  }
+
   /* Interactive and responsive utilities */
   .interactive-hover {
     @apply transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-lg;
@@ -124,6 +152,116 @@
   
   .slide-in-right {
     animation: slideInRight 0.3s ease-out;
+  }
+
+  /* Enhanced chat styles */
+  .chat-container {
+    @apply bg-white shadow-xl rounded-2xl border border-gray-100;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .chat-message-user {
+    @apply bg-medical-blue text-white rounded-2xl rounded-br-md px-4 py-3 max-w-sm ml-auto shadow-sm;
+    background: linear-gradient(135deg, hsl(202, 70%, 45%) 0%, hsl(202, 80%, 35%) 100%);
+    line-height: 1.5;
+  }
+
+  .chat-message-bot {
+    @apply bg-gray-50 text-gray-800 rounded-2xl rounded-bl-md px-4 py-3 max-w-sm shadow-sm;
+    background: linear-gradient(135deg, hsl(0, 0%, 98%) 0%, hsl(0, 0%, 96%) 100%);
+    line-height: 1.6;
+    border: 1px solid hsl(210, 20%, 92%);
+  }
+
+  .chat-avatar-bot {
+    @apply w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0;
+    background: linear-gradient(135deg, hsl(202, 70%, 45%) 0%, hsl(142, 76%, 36%) 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .chat-avatar-user {
+    @apply w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0;
+    background: linear-gradient(135deg, hsl(202, 70%, 45%) 0%, hsl(202, 80%, 35%) 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .chat-typing-indicator {
+    @apply flex space-x-1;
+  }
+
+  .chat-typing-dot {
+    @apply w-2 h-2 bg-gray-400 rounded-full animate-bounce;
+  }
+
+  .chat-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(210, 20%, 85%) transparent;
+  }
+
+  .chat-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chat-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .chat-scroll::-webkit-scrollbar-thumb {
+    background-color: hsl(210, 20%, 85%);
+    border-radius: 3px;
+  }
+
+  .chat-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(210, 20%, 75%);
+  }
+
+  .chat-input-container {
+    @apply border-t border-gray-100 bg-gray-50/50 rounded-b-2xl;
+  }
+
+  .chat-input {
+    @apply w-full px-4 py-3 text-gray-800 bg-transparent border-0 focus:ring-0 resize-none;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    max-height: 120px;
+  }
+
+  .chat-input:focus {
+    outline: none;
+  }
+
+  .chat-button {
+    @apply p-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95;
+  }
+
+  .chat-button-primary {
+    @apply text-white shadow-md;
+    background-color: hsl(202, 70%, 45%);
+  }
+  
+  .chat-button-primary:hover {
+    background-color: hsl(202, 80%, 35%);
+  }
+
+  .chat-button-secondary {
+    @apply bg-gray-100 text-gray-600 hover:bg-gray-200;
+  }
+
+  .chat-button-voice {
+    @apply text-white hover:bg-green-600;
+    background-color: var(--healthcare-green);
+  }
+
+  .chat-button-voice.listening {
+    @apply bg-red-500 hover:bg-red-600 animate-pulse;
+  }
+
+  .slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
   }
   
   .pulse-soft {

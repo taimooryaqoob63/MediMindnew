@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Shield, Mic, MicOff, Volume2, VolumeX, X, ChevronDown } from "lucide-react";
+import { Bot, Send, Mic, MicOff, Volume2, VolumeX, ChevronDown, Stethoscope, Heart, BookOpen, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarkdownRenderer } from "@/components/ui/markdown";
@@ -35,6 +35,7 @@ interface ChatResponse {
 
 export default function AITutorChat({ courseId, currentModule, isMobile, isOpen, onClose }: AITutorChatProps) {
   const [inputMessage, setInputMessage] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   
   // TTS and STT state
   const [isListening, setIsListening] = useState(false);
@@ -220,111 +221,181 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   return (
     <div className={`
       ${isMobile 
-        ? 'h-96 bg-white border-t border-gray-200 rounded-t-xl' 
-        : 'w-96 h-full bg-white border-l border-gray-200'
+        ? 'h-96 chat-container border-t-0 rounded-t-2xl' 
+        : 'w-96 h-full chat-container border-l-0 rounded-l-none rounded-r-2xl'
       } 
-      flex flex-col slide-in-right
+      flex flex-col slide-in-right overflow-hidden
     `}>
-      <div className="p-4 border-b border-gray-200 flex-shrink-0">
+      {/* Enhanced Header */}
+      <div className="px-6 py-4 bg-gradient-to-r from-medical-blue to-healthcare-green text-white flex-shrink-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-medical-blue to-accent-purple rounded-full flex items-center justify-center">
-              <Bot className="w-5 h-5 text-white" />
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <Stethoscope className="w-6 h-6 text-white" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-healthcare-green rounded-full border-2 border-white flex items-center justify-center">
+                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+              </div>
             </div>
             <div>
-              <h3 className="font-semibold text-text-dark">AI Tutor</h3>
-              <p className="text-sm text-gray-500">Ask me anything about diabetes care</p>
+              <h3 className="font-semibold text-white text-lg">MediMind AI Tutor</h3>
+              <p className="text-white/80 text-sm font-medium">Diabetes Care Specialist</p>
             </div>
           </div>
-          {isMobile && (
+          <div className="flex items-center space-x-2">
             <Button
               variant="ghost"
               size="sm"
-              onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 button-interactive"
+              onClick={() => setIsTTSEnabled(!isTTSEnabled)}
+              className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
             >
-              <ChevronDown className="w-5 h-5" />
+              {isTTSEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </Button>
-          )}
+            {isMobile && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+              >
+                <ChevronDown className="w-5 h-5" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Enhanced Chat Messages Area */}
       <div 
         ref={scrollContainerRef}
         className={`
-          flex-1 overflow-y-auto p-4 space-y-4 
+          flex-1 overflow-y-auto px-6 py-4 space-y-6 bg-gradient-to-b from-white to-gray-50/30
           ${isMobile ? 'max-h-64' : 'min-h-0'}
-          scrollbar-thin chat-scroll
+          chat-scroll
         `}
         style={{ 
           overscrollBehavior: 'contain',
           WebkitOverflowScrolling: 'touch'
         }}>
-        {/* Welcome Message */}
-        <div className="flex items-start space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-medical-blue to-accent-purple rounded-full flex items-center justify-center flex-shrink-0">
-            <Bot className="w-4 h-4 text-white" />
+        {/* Enhanced Welcome Message */}
+        <div className="flex items-start space-x-4 animate-fade-in">
+          <div className="chat-avatar-bot">
+            <Heart className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1">
-            <div className="bg-gray-100 rounded-lg p-3">
-              <p className="text-sm text-text-dark">
-                Hello! I'm your AI tutor, ready to help you understand diabetes management. 
-                I can answer questions based on NICE guidelines, NHS best practices, and CQC requirements. 
-                What would you like to know?
+            <div className="chat-message-bot">
+              <div className="flex items-center space-x-2 mb-2">
+                <BookOpen className="w-4 h-4 text-healthcare-green" />
+                <span className="text-sm font-medium text-healthcare-green">Welcome Guide</span>
+              </div>
+              <p className="text-sm leading-relaxed">
+                Hello! I'm your MediMind AI tutor, specializing in evidence-based diabetes care. 
+                I can help with clinical guidelines, medication management, and patient care protocols 
+                based on <strong>NICE guidelines</strong>, <strong>NHS best practices</strong>, and <strong>CQC requirements</strong>.
               </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-healthcare-green-light text-healthcare-green font-medium">
+                  📋 Clinical Guidelines
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-medical-blue-light text-medical-blue font-medium">
+                  💊 Medication Safety
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700 font-medium">
+                  🎯 Best Practices
+                </span>
+              </div>
             </div>
-            <p className="text-xs text-gray-500 mt-1">AI Assistant</p>
+            <p className="text-xs text-gray-500 mt-2 flex items-center space-x-1">
+              <Bot className="w-3 h-3" />
+              <span>AI Assistant • Always learning</span>
+            </p>
           </div>
         </div>
 
-        {/* Chat Messages */}
-        {messages.map((msg) => (
-          <div key={msg.id} className="group">
+        {/* Enhanced Chat Messages */}
+        {messages.map((msg, index) => (
+          <div key={msg.id} className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
             {/* User Message */}
-            <div className="flex items-start space-x-3 justify-end mb-4">
+            <div className="flex items-end space-x-3 justify-end mb-6">
               <div className="flex-1">
-                <div className="bg-medical-blue rounded-lg p-3 ml-8 transition-all duration-200 hover:shadow-md">
-                  <p className="text-sm text-white select-text">{msg.message}</p>
+                <div className="chat-message-user transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
+                  <p className="text-sm leading-relaxed select-text">{msg.message}</p>
                 </div>
-                <p className="text-xs text-gray-500 mt-1 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  {formatTimestamp(msg.timestamp)}
+                <p className="text-xs text-gray-500 mt-2 text-right opacity-0 group-hover:opacity-100 transition-all duration-300">
+                  <span className="inline-flex items-center space-x-1">
+                    <span>You</span>
+                    <span>•</span>
+                    <span>{formatTimestamp(msg.timestamp)}</span>
+                  </span>
                 </p>
               </div>
-              <div className="w-8 h-8 bg-medical-blue rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-xs font-medium">You</span>
+              <div className="chat-avatar-user">
+                <span className="text-white text-xs font-semibold">You</span>
               </div>
             </div>
 
-            {/* AI Response */}
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-medical-blue to-accent-purple rounded-full flex items-center justify-center flex-shrink-0">
-                <Bot className="w-4 h-4 text-white" />
+            {/* Enhanced AI Response */}
+            <div className="flex items-start space-x-4 mb-6">
+              <div className="chat-avatar-bot">
+                <Stethoscope className="w-4 h-4 text-white" />
               </div>
-              <div className="flex-1">
-                <div className="bg-gray-100 hover:bg-gray-50 rounded-lg p-3 transition-all duration-200 hover:shadow-md">
-                  <MarkdownRenderer content={msg.response} className="text-sm text-text-dark select-text" />
+              <div className="flex-1 space-y-3">
+                <div className="chat-message-bot transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
+                  <MarkdownRenderer 
+                    content={msg.response} 
+                    className="text-sm leading-relaxed select-text prose prose-sm max-w-none prose-headings:text-gray-800 prose-strong:text-gray-900 prose-a:text-medical-blue hover:prose-a:text-medical-blue-dark prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded" 
+                  />
                 </div>
-                <p className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  {formatTimestamp(msg.timestamp)}
+                
+                {/* Follow-up Actions */}
+                <div className="flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                  <button className="inline-flex items-center px-3 py-1.5 text-xs bg-medical-blue-light text-medical-blue rounded-full hover:bg-medical-blue hover:text-white transition-colors duration-200">
+                    <BookOpen className="w-3 h-3 mr-1" />
+                    View Guidelines
+                  </button>
+                  <button className="inline-flex items-center px-3 py-1.5 text-xs bg-healthcare-green-light text-healthcare-green rounded-full hover:bg-healthcare-green hover:text-white transition-colors duration-200">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    Test Knowledge
+                  </button>
+                  <button className="inline-flex items-center px-3 py-1.5 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-600 hover:text-white transition-colors duration-200">
+                    <Heart className="w-3 h-3 mr-1" />
+                    Related Topics
+                  </button>
+                </div>
+                
+                <p className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                  <span className="inline-flex items-center space-x-1">
+                    <Bot className="w-3 h-3" />
+                    <span>MediMind AI</span>
+                    <span>•</span>
+                    <span>{formatTimestamp(msg.timestamp)}</span>
+                    <span>•</span>
+                    <span className="text-healthcare-green">Evidence-based</span>
+                  </span>
                 </p>
               </div>
             </div>
           </div>
         ))}
 
-        {/* Loading Message */}
+        {/* Enhanced Loading Message */}
         {chatMutation.isPending && (
-          <div className="flex items-start space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-medical-blue to-accent-purple rounded-full flex items-center justify-center flex-shrink-0">
-              <Bot className="w-4 h-4 text-white" />
+          <div className="flex items-start space-x-4 animate-fade-in">
+            <div className="chat-avatar-bot">
+              <Stethoscope className="w-4 h-4 text-white animate-pulse" />
             </div>
             <div className="flex-1">
-              <div className="bg-gray-100 rounded-lg p-3">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="chat-message-bot">
+                <div className="flex items-center space-x-3">
+                  <div className="chat-typing-indicator">
+                    <div className="chat-typing-dot" style={{ animationDelay: '0s' }}></div>
+                    <div className="chat-typing-dot" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="chat-typing-dot" style={{ animationDelay: '0.4s' }}></div>
+                  </div>
+                  <span className="text-sm text-gray-600 font-medium">Analyzing your question...</span>
                 </div>
+                <p className="text-xs text-gray-500 mt-2">Consulting medical guidelines and evidence-based practices</p>
               </div>
             </div>
           </div>
@@ -333,77 +404,70 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Chat Input */}
-      <div className={`${isMobile ? 'p-3' : 'p-4'} border-t border-gray-200 flex-shrink-0`}>
-        <div className={`flex space-x-2 mb-2`}>
-          <Input
-            type="text"
-            placeholder={isListening ? "Listening..." : (isMobile ? "Ask AI..." : "Ask about diabetes care guidelines...")}
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="flex-1 text-sm"
-            disabled={chatMutation.isPending || isListening}
-          />
-          
-          {/* Microphone Button */}
-          <Button
-            onClick={isListening ? stopListening : startListening}
-            disabled={chatMutation.isPending || !recognition}
-            variant={isListening ? "default" : "outline"}
-            size="sm"
-            className={`button-interactive ${isListening ? "bg-red-500 hover:bg-red-600 text-white" : ""}`}
-            title={isListening ? "Stop listening" : "Start voice input"}
-          >
-            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-          </Button>
-          
-          {/* Send Button */}
-          <Button
-            onClick={handleSendMessage}
-            disabled={!inputMessage.trim() || chatMutation.isPending}
-            className="bg-medical-blue hover:bg-medical-blue/90 button-interactive"
-            size="sm"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
-        
-        {/* TTS Controls and Info */}
-        <div className={`flex items-center justify-between ${isMobile ? 'flex-col space-y-2' : ''}`}>
-          <p className={`${isMobile ? 'text-xs' : 'text-xs'} text-gray-500 flex items-center`}>
-            <Shield className="w-3 h-3 medical-blue mr-1" />
-            {isMobile ? 'NICE/NHS Guidelines' : 'Responses based on NICE, NHS & CQC guidelines'}
-          </p>
-          
-          <div className="flex items-center space-x-2">
-            {/* TTS Toggle */}
-            <Button
-              onClick={toggleTTS}
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 button-interactive"
-              title={isTTSEnabled ? "Disable text-to-speech" : "Enable text-to-speech"}
-            >
-              {isTTSEnabled ? (
-                <Volume2 className="w-3 h-3 text-green-600" />
-              ) : (
-                <VolumeX className="w-3 h-3 text-gray-400" />
-              )}
-            </Button>
+      {/* Enhanced Input Area */}
+      <div className="chat-input-container">
+        <div className="p-4">
+          <div className="flex items-end space-x-3">
+            <div className="flex-1">
+              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm focus-within:shadow-md focus-within:border-medical-blue transition-all duration-200">
+                <textarea
+                  ref={inputRef}
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Ask me anything about diabetes care..."
+                  className="chat-input placeholder-gray-400"
+                  disabled={chatMutation.isPending}
+                  rows={1}
+                  style={{ 
+                    minHeight: '48px',
+                    resize: 'none'
+                  }}
+                />
+              </div>
+            </div>
             
-            {/* Stop Speaking Button */}
-            {currentUtterance && synthesis && !synthesis.paused && (
+            {/* Enhanced Control Buttons */}
+            <div className="flex items-center space-x-2">
               <Button
-                onClick={stopSpeaking}
-                variant="ghost"
+                onClick={isListening ? stopListening : startListening}
+                disabled={chatMutation.isPending}
+                className={`chat-button ${isListening ? 'chat-button-voice listening' : 'chat-button-voice'}`}
                 size="sm"
-                className="h-6 px-2 text-red-500"
-                title="Stop speaking"
               >
-                Stop
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
               </Button>
-            )}
+              
+              <Button
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || chatMutation.isPending}
+                className="chat-button chat-button-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                size="sm"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+          
+          {/* Status Indicators */}
+          <div className="flex items-center justify-between mt-3 px-2">
+            <div className="flex items-center space-x-4 text-xs text-gray-500">
+              {isListening && (
+                <span className="flex items-center space-x-1 text-red-600 animate-pulse">
+                  <Mic className="w-3 h-3" />
+                  <span>Listening...</span>
+                </span>
+              )}
+              <span className="flex items-center space-x-1">
+                <Bot className="w-3 h-3" />
+                <span>Evidence-based responses</span>
+              </span>
+            </div>
+            
+            <div className="flex items-center space-x-1 text-xs text-gray-400">
+              <kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">Enter</kbd>
+              <span>to send</span>
+            </div>
           </div>
         </div>
       </div>
