@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Upload, FileText, Trash2, Eye, AlertCircle, CheckCircle, Clock, Database } from "lucide-react";
+import { Upload, Database, FileText, Trash2, Clock, AlertCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,16 @@ import type { Document, ProcessingJob, User } from "@shared/schema";
 
 interface DocumentManagementProps {
   user: User | null;
+}
+
+interface VerificationData {
+  totalDocuments: number;
+  documentsWithChunks: number;
+  completedJobs: ProcessingJob[];
+  processingJobs: ProcessingJob[];
+  failedJobs: ProcessingJob[];
+  totalChunks: number;
+  documentsByCategory: Record<string, number>;
 }
 
 export default function DocumentManagement({ user }: DocumentManagementProps) {
@@ -33,6 +43,11 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
   const { data: jobs = [], isLoading: jobsLoading } = useQuery<ProcessingJob[]>({
     queryKey: ["/api/rag/jobs"],
     refetchInterval: 5000, // Refresh every 5 seconds
+  });
+
+  // Fetch verification data
+  const { data: verificationData, isLoading: verificationLoading } = useQuery<VerificationData>({
+    queryKey: ["/api/rag/verification"],
   });
 
   // Initialize vector store mutation
@@ -70,6 +85,7 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/rag/documents"] });
       queryClient.invalidateQueries({ queryKey: ["/api/rag/jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rag/verification"] });
       setUploadFile(null);
       toast({
         title: "Document Uploaded",
@@ -93,6 +109,7 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/rag/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rag/verification"] });
       toast({
         title: "Document Deleted",
         description: "Document and its vectors have been removed.",
@@ -152,7 +169,7 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Document Management</h1>
@@ -176,7 +193,7 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
                   Initialize the vector store to enable document processing and intelligent responses.
                 </p>
               </div>
-              <Button 
+              <Button
                 onClick={() => initializeMutation.mutate()}
                 disabled={initializeMutation.isPending}
                 className="ml-4"
@@ -184,6 +201,63 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
                 {initializeMutation.isPending ? "Initializing..." : "Initialize Vector Store"}
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Document Verification Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <CheckCircle className="w-5 h-5 mr-2" />
+              Document Status Verification
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {verificationLoading ? (
+              <p>Loading verification data...</p>
+            ) : verificationData ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-800">Total Documents</h3>
+                  <p className="text-2xl font-bold text-blue-600">{verificationData.totalDocuments}</p>
+                  <p className="text-sm text-blue-600">
+                    {verificationData.documentsWithChunks} with processed chunks
+                  </p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-green-800">Processing Status</h3>
+                  <p className="text-sm text-green-600">
+                    ✅ Completed: {verificationData.completedJobs.length}
+                  </p>
+                  <p className="text-sm text-yellow-600">
+                    ⏳ Processing: {verificationData.processingJobs.length}
+                  </p>
+                  <p className="text-sm text-red-600">
+                    ❌ Failed: {verificationData.failedJobs.length}
+                  </p>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-purple-800">Total Chunks</h3>
+                  <p className="text-2xl font-bold text-purple-600">{verificationData.totalChunks}</p>
+                  <p className="text-sm text-purple-600">Available for search</p>
+                </div>
+              </div>
+            ) : (
+              <p>Failed to load verification data</p>
+            )}
+
+            {verificationData?.documentsByCategory && (
+              <div className="mt-4">
+                <h4 className="font-semibold mb-2">Documents by Category:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(verificationData.documentsByCategory).map(([category, count]) => (
+                    <Badge key={category} variant="outline" className="px-3 py-1">
+                      {category}: {count}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -213,7 +287,7 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <Label htmlFor="category">Category</Label>
                 <Select value={category} onValueChange={setCategory}>
@@ -247,7 +321,7 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
               )}
             </div>
 
-            <Button 
+            <Button
               onClick={handleUpload}
               disabled={!uploadFile || uploadMutation.isPending}
               className="w-full"

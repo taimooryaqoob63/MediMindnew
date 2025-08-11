@@ -282,6 +282,45 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
+  // Document verification endpoint
+  app.get("/api/rag/documents/verify", isAuthenticated, async (req, res) => {
+    try {
+      const documents = await storage.getDocuments();
+      const jobs = await storage.getProcessingJobs();
+      
+      const documentStats = {
+        totalDocuments: documents.length,
+        documentsWithChunks: 0,
+        totalChunks: 0,
+        recentDocuments: documents.slice(-10), // Last 10 documents
+        processingJobs: jobs.filter(job => job.status === 'processing'),
+        completedJobs: jobs.filter(job => job.status === 'completed'),
+        failedJobs: jobs.filter(job => job.status === 'failed'),
+        documentsByCategory: {}
+      };
+
+      // Get chunk counts and categorize documents
+      for (const doc of documents) {
+        const chunks = await storage.getDocumentChunks(doc.id);
+        if (chunks.length > 0) {
+          documentStats.documentsWithChunks++;
+        }
+        documentStats.totalChunks += chunks.length;
+        
+        // Categorize by document category
+        if (!documentStats.documentsByCategory[doc.category]) {
+          documentStats.documentsByCategory[doc.category] = 0;
+        }
+        documentStats.documentsByCategory[doc.category]++;
+      }
+
+      res.json(documentStats);
+    } catch (error) {
+      console.error("Error verifying documents:", error);
+      res.status(500).json({ message: "Failed to verify documents" });
+    }
+  });
+
   // Analytics endpoint for monitoring (admin only)
   app.get("/api/rag/analytics", isAuthenticated, async (req, res) => {
     try {
