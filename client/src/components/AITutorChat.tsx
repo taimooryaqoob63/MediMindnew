@@ -249,8 +249,19 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               size="sm"
               onClick={() => setIsTTSEnabled(!isTTSEnabled)}
               className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+              title={isTTSEnabled ? "Disable Text-to-Speech" : "Enable Text-to-Speech"}
             >
               {isTTSEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={stopSpeaking}
+              className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+              title="Stop current speech"
+              disabled={!currentUtterance && !synthesis?.speaking}
+            >
+              <VolumeX className="w-4 h-4" />
             </Button>
             {isMobile && (
               <Button
@@ -456,6 +467,12 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <span className="flex items-center space-x-1 text-red-600 animate-pulse">
                   <Mic className="w-3 h-3" />
                   <span>Listening...</span>
+                </span>
+              )}
+              {synthesis?.speaking && (
+                <span className="flex items-center space-x-1 text-medical-blue animate-pulse">
+                  <Volume2 className="w-3 h-3" />
+                  <span>Speaking...</span>
                 </span>
               )}
               <span className="flex items-center space-x-1">
