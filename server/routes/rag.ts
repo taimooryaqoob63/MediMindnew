@@ -341,8 +341,55 @@ export function registerRAGRoutes(app: Express) {
         processingJobs: jobs.filter(job => job.status === 'processing'),
         completedJobs: jobs.filter(job => job.status === 'completed'),
         failedJobs: jobs.filter(job => job.status === 'failed'),
-        documentsByCategory: {} as Record<string, number>
+        documentsByCategory: {} as Record<string, number>,
+        documentsByType: {} as Record<string, number>,
+        vectorStoreStatus: 'unknown' as string,
+        chunkDistribution: [] as Array<{documentId: string, title: string, chunkCount: number, hasVectors: boolean}>
       };
+
+
+
+  // Recent uploads status endpoint
+  app.get("/api/rag/status/recent", isAuthenticated, async (req, res) => {
+    try {
+      const documents = await storage.getDocuments();
+      const jobs = await storage.getProcessingJobs();
+      
+      // Get documents from the last hour
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const recentDocs = documents.filter(doc => new Date(doc.createdAt) > oneHourAgo);
+      
+      // Get recent jobs
+      const recentJobs = jobs.filter(job => new Date(job.createdAt) > oneHourAgo);
+      
+      const status = {
+        recentDocuments: recentDocs.length,
+        recentJobs: recentJobs.length,
+        completedRecently: recentJobs.filter(job => job.status === 'completed').length,
+        failedRecently: recentJobs.filter(job => job.status === 'failed').length,
+        processingNow: recentJobs.filter(job => job.status === 'processing').length,
+        details: await Promise.all(recentDocs.map(async (doc) => {
+          const chunks = await storage.getDocumentChunks(doc.id);
+          const relatedJob = recentJobs.find(job => job.metadata?.filePath?.includes(doc.title.split('.')[0]));
+          return {
+            id: doc.id,
+            title: doc.title,
+            category: doc.category,
+            documentType: doc.documentType,
+            chunkCount: chunks.length,
+            hasVectors: chunks.some(chunk => chunk.vectorId),
+            jobStatus: relatedJob?.status || 'unknown',
+            createdAt: doc.createdAt
+          };
+        }))
+      };
+      
+      res.json(status);
+    } catch (error) {
+      console.error("Error getting recent status:", error);
+      res.status(500).json({ message: "Failed to get recent status" });
+    }
+  });
 
       // Get chunk counts and categorize documents
       for (const doc of documents) {
@@ -352,11 +399,33 @@ export function registerRAGRoutes(app: Express) {
         }
         documentStats.totalChunks += chunks.length;
         
-        // Categorize by document category
-        if (!documentStats.documentsByCategory[doc.category]) {
-          documentStats.documentsByCategory[doc.category] = 0;
+        // Check if chunks have vector IDs
+        const hasVectors = chunks.some(chunk => chunk.vectorId);
+        
+        documentStats.chunkDistribution.push({
+          documentId: doc.id,
+          title: doc.title,
+          chunkCount: chunks.length,
+          hasVectors
+        });
+        
+        // Categorize by document category and type
+        documentStats.documentsByCategory[doc.category] = (documentStats.documentsByCategory[doc.category] || 0) + 1;
+        documentStats.documentsByType[doc.documentType] = (documentStats.documentsByType[doc.documentType] || 0) + 1;
+      }
+
+      // Test vector store connection
+      try {
+        if (process.env.PINECONE_API_KEY && process.env.OPENAI_API_KEY) {
+          // Try a simple query to test the vector store
+          const testEmbedding = await vectorStore.createEmbedding("test query");
+          const testResults = await vectorStore.queryVectors(testEmbedding, 1);
+          documentStats.vectorStoreStatus = 'connected';
+        } else {
+          documentStats.vectorStoreStatus = 'missing_api_keys';
         }
-        documentStats.documentsByCategory[doc.category]++;
+      } catch (error) {
+        documentStats.vectorStoreStatus = 'connection_error';
       }
 
       res.json(documentStats);
