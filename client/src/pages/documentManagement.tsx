@@ -307,10 +307,13 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
 
             <div>
               <Label htmlFor="file-upload">Select Document</Label>
+              <p className="text-sm text-gray-600 mb-2">
+                Supported formats: PDF, DOCX, HTML, TXT, and JSON files
+              </p>
               <Input
                 id="file-upload"
                 type="file"
-                accept=".pdf,.docx,.html,.htm,.txt"
+                accept=".pdf,.docx,.html,.htm,.txt,.json"
                 onChange={handleFileUpload}
                 className="mt-1"
               />

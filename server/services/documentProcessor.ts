@@ -117,6 +117,8 @@ export class DocumentProcessor {
           return await this.extractHtmlText(filePath);
         case '.txt':
           return await fs.readFile(filePath, 'utf-8');
+        case '.json':
+          return await this.extractJsonText(filePath);
         default:
           throw new Error(`Unsupported file type: ${ext}`);
       }
@@ -142,6 +144,64 @@ export class DocumentProcessor {
     const html = await fs.readFile(filePath, 'utf-8');
     const dom = new JSDOM(html);
     return dom.window.document.body.textContent || '';
+  }
+
+  private async extractJsonText(filePath: string): Promise<string> {
+    const jsonContent = await fs.readFile(filePath, 'utf-8');
+    
+    try {
+      const jsonData = JSON.parse(jsonContent);
+      
+      // Convert JSON to readable text format
+      // If it's an array of objects, format each object
+      if (Array.isArray(jsonData)) {
+        return jsonData.map((item, index) => {
+          if (typeof item === 'object' && item !== null) {
+            return `Item ${index + 1}:\n${this.formatJsonObject(item)}\n`;
+          } else {
+            return `Item ${index + 1}: ${String(item)}\n`;
+          }
+        }).join('\n');
+      } 
+      // If it's a single object, format it
+      else if (typeof jsonData === 'object' && jsonData !== null) {
+        return this.formatJsonObject(jsonData);
+      } 
+      // If it's a primitive value, convert to string
+      else {
+        return String(jsonData);
+      }
+    } catch (error) {
+      // If JSON parsing fails, treat as plain text
+      console.warn(`Failed to parse JSON file ${filePath}, treating as plain text`);
+      return jsonContent;
+    }
+  }
+
+  private formatJsonObject(obj: any, depth: number = 0): string {
+    const indent = '  '.repeat(depth);
+    const lines: string[] = [];
+    
+    for (const [key, value] of Object.entries(obj)) {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        lines.push(`${indent}${key}:`);
+        lines.push(this.formatJsonObject(value, depth + 1));
+      } else if (Array.isArray(value)) {
+        lines.push(`${indent}${key}: [${value.length} items]`);
+        value.forEach((item, index) => {
+          if (typeof item === 'object' && item !== null) {
+            lines.push(`${indent}  Item ${index + 1}:`);
+            lines.push(this.formatJsonObject(item, depth + 2));
+          } else {
+            lines.push(`${indent}  Item ${index + 1}: ${String(item)}`);
+          }
+        });
+      } else {
+        lines.push(`${indent}${key}: ${String(value)}`);
+      }
+    }
+    
+    return lines.join('\n');
   }
 
   private async chunkDocument(
