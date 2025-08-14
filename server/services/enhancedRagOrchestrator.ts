@@ -81,11 +81,8 @@ export class EnhancedRagOrchestrator {
     const startTime = Date.now();
     
     try {
-      // Step 1: Emergency detection
+      // Step 1: Emergency detection (for educational context, not blocking)
       const emergencyCheck = this.checkEmergencyKeywords(query);
-      if (emergencyCheck.isEmergency) {
-        return this.handleEmergencyResponse(emergencyCheck.keywords);
-      }
 
       // Step 2: Check cache
       const cacheResult = await this.checkQueryCache(query);
@@ -97,6 +94,11 @@ export class EnhancedRagOrchestrator {
           cacheHit: true,
           responseTime: Date.now() - startTime,
         });
+        
+        // Add emergency disclaimer to cached responses if needed
+        if (emergencyCheck.isEmergency) {
+          return this.addEmergencyDisclaimer(cacheResult, emergencyCheck.keywords);
+        }
         return cacheResult;
       }
 
@@ -129,15 +131,20 @@ export class EnhancedRagOrchestrator {
         retrievalResult
       );
 
-      // Step 9: Cache if appropriate
+      // Step 9: Add emergency disclaimer if needed
+      const responseWithDisclaimer = emergencyCheck.isEmergency 
+        ? this.addEmergencyDisclaimer(finalResponse, emergencyCheck.keywords)
+        : finalResponse;
+
+      // Step 10: Cache if appropriate (cache original response, not the one with disclaimer)
       if (analysis.queryType === 'faq' || analysis.confidence > 90) {
         await this.cacheResponse(query, finalResponse);
       }
 
-      // Step 10: Update summaries
+      // Step 11: Update summaries
       await this.updateAgentSummaries(user.id, courseId, query, finalResponse, selectedAgents);
 
-      // Step 11: Log analytics
+      // Step 12: Log analytics
       await this.logAnalytics({
         eventType: 'response',
         userId: user.id,
@@ -151,14 +158,14 @@ export class EnhancedRagOrchestrator {
       });
 
       return {
-        content: finalResponse.content,
-        sources: finalResponse.sources,
-        confidence: finalResponse.confidence,
+        content: responseWithDisclaimer.content,
+        sources: responseWithDisclaimer.sources || finalResponse.sources,
+        confidence: responseWithDisclaimer.confidence || finalResponse.confidence,
         followUpQuestions: finalResponse.followUpQuestions,
-        suggestedActions: finalResponse.suggestedActions,
+        suggestedActions: responseWithDisclaimer.suggestedActions || finalResponse.suggestedActions,
         usedRAG: true,
         cacheHit: false,
-        agentsUsed: selectedAgents,
+        agentsUsed: 'agentsUsed' in responseWithDisclaimer ? responseWithDisclaimer.agentsUsed : selectedAgents,
         responseTime: Date.now() - startTime,
         streamable: true,
       };
@@ -194,6 +201,34 @@ export class EnhancedRagOrchestrator {
     return {
       isEmergency: foundKeywords.length > 0,
       keywords: foundKeywords
+    };
+  }
+
+  private addEmergencyDisclaimer(response: ChatResponse, keywords: string[]): ChatResponse {
+    const emergencyDisclaimer = `
+
+---
+
+🚨 **IMPORTANT SAFETY NOTICE**: Your query contains emergency-related terms (${keywords.join(', ')}). 
+
+**If this is an actual emergency:**
+• **CALL 999 IMMEDIATELY** for emergency medical assistance
+• Follow your institution's emergency protocols
+• Contact your on-call medical professional
+• Document as required by CQC guidelines
+
+⚠️ **This is educational content only. AI cannot replace emergency medical care or institutional protocols.**`;
+
+    return {
+      ...response,
+      content: response.content + emergencyDisclaimer,
+      confidence: Math.min(response.confidence || 0, 85), // Reduce confidence for emergency-flagged content
+      suggestedActions: [
+        ...(response.suggestedActions || []),
+        { label: "Call 999", action: "emergency_call", url: "tel:999" },
+        { label: "Emergency Protocols", action: "view_protocols", url: "/emergency-protocols" }
+      ],
+      agentsUsed: [...(response.agentsUsed || []), 'emergency_disclaimer']
     };
   }
 
