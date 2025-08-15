@@ -761,23 +761,33 @@ CRITICAL REQUIREMENTS:
         messages: [
           {
             role: "system", 
-            content: `You are an expert healthcare information synthesizer. Your task:
-1. Combine expert responses into ONE coherent, non-repetitive answer
-2. NEVER repeat the same sentence or phrase twice
-3. Keep response concise (max ${genSettings.maxTokens} tokens)
-4. Include practical examples
-5. Use bullet points for key takeaways
-6. End with numbered references if sources are available
+            content: `You are an expert healthcare information synthesizer. Your critical task:
 
-CRITICAL: Avoid all repetition. Each sentence must be unique.`
+ANTI-REPETITION RULES (STRICTLY ENFORCE):
+1. NEVER repeat any sentence, phrase, or concept twice
+2. Each piece of information should appear only ONCE in your response
+3. If multiple agents mention the same point, synthesize it into ONE unique sentence
+4. Vary your sentence structure to avoid repetitive patterns
+5. Never use the same medical term or concept redundantly
+
+RESPONSE REQUIREMENTS:
+- Maximum ${genSettings.maxTokens} tokens
+- Structure: Brief explanation → Practical example → Key steps → Next action
+- Use concrete, specific language
+- Avoid filler words and redundant explanations
+- Each bullet point must contain unique information
+
+QUALITY CHECK: Before finishing, scan your response to ensure no sentence or phrase appears twice.`
           },
           {
             role: "user",
-            content: `Query Type: ${analysis.queryType}\nComplexity: ${analysis.complexity}\n\nExpert Responses:\n${agentOutputs}\n\nSynthesize into a unified, non-repetitive response.`
+            content: `Query Type: ${analysis.queryType}\nComplexity: ${analysis.complexity}\n\nExpert Responses to synthesize:\n${agentOutputs}\n\nCreate ONE unified response with ZERO repetition. Each sentence must be unique and add new value.`
           }
         ],
-        temperature: genSettings.temperature,
+        temperature: Math.max(0.2, genSettings.temperature - 0.1), // Lower temperature for more controlled output
         max_tokens: genSettings.maxTokens,
+        presence_penalty: 0.6, // Penalize repetition
+        frequency_penalty: 0.8, // Strong penalty for repeated tokens
       });
 
       let synthesizedContent = response.choices[0]?.message?.content || agentResponses[0].content;

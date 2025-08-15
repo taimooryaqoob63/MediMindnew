@@ -10,25 +10,25 @@ import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 
-// Final deduplication function as safety net
+// Enhanced deduplication function to eliminate repetitive sentences
 function finalDeduplication(content: string): string {
   if (!content) return content;
   
   console.log('Final deduplication - Original length:', content.length);
   
-  // STEP 1: Look for repeating patterns using sliding window approach
+  // STEP 1: Check for complete duplication (entire response repeated)
   let bestReduction = content;
   let maxReductionFound = false;
   
-  // Try different split points to find duplication
-  for (let splitRatio = 0.45; splitRatio <= 0.55; splitRatio += 0.01) {
+  // More aggressive sliding window approach
+  for (let splitRatio = 0.4; splitRatio <= 0.6; splitRatio += 0.01) {
     const splitPoint = Math.floor(content.length * splitRatio);
     const part1 = content.substring(0, splitPoint).trim();
     const part2 = content.substring(splitPoint).trim();
     
-    if (part1.length < 100 || part2.length < 100) continue;
+    if (part1.length < 80 || part2.length < 80) continue;
     
-    // Normalize both parts
+    // Normalize both parts for comparison
     const normalize = (text: string) => text
       .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
@@ -38,50 +38,82 @@ function finalDeduplication(content: string): string {
     const norm1 = normalize(part1);
     const norm2 = normalize(part2);
     
-    // Check if part2 starts with part1 (indicating duplication)
+    // Check for various types of duplication
     const similarity = calculateTextSimilarity(norm1, norm2);
     console.log(`Split at ${Math.round(splitRatio * 100)}%: similarity = ${similarity}`);
     
-    if (similarity > 0.8) {
-      console.log('DUPLICATION FOUND - Using first part only');
+    // Lower threshold for detecting duplication
+    if (similarity > 0.65) {
+      console.log('MAJOR DUPLICATION DETECTED - Using first part only');
       bestReduction = part1;
       maxReductionFound = true;
       break;
     }
   }
   
-  // STEP 2: If no major duplication found, do sentence-level deduplication
-  if (!maxReductionFound) {
-    console.log('No major duplication detected, checking sentences...');
-    const sentences = bestReduction.split(/[.!?]+/).filter(s => s.trim().length > 15);
-    const uniqueSentences: string[] = [];
-    const seenNormalized = new Set<string>();
+  // STEP 2: Advanced sentence-level deduplication
+  console.log('Performing sentence-level deduplication...');
+  
+  // Split by sentences more accurately
+  const sentences = bestReduction.split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 10);
+  
+  const uniqueSentences: string[] = [];
+  const seenNormalized = new Set<string>();
+  const seenKeyPhrases = new Set<string>();
+  
+  for (const sentence of sentences) {
+    if (sentence.length < 15) {
+      uniqueSentences.push(sentence);
+      continue;
+    }
     
-    for (const sentence of sentences) {
-      const clean = sentence.trim();
-      if (clean.length < 20) continue;
-      
-      const normalized = clean.toLowerCase()
-        .replace(/[^\w\s]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this|it|as)\b/g, '')
-        .trim();
-      
-      if (normalized.length < 10) {
-        uniqueSentences.push(clean);
-        continue;
-      }
-      
-      if (!seenNormalized.has(normalized)) {
-        seenNormalized.add(normalized);
-        uniqueSentences.push(clean);
-      } else {
-        console.log('Duplicate sentence removed:', clean.substring(0, 60) + '...');
+    // More aggressive normalization
+    const normalized = sentence.toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this|it|as|can|will|should|must|may|might|could|would|has|have|had)\b/g, '')
+      .trim();
+    
+    // Extract key phrases (3+ consecutive words)
+    const words = normalized.split(' ').filter(w => w.length > 2);
+    const keyPhrases = [];
+    for (let i = 0; i < words.length - 2; i++) {
+      keyPhrases.push(words.slice(i, i + 3).join(' '));
+    }
+    
+    // Check for exact sentence duplication
+    if (seenNormalized.has(normalized)) {
+      console.log('Exact duplicate sentence removed:', sentence.substring(0, 60) + '...');
+      continue;
+    }
+    
+    // Check for semantic duplication via key phrases
+    let hasDuplicateContent = false;
+    for (const phrase of keyPhrases) {
+      if (phrase.length > 8 && seenKeyPhrases.has(phrase)) {
+        console.log('Semantic duplicate detected via phrase:', phrase);
+        hasDuplicateContent = true;
+        break;
       }
     }
     
-    bestReduction = uniqueSentences.join('. ');
+    if (!hasDuplicateContent) {
+      seenNormalized.add(normalized);
+      for (const phrase of keyPhrases) {
+        if (phrase.length > 8) seenKeyPhrases.add(phrase);
+      }
+      uniqueSentences.push(sentence);
+    } else {
+      console.log('Semantic duplicate removed:', sentence.substring(0, 60) + '...');
+    }
   }
+  
+  bestReduction = uniqueSentences.join(' ');
+  
+  // STEP 3: Remove repeated phrases within the content
+  bestReduction = removeRepeatedPhrases(bestReduction);
   
   // Ensure proper ending
   if (bestReduction && !bestReduction.match(/[.!?]$/)) {
@@ -92,6 +124,42 @@ function finalDeduplication(content: string): string {
   console.log('Final length:', bestReduction.length, '| Reduction:', reductionPercent + '%');
   
   return bestReduction;
+}
+
+// Helper function to remove repeated phrases within text
+function removeRepeatedPhrases(text: string): string {
+  // Find and remove repeated phrases (5+ words that appear multiple times)
+  const words = text.split(/\s+/);
+  const phrases = new Map<string, number>();
+  
+  // Collect all 5-word phrases
+  for (let i = 0; i <= words.length - 5; i++) {
+    const phrase = words.slice(i, i + 5).join(' ').toLowerCase();
+    phrases.set(phrase, (phrases.get(phrase) || 0) + 1);
+  }
+  
+  // Remove phrases that appear more than once - use forEach to avoid iteration issues
+  phrases.forEach((count, phrase) => {
+    if (count > 1 && phrase.length > 20) {
+      const regex = new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      const matches = text.match(regex);
+      if (matches && matches.length > 1) {
+        // Keep only the first occurrence
+        let found = false;
+        text = text.replace(regex, (match) => {
+          if (!found) {
+            found = true;
+            return match;
+          }
+          return '';
+        });
+        console.log('Removed repeated phrase:', phrase.substring(0, 40) + '...');
+      }
+    }
+  });
+  
+  // Clean up extra whitespace
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 // Helper function to calculate text similarity
@@ -121,9 +189,11 @@ function calculateTextSimilarity(text1: string, text2: string): number {
   // Method 2: Overall word overlap
   const set1 = new Set(words1);
   const set2 = new Set(words2);
-  const intersection = new Set([...set1].filter(x => set2.has(x)));
-  const union = new Set([...set1, ...set2]);
-  const overlapSimilarity = intersection.size / union.size;
+  const set1Array = Array.from(set1);
+  const set2Array = Array.from(set2);
+  const intersection = set1Array.filter(x => set2.has(x));
+  const union = Array.from(new Set([...set1Array, ...set2Array]));
+  const overlapSimilarity = intersection.length / union.length;
   
   // Combine both methods - prioritize sequential matching
   return Math.max(sequentialSimilarity, overlapSimilarity * 0.7);
@@ -481,10 +551,10 @@ export function registerRAGRoutes(app: Express) {
       
       // Get documents from the last hour
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-      const recentDocs = documents.filter(doc => new Date(doc.createdAt) > oneHourAgo);
+      const recentDocs = documents.filter(doc => doc.createdAt && new Date(doc.createdAt) > oneHourAgo);
       
       // Get recent jobs
-      const recentJobs = jobs.filter(job => new Date(job.createdAt) > oneHourAgo);
+      const recentJobs = jobs.filter(job => job.createdAt && new Date(job.createdAt) > oneHourAgo);
       
       const status = {
         recentDocuments: recentDocs.length,
@@ -494,7 +564,10 @@ export function registerRAGRoutes(app: Express) {
         processingNow: recentJobs.filter(job => job.status === 'processing').length,
         details: await Promise.all(recentDocs.map(async (doc) => {
           const chunks = await storage.getDocumentChunks(doc.id);
-          const relatedJob = recentJobs.find(job => job.metadata?.filePath?.includes(doc.title.split('.')[0]));
+          const relatedJob = recentJobs.find(job => {
+            const metadata = job.metadata as any;
+            return metadata?.filePath?.includes(doc.title.split('.')[0]);
+          });
           return {
             id: doc.id,
             title: doc.title,

@@ -86,8 +86,10 @@ Respond in JSON format with:
         { role: "user", content: userPrompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3,
-      max_tokens: 600
+      temperature: 0.2, // Lower temperature for more controlled output
+      max_tokens: 600,
+      presence_penalty: 0.6, // Penalize repetition
+      frequency_penalty: 0.7, // Penalize repeated tokens
     });
 
     const result = JSON.parse(completion.choices[0].message.content || '{}');
