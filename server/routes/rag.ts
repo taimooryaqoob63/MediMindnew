@@ -16,6 +16,36 @@ function finalDeduplication(content: string): string {
   
   console.log('Final deduplication - Original length:', content.length);
   
+  // STEP 0: Check for simple exact duplication by looking for repeated chunks
+  const contentLower = content.toLowerCase().replace(/\s+/g, ' ').trim();
+  const words = contentLower.split(' ');
+  
+  // Check if content is repeated exactly (most common case)
+  if (words.length > 20) {
+    const halfLength = Math.floor(words.length / 2);
+    const firstHalf = words.slice(0, halfLength).join(' ');
+    const secondHalf = words.slice(halfLength).join(' ');
+    
+    // Check for exact duplication
+    if (firstHalf === secondHalf) {
+      console.log('EXACT WORD-FOR-WORD DUPLICATION DETECTED - Using first half');
+      const originalWords = content.split(' ');
+      const resultWords = originalWords.slice(0, Math.floor(originalWords.length / 2));
+      return resultWords.join(' ').trim();
+    }
+    
+    // Check for duplication with slight variations (up to 95% similarity)
+    if (firstHalf.length > 50 && secondHalf.length > 50) {
+      const similarity = calculateTextSimilarity(firstHalf, secondHalf);
+      if (similarity > 0.9) {
+        console.log('NEAR-EXACT DUPLICATION DETECTED (similarity:', similarity, ') - Using first half');
+        const originalWords = content.split(' ');
+        const resultWords = originalWords.slice(0, Math.floor(originalWords.length / 2));
+        return resultWords.join(' ').trim();
+      }
+    }
+  }
+  
   // STEP 1: Handle content without proper sentence breaks by inserting breaks
   let processedContent = content
     .replace(/\.([A-Z])/g, '. $1')  // Add space after period if missing
@@ -59,8 +89,16 @@ function finalDeduplication(content: string): string {
     const matchRatio = matchCount / compareLength;
     console.log(`Sentence match ratio: ${matchRatio} (${matchCount}/${compareLength})`);
     
-    if (matchRatio > 0.7) { // If 70% or more sentences match
+    if (matchRatio > 0.5) { // Lowered threshold to 50%
       console.log('MAJOR SENTENCE DUPLICATION DETECTED - Using first half only');
+      const firstHalfSentences = sentences.slice(0, halfPoint);
+      return firstHalfSentences.join(' ').trim();
+    }
+    
+    // Also check for exact first sentence matches (most common pattern)
+    if (normalizedSentences.length > 2 && 
+        normalizedSentences[0] === normalizedSentences[halfPoint]) {
+      console.log('FIRST SENTENCE DUPLICATION DETECTED - Using first half only');
       const firstHalfSentences = sentences.slice(0, halfPoint);
       return firstHalfSentences.join(' ').trim();
     }
