@@ -26,34 +26,81 @@ function finalDeduplication(content: string): string {
   let bestReduction = processedContent;
   let maxReductionFound = false;
   
-  // More aggressive sliding window approach
-  for (let splitRatio = 0.3; splitRatio <= 0.7; splitRatio += 0.01) {
-    const splitPoint = Math.floor(processedContent.length * splitRatio);
-    const part1 = processedContent.substring(0, splitPoint).trim();
-    const part2 = processedContent.substring(splitPoint).trim();
+  // First, check for exact halfway duplication (most common case)
+  console.log('Checking for exact duplication patterns...');
+  
+  // Try multiple split points around the halfway mark
+  for (let offset = -50; offset <= 50; offset += 10) {
+    const splitPoint = Math.floor(processedContent.length / 2) + offset;
+    if (splitPoint < 100 || splitPoint > processedContent.length - 100) continue;
     
-    if (part1.length < 60 || part2.length < 60) continue;
+    const firstPart = processedContent.substring(0, splitPoint).trim();
+    const secondPart = processedContent.substring(splitPoint).trim();
     
-    // Normalize both parts for comparison
     const normalize = (text: string) => text
       .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
     
-    const norm1 = normalize(part1);
-    const norm2 = normalize(part2);
+    const norm1 = normalize(firstPart);
+    const norm2 = normalize(secondPart);
     
-    // Check for duplication patterns
-    const similarity = calculateTextSimilarity(norm1, norm2);
-    console.log(`Split at ${Math.round(splitRatio * 100)}%: similarity = ${similarity}`);
-    
-    // More sensitive threshold for detecting duplication
-    if (similarity > 0.5 || norm2.startsWith(norm1.substring(0, Math.min(norm1.length, 100)))) {
-      console.log('MAJOR DUPLICATION DETECTED - Using first part only');
-      bestReduction = part1;
-      maxReductionFound = true;
-      break;
+    // Check for exact duplication
+    if (norm1.length > 50 && norm2.length > 50) {
+      // Check if second part starts with first part (indicating duplication)
+      const firstWords = norm1.split(' ').slice(0, 20).join(' '); // First 20 words
+      const secondWords = norm2.split(' ').slice(0, 20).join(' '); // First 20 words
+      
+      if (firstWords.length > 30 && secondWords.length > 30 && firstWords === secondWords) {
+        console.log('EXACT DUPLICATION DETECTED at offset', offset, '- Using first part only');
+        console.log('First part preview:', firstWords.substring(0, 80) + '...');
+        console.log('Second part preview:', secondWords.substring(0, 80) + '...');
+        bestReduction = firstPart;
+        maxReductionFound = true;
+        break;
+      }
+      
+      // Also check for longer exact matches
+      if (norm1 === norm2) {
+        console.log('COMPLETE EXACT MATCH DETECTED - Using first part only');
+        bestReduction = firstPart;
+        maxReductionFound = true;
+        break;
+      }
+    }
+  }
+  
+  // If no exact halfway match, try sliding window approach
+  if (!maxReductionFound) {
+    for (let splitRatio = 0.3; splitRatio <= 0.7; splitRatio += 0.02) {
+      const splitPoint = Math.floor(processedContent.length * splitRatio);
+      const part1 = processedContent.substring(0, splitPoint).trim();
+      const part2 = processedContent.substring(splitPoint).trim();
+      
+      if (part1.length < 60 || part2.length < 60) continue;
+      
+      // Normalize both parts for comparison
+      const normalize = (text: string) => text
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      const norm1 = normalize(part1);
+      const norm2 = normalize(part2);
+      
+      // Check for duplication patterns
+      const similarity = calculateTextSimilarity(norm1, norm2);
+      console.log(`Split at ${Math.round(splitRatio * 100)}%: similarity = ${similarity}`);
+      
+      // More sensitive threshold for detecting duplication
+      if (similarity > 0.4 || norm2.startsWith(norm1.substring(0, Math.min(norm1.length, 150)))) {
+        console.log('MAJOR DUPLICATION DETECTED - Using first part only');
+        bestReduction = part1;
+        maxReductionFound = true;
+        break;
+      }
     }
   }
   

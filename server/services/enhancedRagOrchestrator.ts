@@ -786,10 +786,11 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
             content: `Query Type: ${analysis.queryType}\nComplexity: ${analysis.complexity}\n\nExpert Responses to synthesize:\n${agentOutputs}\n\nCreate ONE unified response with ZERO repetition. Each sentence must be unique and add new value.`
           }
         ],
-        temperature: Math.max(0.2, genSettings.temperature - 0.1), // Lower temperature for more controlled output
+        temperature: 0.1, // Very low temperature for maximum control
         max_tokens: genSettings.maxTokens,
-        presence_penalty: 0.6, // Penalize repetition
-        frequency_penalty: 0.8, // Strong penalty for repeated tokens
+        presence_penalty: 1.0, // Maximum penalty for repetition
+        frequency_penalty: 1.0, // Maximum penalty for repeated tokens
+        top_p: 0.8, // Focus on most likely tokens
       });
 
       let synthesizedContent = response.choices[0]?.message?.content || agentResponses[0].content;
