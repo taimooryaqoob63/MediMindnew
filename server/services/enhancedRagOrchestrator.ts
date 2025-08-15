@@ -584,6 +584,11 @@ Provide JSON response with:
 
     const systemPrompt = agentPrompts[agentType] || agentPrompts.learning_facilitator;
     const contextWindow = this.buildContextWindow(retrieval.sources, analysis);
+    
+    // Enhance system prompt to emphasize citation requirements
+    const enhancedSystemPrompt = `${systemPrompt}
+
+CRITICAL: You must reference and cite the source materials provided in your response. When mentioning information from the context, explicitly reference it (e.g., "According to the NICE guidelines provided..." or "As stated in the NHS documentation..."). This is essential for medical accuracy and compliance.`;
 
     try {
       // Get appropriate generation settings based on query analysis
@@ -592,10 +597,10 @@ Provide JSON response with:
       const response = await this.openai.chat.completions.create({
         model: generationSettings.model,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: enhancedSystemPrompt },
           { 
             role: "user", 
-            content: `Context: ${contextWindow}\n\nUser Role: ${user.role}\n\nQuery: ${query}\n\nProvide a comprehensive response based on the available context.`
+            content: `Context from authoritative sources: ${contextWindow}\n\nUser Role: ${user.role}\n\nQuery: ${query}\n\nProvide a comprehensive response based on the available context. Remember to cite the sources and include specific guidance from NICE, NHS, or CQC documentation when available.`
           }
         ],
         temperature: generationSettings.temperature,
@@ -746,8 +751,8 @@ Provide JSON response with:
         model: "gpt-4o",
         messages: [
           {
-            role: "system",
-            content: "You are an expert healthcare information synthesizer. Combine the following expert responses into a comprehensive, coherent answer."
+            role: "system", 
+            content: "You are an expert healthcare information synthesizer. Combine the expert responses into a comprehensive, coherent answer. IMPORTANT: Always end your response with a 'References' section that explicitly lists the source materials mentioned by the experts, formatted as numbered citations."
           },
           {
             role: "user",
@@ -758,12 +763,18 @@ Provide JSON response with:
         max_tokens: 1200,
       });
 
-      const synthesizedContent = response.choices[0]?.message?.content || agentResponses[0].content;
+      let synthesizedContent = response.choices[0]?.message?.content || agentResponses[0].content;
       
       const allSources = agentResponses.flatMap(r => r.sources);
       const uniqueSources = allSources.filter((source, index, array) => 
         array.findIndex(s => s.id === source.id) === index
       );
+
+      // Ensure citations are always included in the response
+      if (uniqueSources.length > 0 && !synthesizedContent.includes('References') && !synthesizedContent.includes('Sources')) {
+        const citationSection = this.formatCitationSection(uniqueSources);
+        synthesizedContent += '\n\n' + citationSection;
+      }
 
       const allQuestions = agentResponses.flatMap(r => r.followUpQuestions || []);
       const uniqueQuestions = Array.from(new Set(allQuestions)).slice(0, 3);
@@ -869,6 +880,25 @@ Provide JSON response with:
     } catch (error) {
       console.error('Analytics logging error:', error);
     }
+  }
+
+  private formatCitationSection(sources: any[]): string {
+    if (sources.length === 0) return '';
+    
+    const citations = sources.map((source, index) => {
+      const sourceNumber = index + 1;
+      const title = source.title || 'Untitled Document';
+      const type = source.type || 'Document';
+      const url = source.url ? ` Available at: ${source.url}` : '';
+      
+      return `[${sourceNumber}] ${title} (${type})${url}`;
+    }).join('\n');
+    
+    return `## References
+
+${citations}
+
+**Note**: All medical guidance should be verified with current NICE guidelines, NHS protocols, and your local care home policies. In emergencies, always call 999 and follow your facility's emergency procedures.`;
   }
 
   async collectFeedback(
