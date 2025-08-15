@@ -21,6 +21,56 @@ function finalDeduplication(content: string): string {
   content = formatHeadings(content);
   
   console.log('Final deduplication - Original length:', content.length);
+  console.log('Content preview for debugging:', content.substring(0, 200) + '...');
+  
+  // STEP -1: Most direct duplication check - look for exact half duplication
+  const halfLength = Math.floor(content.length / 2);
+  if (halfLength > 100) {
+    const firstHalf = content.substring(0, halfLength).trim();
+    const secondHalf = content.substring(halfLength).trim();
+    
+    console.log('Checking direct half-split:', firstHalf.length, 'vs', secondHalf.length);
+    
+    if (firstHalf === secondHalf) {
+      console.log('DIRECT HALF DUPLICATION DETECTED - exact match');
+      return formatHeadings(firstHalf);
+    }
+    
+    // Check if second half starts with first half (common pattern)
+    if (secondHalf.startsWith(firstHalf.substring(0, Math.min(200, firstHalf.length)))) {
+      console.log('DIRECT HALF DUPLICATION DETECTED - second starts with first');
+      return formatHeadings(firstHalf);
+    }
+  }
+  
+  // STEP -0.75: Try different split points around the middle
+  for (let offset = -100; offset <= 100; offset += 10) {
+    const splitPoint = halfLength + offset;
+    if (splitPoint < 50 || splitPoint > content.length - 50) continue;
+    
+    const part1 = content.substring(0, splitPoint).trim();
+    const part2 = content.substring(splitPoint).trim();
+    
+    if (part1.length > 100 && part1 === part2) {
+      console.log('OFFSET DUPLICATION DETECTED at offset:', offset);
+      return formatHeadings(part1);
+    }
+  }
+  
+  // STEP -0.6: Brute force search for any repeated pattern
+  const contentWords = content.split(/\s+/);
+  const contentText = contentWords.join(' ');
+  
+  // Look for any substring that appears twice consecutively
+  for (let wordCount = 20; wordCount <= Math.floor(contentWords.length / 2); wordCount += 5) {
+    const testChunk = contentWords.slice(0, wordCount).join(' ');
+    const remainingText = contentWords.slice(wordCount).join(' ');
+    
+    if (testChunk.length > 100 && remainingText.startsWith(testChunk.substring(0, Math.min(300, testChunk.length)))) {
+      console.log('BRUTE FORCE PATTERN FOUND - word count:', wordCount);
+      return formatHeadings(testChunk.trim());
+    }
+  }
   
   // STEP -0.5: Simple substring repetition check
   // Look for cases where the content literally repeats itself
