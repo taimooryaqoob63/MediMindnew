@@ -16,83 +16,117 @@ function finalDeduplication(content: string): string {
   
   console.log('Final deduplication - Original length:', content.length);
   
-  // STEP 1: Direct half-and-half duplication check (most common case)
-  const halfLength = Math.floor(content.length / 2);
-  if (halfLength > 50) {
-    const firstHalf = content.substring(0, halfLength);
-    const secondHalf = content.substring(halfLength);
+  // STEP 1: Look for repeating patterns using sliding window approach
+  let bestReduction = content;
+  let maxReductionFound = false;
+  
+  // Try different split points to find duplication
+  for (let splitRatio = 0.45; splitRatio <= 0.55; splitRatio += 0.01) {
+    const splitPoint = Math.floor(content.length * splitRatio);
+    const part1 = content.substring(0, splitPoint).trim();
+    const part2 = content.substring(splitPoint).trim();
     
-    // Remove whitespace and punctuation for comparison
-    const normalizeForComparison = (text: string) => text
+    if (part1.length < 100 || part2.length < 100) continue;
+    
+    // Normalize both parts
+    const normalize = (text: string) => text
       .toLowerCase()
-      .replace(/[^\w\s]/g, '')
+      .replace(/[^\w\s]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
     
-    const normalizedFirst = normalizeForComparison(firstHalf);
-    const normalizedSecond = normalizeForComparison(secondHalf);
+    const norm1 = normalize(part1);
+    const norm2 = normalize(part2);
     
-    // Check if second half matches first half (complete duplication)
-    const similarity = calculateSimilarity(normalizedFirst, normalizedSecond);
-    console.log('Half-to-half similarity:', similarity);
+    // Check if part2 starts with part1 (indicating duplication)
+    const similarity = calculateTextSimilarity(norm1, norm2);
+    console.log(`Split at ${Math.round(splitRatio * 100)}%: similarity = ${similarity}`);
     
-    if (similarity > 0.85) { // 85% similarity indicates duplication
-      console.log('COMPLETE DUPLICATION DETECTED - Keeping only first half');
-      content = firstHalf.trim();
-      // Ensure it ends properly
-      if (!content.endsWith('.') && !content.endsWith('!') && !content.endsWith('?')) {
-        content += '.';
+    if (similarity > 0.8) {
+      console.log('DUPLICATION FOUND - Using first part only');
+      bestReduction = part1;
+      maxReductionFound = true;
+      break;
+    }
+  }
+  
+  // STEP 2: If no major duplication found, do sentence-level deduplication
+  if (!maxReductionFound) {
+    console.log('No major duplication detected, checking sentences...');
+    const sentences = bestReduction.split(/[.!?]+/).filter(s => s.trim().length > 15);
+    const uniqueSentences: string[] = [];
+    const seenNormalized = new Set<string>();
+    
+    for (const sentence of sentences) {
+      const clean = sentence.trim();
+      if (clean.length < 20) continue;
+      
+      const normalized = clean.toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this|it|as)\b/g, '')
+        .trim();
+      
+      if (normalized.length < 10) {
+        uniqueSentences.push(clean);
+        continue;
+      }
+      
+      if (!seenNormalized.has(normalized)) {
+        seenNormalized.add(normalized);
+        uniqueSentences.push(clean);
+      } else {
+        console.log('Duplicate sentence removed:', clean.substring(0, 60) + '...');
       }
     }
+    
+    bestReduction = uniqueSentences.join('. ');
   }
   
-  // STEP 2: Sentence-level deduplication for remaining content
-  const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 10);
-  const uniqueSentences: string[] = [];
-  const seenNormalized = new Set<string>();
-  
-  for (const sentence of sentences) {
-    const clean = sentence.trim();
-    if (clean.length < 15) continue;
-    
-    const normalized = clean.toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    
-    if (!seenNormalized.has(normalized)) {
-      seenNormalized.add(normalized);
-      uniqueSentences.push(clean);
-    } else {
-      console.log('Duplicate sentence removed:', clean.substring(0, 50) + '...');
-    }
+  // Ensure proper ending
+  if (bestReduction && !bestReduction.match(/[.!?]$/)) {
+    bestReduction += '.';
   }
   
-  const finalResult = uniqueSentences.join('. ') + '.';
-  console.log('Final length:', finalResult.length, '| Reduction:', Math.round((1 - finalResult.length / content.length) * 100) + '%');
+  const reductionPercent = Math.round((1 - bestReduction.length / content.length) * 100);
+  console.log('Final length:', bestReduction.length, '| Reduction:', reductionPercent + '%');
   
-  return finalResult;
+  return bestReduction;
 }
 
 // Helper function to calculate text similarity
-function calculateSimilarity(text1: string, text2: string): number {
+function calculateTextSimilarity(text1: string, text2: string): number {
   if (!text1 || !text2) return 0;
   
-  // Use longest common subsequence approach
-  const words1 = text1.split(' ');
-  const words2 = text2.split(' ');
+  const words1 = text1.split(' ').filter(w => w.length > 2);
+  const words2 = text2.split(' ').filter(w => w.length > 2);
   
-  // Simple similarity check: how many words match in order
-  let matches = 0;
-  const minLength = Math.min(words1.length, words2.length);
+  if (words1.length === 0 || words2.length === 0) return 0;
   
-  for (let i = 0; i < minLength; i++) {
-    if (words1[i] === words2[i]) {
-      matches++;
+  // Method 1: Check if text2 starts with a significant portion of text1
+  const shorterLength = Math.min(words1.length, words2.length);
+  const checkLength = Math.min(shorterLength, 50); // Check first 50 words
+  
+  let sequentialMatches = 0;
+  for (let i = 0; i < checkLength; i++) {
+    if (i < words1.length && i < words2.length && words1[i] === words2[i]) {
+      sequentialMatches++;
+    } else {
+      break; // Stop at first mismatch
     }
   }
   
-  return matches / Math.max(words1.length, words2.length);
+  const sequentialSimilarity = sequentialMatches / checkLength;
+  
+  // Method 2: Overall word overlap
+  const set1 = new Set(words1);
+  const set2 = new Set(words2);
+  const intersection = new Set([...set1].filter(x => set2.has(x)));
+  const union = new Set([...set1, ...set2]);
+  const overlapSimilarity = intersection.size / union.size;
+  
+  // Combine both methods - prioritize sequential matching
+  return Math.max(sequentialSimilarity, overlapSimilarity * 0.7);
 }
 
 // Configure multer for document uploads
