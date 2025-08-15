@@ -40,12 +40,12 @@ function finalDeduplication(content: string): string {
       return formatHeadings(firstHalf);
     }
     
-    // Check normalized versions to catch minor variations
-    const norm1 = firstHalf.replace(/\s+/g, ' ').trim().toLowerCase();
-    const norm2 = secondHalf.replace(/\s+/g, ' ').trim().toLowerCase();
+    // Check normalized versions to catch minor variations and invisible characters
+    const norm1 = normalizeText(firstHalf);
+    const norm2 = normalizeText(secondHalf);
     
     if (norm1 === norm2 && norm1.length > 100) {
-      console.log('NORMALIZED HALF DUPLICATION DETECTED');
+      console.log('ROBUST NORMALIZED DUPLICATION DETECTED');
       return formatHeadings(firstHalf);
     }
     
@@ -58,6 +58,13 @@ function finalDeduplication(content: string): string {
     // Check normalized starting pattern
     if (norm2.startsWith(norm1.substring(0, Math.min(200, norm1.length)))) {
       console.log('NORMALIZED STARTING DUPLICATION DETECTED');
+      return formatHeadings(firstHalf);
+    }
+    
+    // Additional check for near-identical content (allowing for small split differences)
+    const similarity = calculateTextSimilarity(norm1, norm2);
+    if (similarity > 0.95 && norm1.length > 100) {
+      console.log('HIGH SIMILARITY DUPLICATION DETECTED - similarity:', similarity);
       return formatHeadings(firstHalf);
     }
   }
@@ -437,6 +444,17 @@ function removeUnwantedDisclaimers(content: string): string {
   }
   
   return result.trim();
+}
+
+// Robust text normalization to catch invisible character differences
+function normalizeText(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\s+/g, ' ') // Collapse whitespace
+    .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width spaces and BOM
+    .replace(/[^\w\s.,!?'"-]/gi, '') // Remove most non-standard punctuation/symbols
+    .trim()
+    .toLowerCase();
 }
 
 // Detect diabetes-specific concepts to prevent semantic repetition
@@ -928,6 +946,117 @@ export function registerRAGRoutes(app: Express) {
     } catch (error) {
       console.error("Error deleting document:", error);
       res.status(500).json({ message: "Failed to delete document" });
+    }
+  });
+
+  // Unified chat endpoint that handles RAG fallback internally (recommended)
+  app.post("/api/chat/generate", isAuthenticated, async (req, res) => {
+    try {
+      const { message, courseId, context, conversationHistory } = req.body;
+      const user = req.user as any;
+
+      if (!message) {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Create user object for the enhanced orchestrator
+      const userObj = {
+        id: user.claims.sub,
+        email: user.claims.email || user.claims.global_name || null,
+        firstName: user.claims.given_name || null,
+        lastName: user.claims.family_name || null,
+        profileImageUrl: user.claims.picture || null,
+        role: 'care_worker' as const,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      let response;
+      let usedRAG = true;
+
+      try {
+        // 1. Attempt the preferred RAG model first
+        console.log('Attempting RAG chat for unified endpoint...');
+        response = await enhancedRagOrchestrator.processQuery(
+          message, 
+          userObj, 
+          courseId, 
+          conversationHistory
+        );
+        
+        // Apply deduplication to the RAG response
+        if (response.content) {
+          response.content = finalDeduplication(response.content);
+        }
+        
+      } catch (ragError) {
+        // 2. If RAG fails, fallback to basic model within the SAME request
+        console.log('RAG model failed, falling back to basic chat within unified endpoint:', ragError);
+        usedRAG = false;
+        
+        // Import the basic AI function
+        const { getAITutorResponse } = await import('../services/openai');
+        const aiResponse = await getAITutorResponse(message, context);
+        
+        // Convert to RAG-like response format
+        response = {
+          content: aiResponse.response,
+          confidence: 0.5,
+          sources: [],
+          usedRAG: false,
+          agentsUsed: ['basic_fallback'],
+          responseTime: Date.now()
+        };
+        
+        // Apply deduplication to the basic response too
+        if (response.content) {
+          response.content = finalDeduplication(response.content);
+        }
+      }
+
+      // 3. Save the message (use appropriate storage based on what was used)
+      let chatMessage;
+      if (usedRAG) {
+        chatMessage = await storage.createRagChatMessage({
+          userId: user.claims.sub,
+          courseId: courseId || null,
+          message,
+          response: response.content || '',
+          sources: response.sources || [],
+          confidence: response.confidence || 0,
+          agentTrace: { 
+            agents: response.agentsUsed || [],
+            responseTime: response.responseTime || 0,
+            cacheHit: response.cacheHit || false,
+            usedRAG: response.usedRAG || true
+          }
+        });
+      } else {
+        chatMessage = await storage.createChatMessage({
+          userId: user.claims.sub,
+          courseId: courseId || '',
+          message,
+          response: response.content || '',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // 4. Send the unified response
+      res.json({
+        ...response,
+        id: chatMessage.id,
+        timestamp: chatMessage.timestamp,
+        usedRAG
+      });
+    } catch (error) {
+      console.error("Unified chat endpoint error:", error);
+      res.status(500).json({ 
+        message: "I'm experiencing technical difficulties. Please consult your local healthcare guidelines for immediate assistance.",
+        confidence: 0,
+        sources: [],
+        usedRAG: false,
+        agentsUsed: ['error_handler']
+      });
     }
   });
 

@@ -109,23 +109,20 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const chatMutation = useMutation({
     mutationFn: async (data: { message: string; courseId: string; context?: string }) => {
-      // Try RAG-enhanced chat first
-      try {
-        const ragResponse = await apiRequest("POST", "/api/rag/chat", {
-          message: data.message,
-          courseId: data.courseId
-        });
-        const result = await ragResponse.json();
-        console.log('RAG response:', result); // Debug log
-        return { ...result, usedRAG: true } as ChatResponse;
-      } catch (ragError) {
-        console.log('RAG chat failed, falling back to basic chat:', ragError);
-        // Fallback to basic chat
-        const response = await apiRequest("POST", "/api/chat", data);
-        const result = await response.json();
-        console.log('Basic chat response:', result); // Debug log
-        return { ...result, usedRAG: false } as ChatResponse;
+      // Use the unified endpoint that handles RAG fallback internally
+      const response = await apiRequest("POST", "/api/chat/generate", {
+        message: data.message,
+        courseId: data.courseId,
+        context: data.context
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to get chat response");
       }
+      
+      const result = await response.json();
+      console.log('Unified chat response:', result); // Debug log
+      return result as ChatResponse;
     },
     onSuccess: (data) => {
       setInputMessage("");
