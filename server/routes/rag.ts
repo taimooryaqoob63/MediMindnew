@@ -22,17 +22,58 @@ function finalDeduplication(content: string): string {
     .replace(/\?([A-Z])/g, '? $1')  // Add space after question mark if missing
     .replace(/!([A-Z])/g, '! $1');  // Add space after exclamation if missing
   
-  // STEP 2: Check for complete duplication patterns
+  // STEP 2: Aggressive sentence-based duplication detection
+  console.log('Checking for sentence-based duplication patterns...');
+  
+  // Split into sentences and check for repetitive patterns
+  const sentences = processedContent
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 10);
+  
+  console.log('Total sentences found:', sentences.length);
+  
+  // Look for patterns where sentences repeat in blocks
+  const normalizedSentences = sentences.map(s => 
+    s.toLowerCase()
+     .replace(/[^\w\s]/g, ' ')
+     .replace(/\s+/g, ' ')
+     .trim()
+  );
+  
+  // Check if second half of sentences match first half
+  const halfPoint = Math.floor(sentences.length / 2);
+  if (halfPoint > 2) {
+    const firstHalfNorm = normalizedSentences.slice(0, halfPoint);
+    const secondHalfNorm = normalizedSentences.slice(halfPoint);
+    
+    let matchCount = 0;
+    const compareLength = Math.min(firstHalfNorm.length, secondHalfNorm.length);
+    
+    for (let i = 0; i < compareLength; i++) {
+      if (firstHalfNorm[i] === secondHalfNorm[i]) {
+        matchCount++;
+      }
+    }
+    
+    const matchRatio = matchCount / compareLength;
+    console.log(`Sentence match ratio: ${matchRatio} (${matchCount}/${compareLength})`);
+    
+    if (matchRatio > 0.7) { // If 70% or more sentences match
+      console.log('MAJOR SENTENCE DUPLICATION DETECTED - Using first half only');
+      const firstHalfSentences = sentences.slice(0, halfPoint);
+      return firstHalfSentences.join(' ').trim();
+    }
+  }
+  
+  // STEP 3: Character-based duplication check as fallback
   let bestReduction = processedContent;
   let maxReductionFound = false;
   
-  // First, check for exact halfway duplication (most common case)
-  console.log('Checking for exact duplication patterns...');
-  
   // Try multiple split points around the halfway mark
-  for (let offset = -50; offset <= 50; offset += 10) {
+  for (let offset = -100; offset <= 100; offset += 25) {
     const splitPoint = Math.floor(processedContent.length / 2) + offset;
-    if (splitPoint < 100 || splitPoint > processedContent.length - 100) continue;
+    if (splitPoint < 200 || splitPoint > processedContent.length - 200) continue;
     
     const firstPart = processedContent.substring(0, splitPoint).trim();
     const secondPart = processedContent.substring(splitPoint).trim();
@@ -46,24 +87,16 @@ function finalDeduplication(content: string): string {
     const norm1 = normalize(firstPart);
     const norm2 = normalize(secondPart);
     
-    // Check for exact duplication
-    if (norm1.length > 50 && norm2.length > 50) {
-      // Check if second part starts with first part (indicating duplication)
-      const firstWords = norm1.split(' ').slice(0, 20).join(' '); // First 20 words
-      const secondWords = norm2.split(' ').slice(0, 20).join(' '); // First 20 words
+    // Check for exact duplication with different thresholds
+    if (norm1.length > 100 && norm2.length > 100) {
+      // Check beginning overlap
+      const firstChunk = norm1.substring(0, Math.min(300, norm1.length));
+      const secondChunk = norm2.substring(0, Math.min(300, norm2.length));
       
-      if (firstWords.length > 30 && secondWords.length > 30 && firstWords === secondWords) {
-        console.log('EXACT DUPLICATION DETECTED at offset', offset, '- Using first part only');
-        console.log('First part preview:', firstWords.substring(0, 80) + '...');
-        console.log('Second part preview:', secondWords.substring(0, 80) + '...');
-        bestReduction = firstPart;
-        maxReductionFound = true;
-        break;
-      }
+      const similarity = calculateTextSimilarity(firstChunk, secondChunk);
       
-      // Also check for longer exact matches
-      if (norm1 === norm2) {
-        console.log('COMPLETE EXACT MATCH DETECTED - Using first part only');
+      if (similarity > 0.8) {
+        console.log('HIGH SIMILARITY DUPLICATION DETECTED at offset', offset, 'similarity:', similarity);
         bestReduction = firstPart;
         maxReductionFound = true;
         break;
@@ -71,44 +104,11 @@ function finalDeduplication(content: string): string {
     }
   }
   
-  // If no exact halfway match, try sliding window approach
-  if (!maxReductionFound) {
-    for (let splitRatio = 0.3; splitRatio <= 0.7; splitRatio += 0.02) {
-      const splitPoint = Math.floor(processedContent.length * splitRatio);
-      const part1 = processedContent.substring(0, splitPoint).trim();
-      const part2 = processedContent.substring(splitPoint).trim();
-      
-      if (part1.length < 60 || part2.length < 60) continue;
-      
-      // Normalize both parts for comparison
-      const normalize = (text: string) => text
-        .toLowerCase()
-        .replace(/[^\w\s]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      const norm1 = normalize(part1);
-      const norm2 = normalize(part2);
-      
-      // Check for duplication patterns
-      const similarity = calculateTextSimilarity(norm1, norm2);
-      console.log(`Split at ${Math.round(splitRatio * 100)}%: similarity = ${similarity}`);
-      
-      // More sensitive threshold for detecting duplication
-      if (similarity > 0.4 || norm2.startsWith(norm1.substring(0, Math.min(norm1.length, 150)))) {
-        console.log('MAJOR DUPLICATION DETECTED - Using first part only');
-        bestReduction = part1;
-        maxReductionFound = true;
-        break;
-      }
-    }
-  }
-  
-  // STEP 3: Advanced sentence-level deduplication
+  // STEP 4: Advanced sentence-level deduplication if no major duplication found
   console.log('Performing sentence-level deduplication...');
   
   // More sophisticated sentence splitting
-  const sentences = bestReduction
+  const finalSentences = bestReduction
     .split(/(?<=[.!?])\s+/)
     .map(s => s.trim())
     .filter(s => s.length > 5);
@@ -117,7 +117,7 @@ function finalDeduplication(content: string): string {
   const seenNormalized = new Set<string>();
   const seenConcepts = new Set<string>();
   
-  for (const sentence of sentences) {
+  for (const sentence of finalSentences) {
     if (sentence.length < 10) {
       uniqueSentences.push(sentence);
       continue;
