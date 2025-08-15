@@ -905,14 +905,35 @@ CRITICAL: Avoid all repetition. Each sentence must be unique.`
   private deduplicateContent(content: string): string {
     if (!content) return content;
     
-    // Log original content for debugging
-    console.log('Deduplication input:', content.substring(0, 200) + '...');
+    console.log('Deduplication input length:', content.length);
     
-    // Step 1: Remove exact consecutive duplicates (handles copy-paste scenarios)
-    content = content.replace(/(.{20,}?[.!?])\s*\1+/gi, '$1');
+    // Step 1: Check for complete content duplication (entire response repeated)
+    const contentHalf = Math.floor(content.length / 2);
+    if (contentHalf > 100) {
+      const firstHalf = content.substring(0, contentHalf).trim();
+      const secondHalf = content.substring(contentHalf).trim();
+      
+      // Normalize both halves for comparison
+      const normalizedFirst = firstHalf.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+      const normalizedSecond = secondHalf.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+      
+      // If second half is very similar to first half, it's a complete duplication
+      if (normalizedFirst.length > 50 && 
+          (normalizedSecond === normalizedFirst || 
+           normalizedSecond.startsWith(normalizedFirst.substring(0, Math.min(normalizedFirst.length, 200))))) {
+        console.log('COMPLETE CONTENT DUPLICATION DETECTED - Using first half only');
+        content = firstHalf;
+      }
+    }
     
-    // Step 2: More aggressive duplicate detection
-    // Split by sentence-ending punctuation, preserving the punctuation
+    // Step 2: Remove exact consecutive duplicates with aggressive regex
+    const originalLength = content.length;
+    content = content.replace(/(.{30,}?[.!?])\s*\1+/gi, '$1');
+    if (content.length !== originalLength) {
+      console.log('REGEX DUPLICATES REMOVED');
+    }
+    
+    // Step 3: Sentence-level deduplication
     const sentenceParts = content.split(/([.!?]+)/);
     const rebuiltContent: string[] = [];
     const seenNormalized = new Set<string>();
@@ -926,24 +947,23 @@ CRITICAL: Avoid all repetition. Each sentence must be unique.`
         continue;
       }
       
-      // Create a normalized version for comparison
+      // Aggressive normalization
       const normalized = sentence.toLowerCase()
         .replace(/[^\w\s]/g, '')
         .replace(/\s+/g, ' ')
-        .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by)\b/g, '')
+        .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this)\b/g, '')
         .trim();
       
-      // Skip if we've seen this normalized sentence before
       if (!seenNormalized.has(normalized)) {
         seenNormalized.add(normalized);
         rebuiltContent.push(sentence + punctuation);
       } else {
-        console.log('Duplicate detected and removed:', sentence.substring(0, 50) + '...');
+        console.log('Sentence duplicate removed:', sentence.substring(0, 50) + '...');
       }
     }
     
     const result = rebuiltContent.join('');
-    console.log('Deduplication output:', result.substring(0, 200) + '...');
+    console.log('Deduplication output length:', result.length, 'reduction:', Math.round((1 - result.length / content.length) * 100) + '%');
     return result;
   }
 

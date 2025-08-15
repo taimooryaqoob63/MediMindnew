@@ -15,47 +15,83 @@ function finalDeduplication(content: string): string {
   if (!content) return content;
   
   console.log('Final deduplication applied to:', content.substring(0, 100) + '...');
+  console.log('Original length:', content.length);
   
-  // Remove exact consecutive duplicates with regex
-  content = content.replace(/(.{15,}?[.!?])\s*\1+/gi, '$1');
+  // Step 1: Remove complete paragraph duplications (most aggressive)
+  // Look for duplicated blocks of 100+ characters
+  const paragraphs = content.split(/\n\s*\n/);
+  const uniqueParagraphs: string[] = [];
+  const seenParagraphs = new Set<string>();
   
-  // Split by sentences and check for near-duplicates
-  const sentenceParts = content.split(/([.!?]+)/);
+  for (const paragraph of paragraphs) {
+    const cleanPara = paragraph.trim();
+    if (cleanPara.length < 50) {
+      uniqueParagraphs.push(paragraph);
+      continue;
+    }
+    
+    // Normalize paragraph for comparison
+    const normalized = cleanPara.toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    if (!seenParagraphs.has(normalized)) {
+      seenParagraphs.add(normalized);
+      uniqueParagraphs.push(paragraph);
+    } else {
+      console.log('PARAGRAPH DUPLICATE REMOVED:', cleanPara.substring(0, 100) + '...');
+    }
+  }
+  
+  let result = uniqueParagraphs.join('\n\n');
+  
+  // Step 2: Remove exact consecutive duplicates with regex (catch copy-paste scenarios)
+  const originalLength = result.length;
+  result = result.replace(/(.{50,}?[.!?])\s*\1+/gi, '$1');
+  if (result.length !== originalLength) {
+    console.log('REGEX DUPLICATES REMOVED');
+  }
+  
+  // Step 3: Check for sentence-level duplicates within the remaining content
+  const sentenceParts = result.split(/([.!?]+)/);
   const rebuiltContent: string[] = [];
-  const seenNormalized = new Set<string>();
+  const seenSentenceNormalized = new Set<string>();
   
   for (let i = 0; i < sentenceParts.length; i += 2) {
     const sentence = sentenceParts[i]?.trim();
     const punctuation = sentenceParts[i + 1] || '';
     
-    if (!sentence || sentence.length < 10) {
+    if (!sentence || sentence.length < 15) {
       if (sentence) rebuiltContent.push(sentence + punctuation);
       continue;
     }
     
-    // Very aggressive normalization
+    // Aggressive sentence normalization
     const normalized = sentence.toLowerCase()
       .replace(/[^\w\s]/g, '')
       .replace(/\s+/g, ' ')
-      .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were)\b/g, '')
+      .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this|these|those)\b/g, '')
       .trim();
     
-    if (normalized.length < 5) {
+    if (normalized.length < 10) {
       rebuiltContent.push(sentence + punctuation);
       continue;
     }
     
-    if (!seenNormalized.has(normalized)) {
-      seenNormalized.add(normalized);
+    if (!seenSentenceNormalized.has(normalized)) {
+      seenSentenceNormalized.add(normalized);
       rebuiltContent.push(sentence + punctuation);
     } else {
-      console.log('FINAL DEDUP: Removed duplicate sentence:', sentence.substring(0, 50) + '...');
+      console.log('SENTENCE DUPLICATE REMOVED:', sentence.substring(0, 60) + '...');
     }
   }
   
-  const result = rebuiltContent.join('');
-  console.log('Final result length:', result.length, 'vs original:', content.length);
-  return result;
+  const finalResult = rebuiltContent.join('');
+  console.log('Final result length:', finalResult.length, 'vs original:', content.length);
+  console.log('Reduction:', Math.round((1 - finalResult.length / content.length) * 100) + '%');
+  
+  return finalResult;
 }
 
 // Configure multer for document uploads
