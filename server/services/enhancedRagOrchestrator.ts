@@ -798,6 +798,9 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
       
       console.log('Pre-deduplication synthesized content length:', synthesizedContent.length);
       
+      // Apply immediate aggressive deduplication to synthesized content
+      synthesizedContent = this.aggressiveDeduplication(synthesizedContent);
+      
       // Additional deduplication check for sentences
       synthesizedContent = this.deduplicateContent(synthesizedContent);
       
@@ -926,54 +929,61 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
     console.log('Deduplication input length:', content.length);
     console.log('Content preview:', content.substring(0, 200) + '...');
     
-    // AGGRESSIVE STEP 1: Check for exact complete duplication with multiple split points
-    for (let offset = -20; offset <= 20; offset++) {
-      const splitPoint = Math.floor(content.length / 2) + offset;
-      if (splitPoint < 100 || splitPoint > content.length - 100) continue;
-      
-      const firstPart = content.substring(0, splitPoint).trim();
-      const secondPart = content.substring(splitPoint).trim();
-      
-      // Normalize both parts for comparison
-      const normalizedFirst = firstPart.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
-      const normalizedSecond = secondPart.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
-      
-      // Check for exact duplication
-      if (normalizedFirst.length > 50 && normalizedSecond.length > 50) {
-        if (normalizedFirst === normalizedSecond) {
-          console.log('EXACT COMPLETE DUPLICATION DETECTED at offset', offset, '- Using first part only');
-          content = firstPart;
-          break;
-        }
+    // STEP 1: Ultra-aggressive exact duplication detection
+    const words = content.split(/\s+/);
+    if (words.length > 30) {
+      // Check for word-level exact duplication with wide range
+      for (let offset = -30; offset <= 30; offset++) {
+        const splitPoint = Math.floor(words.length / 2) + offset;
+        if (splitPoint < 10 || splitPoint > words.length - 10) continue;
         
-        // Check if second part starts with first part  
-        if (normalizedSecond.startsWith(normalizedFirst.substring(0, Math.min(normalizedFirst.length, 300)))) {
-          console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part only');
-          content = firstPart;
-          break;
-        }
+        const firstWords = words.slice(0, splitPoint);
+        const secondWords = words.slice(splitPoint);
         
-        // Check for high overlap in the first part of text
-        const checkLength = Math.min(normalizedFirst.length, normalizedSecond.length, 200);
-        const firstPortion = normalizedFirst.substring(0, checkLength);
-        const secondPortion = normalizedSecond.substring(0, checkLength);
-        
-        if (firstPortion === secondPortion && firstPortion.length > 100) {
-          console.log('HIGH OVERLAP DUPLICATION DETECTED at offset', offset, '- Using first part only');
-          content = firstPart;
-          break;
+        // Check for exact word sequence match
+        if (firstWords.length > 20 && secondWords.length > 20) {
+          const firstText = firstWords.join(' ').trim();
+          const secondText = secondWords.join(' ').trim();
+          
+          // Direct text comparison (most accurate)
+          if (firstText === secondText && firstText.length > 100) {
+            console.log('EXACT WORD-FOR-WORD DUPLICATION DETECTED at offset', offset, '- Using first part only');
+            return firstText;
+          }
+          
+          // Check if second part starts with first part exactly
+          if (secondText.startsWith(firstText.substring(0, Math.min(firstText.length, 500)))) {
+            console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part only');
+            return firstText;
+          }
+          
+          // Check for 95%+ similarity
+          const similarity = this.calculateExactSimilarity(firstText, secondText);
+          if (similarity > 0.95 && firstText.length > 200) {
+            console.log('HIGH SIMILARITY DUPLICATION DETECTED at offset', offset, 'similarity:', similarity, '- Using first part only');
+            return firstText;
+          }
         }
       }
     }
     
-    // Step 2: Remove exact consecutive duplicates with aggressive regex
+    // Step 2: Remove exact consecutive duplicates with multiple regex patterns
     const originalLength = content.length;
+    
+    // Pattern 1: Large chunk duplication
+    content = content.replace(/(.{50,}?)\s*\1+/gi, '$1');
+    
+    // Pattern 2: Sentence-ending duplication
     content = content.replace(/(.{30,}?[.!?])\s*\1+/gi, '$1');
+    
+    // Pattern 3: Paragraph-level duplication
+    content = content.replace(/(.*?[.!?])\s*\1+/gi, '$1');
+    
     if (content.length !== originalLength) {
-      console.log('REGEX DUPLICATES REMOVED');
+      console.log('REGEX DUPLICATES REMOVED, reduced by:', originalLength - content.length, 'characters');
     }
     
-    // Step 3: Sentence-level deduplication
+    // Step 3: Enhanced sentence-level deduplication
     const sentenceParts = content.split(/([.!?]+)/);
     const rebuiltContent: string[] = [];
     const seenNormalized = new Set<string>();
@@ -1004,7 +1014,9 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
     
     const result = rebuiltContent.join('');
     console.log('Deduplication output length:', result.length, 'reduction:', Math.round((1 - result.length / content.length) * 100) + '%');
-    return result;
+    
+    // Final safety check for any remaining exact duplications
+    return this.finalSafetyDeduplication(result);
   }
 
   private formatCitationSection(sources: any[]): string {
@@ -1046,6 +1058,110 @@ ${citations}
     } catch (error) {
       console.error('Feedback collection error:', error);
     }
+  }
+
+  private calculateExactSimilarity(text1: string, text2: string): number {
+    if (!text1 || !text2) return 0;
+    
+    const words1 = text1.toLowerCase().split(/\s+/);
+    const words2 = text2.toLowerCase().split(/\s+/);
+    
+    if (words1.length === 0 || words2.length === 0) return 0;
+    
+    // Calculate sequential word matches from the beginning
+    let matches = 0;
+    const minLength = Math.min(words1.length, words2.length);
+    
+    for (let i = 0; i < minLength; i++) {
+      if (words1[i] === words2[i]) {
+        matches++;
+      } else {
+        break; // Stop at first mismatch for more accurate similarity
+      }
+    }
+    
+    return matches / minLength;
+  }
+  
+  private finalSafetyDeduplication(content: string): string {
+    if (!content) return content;
+    
+    // Final brute-force check for exact repetition
+    const lines = content.split('\n').filter(line => line.trim());
+    const uniqueLines: string[] = [];
+    const seenLines = new Set<string>();
+    
+    for (const line of lines) {
+      const normalized = line.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+      if (normalized.length > 10 && !seenLines.has(normalized)) {
+        seenLines.add(normalized);
+        uniqueLines.push(line);
+      } else if (normalized.length <= 10) {
+        uniqueLines.push(line);
+      }
+    }
+    
+    return uniqueLines.join('\n');
+  }
+
+  private aggressiveDeduplication(content: string): string {
+    if (!content) return content;
+    
+    console.log('AGGRESSIVE DEDUPLICATION - Input length:', content.length);
+    
+    // Step 1: Check for exact half-duplication (most common case)
+    const normalizedContent = content.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const words = normalizedContent.split(' ');
+    
+    if (words.length > 40) {
+      const halfPoint = Math.floor(words.length / 2);
+      
+      // Try multiple offsets around the midpoint
+      for (let offset = -15; offset <= 15; offset++) {
+        const splitPoint = halfPoint + offset;
+        if (splitPoint < 10 || splitPoint > words.length - 10) continue;
+        
+        const firstHalf = words.slice(0, splitPoint).join(' ');
+        const secondHalf = words.slice(splitPoint).join(' ');
+        
+        // Check for exact match
+        if (firstHalf === secondHalf && firstHalf.length > 100) {
+          console.log('EXACT HALF-DUPLICATION DETECTED at offset', offset, '- Using first half');
+          const originalWords = content.split(' ');
+          return originalWords.slice(0, splitPoint).join(' ').trim();
+        }
+        
+        // Check for high similarity
+        if (firstHalf.length > 100 && secondHalf.length > 100) {
+          const similarity = this.calculateExactSimilarity(firstHalf, secondHalf);
+          if (similarity > 0.9) {
+            console.log('HIGH SIMILARITY HALF-DUPLICATION DETECTED at offset', offset, 'similarity:', similarity, '- Using first half');
+            const originalWords = content.split(' ');
+            return originalWords.slice(0, splitPoint).join(' ').trim();
+          }
+        }
+      }
+    }
+    
+    // Step 2: Remove consecutive exact duplicates
+    let result = content;
+    const patterns = [
+      /(.{100,}?[.!?])\s*\1+/gi,  // Large sentence duplicates
+      /(.{50,}?)\s*\1+/gi,        // Medium chunk duplicates
+      /(.{30,}?[.!?])\s*\1+/gi    // Small sentence duplicates
+    ];
+    
+    for (const pattern of patterns) {
+      const beforeLength = result.length;
+      result = result.replace(pattern, '$1');
+      if (result.length < beforeLength) {
+        console.log('Pattern duplicate removed, reduced by:', beforeLength - result.length, 'characters');
+      }
+    }
+    
+    console.log('AGGRESSIVE DEDUPLICATION - Output length:', result.length, 'reduction:', Math.round((1 - result.length / content.length) * 100) + '%');
+    
+    return result;
   }
 }
 
