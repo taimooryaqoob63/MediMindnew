@@ -14,84 +14,85 @@ import fs from "fs/promises";
 function finalDeduplication(content: string): string {
   if (!content) return content;
   
-  console.log('Final deduplication applied to:', content.substring(0, 100) + '...');
-  console.log('Original length:', content.length);
+  console.log('Final deduplication - Original length:', content.length);
   
-  // Step 1: Remove complete paragraph duplications (most aggressive)
-  // Look for duplicated blocks of 100+ characters
-  const paragraphs = content.split(/\n\s*\n/);
-  const uniqueParagraphs: string[] = [];
-  const seenParagraphs = new Set<string>();
-  
-  for (const paragraph of paragraphs) {
-    const cleanPara = paragraph.trim();
-    if (cleanPara.length < 50) {
-      uniqueParagraphs.push(paragraph);
-      continue;
-    }
+  // STEP 1: Direct half-and-half duplication check (most common case)
+  const halfLength = Math.floor(content.length / 2);
+  if (halfLength > 50) {
+    const firstHalf = content.substring(0, halfLength);
+    const secondHalf = content.substring(halfLength);
     
-    // Normalize paragraph for comparison
-    const normalized = cleanPara.toLowerCase()
+    // Remove whitespace and punctuation for comparison
+    const normalizeForComparison = (text: string) => text
+      .toLowerCase()
       .replace(/[^\w\s]/g, '')
       .replace(/\s+/g, ' ')
       .trim();
     
-    if (!seenParagraphs.has(normalized)) {
-      seenParagraphs.add(normalized);
-      uniqueParagraphs.push(paragraph);
-    } else {
-      console.log('PARAGRAPH DUPLICATE REMOVED:', cleanPara.substring(0, 100) + '...');
+    const normalizedFirst = normalizeForComparison(firstHalf);
+    const normalizedSecond = normalizeForComparison(secondHalf);
+    
+    // Check if second half matches first half (complete duplication)
+    const similarity = calculateSimilarity(normalizedFirst, normalizedSecond);
+    console.log('Half-to-half similarity:', similarity);
+    
+    if (similarity > 0.85) { // 85% similarity indicates duplication
+      console.log('COMPLETE DUPLICATION DETECTED - Keeping only first half');
+      content = firstHalf.trim();
+      // Ensure it ends properly
+      if (!content.endsWith('.') && !content.endsWith('!') && !content.endsWith('?')) {
+        content += '.';
+      }
     }
   }
   
-  let result = uniqueParagraphs.join('\n\n');
+  // STEP 2: Sentence-level deduplication for remaining content
+  const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 10);
+  const uniqueSentences: string[] = [];
+  const seenNormalized = new Set<string>();
   
-  // Step 2: Remove exact consecutive duplicates with regex (catch copy-paste scenarios)
-  const originalLength = result.length;
-  result = result.replace(/(.{50,}?[.!?])\s*\1+/gi, '$1');
-  if (result.length !== originalLength) {
-    console.log('REGEX DUPLICATES REMOVED');
-  }
-  
-  // Step 3: Check for sentence-level duplicates within the remaining content
-  const sentenceParts = result.split(/([.!?]+)/);
-  const rebuiltContent: string[] = [];
-  const seenSentenceNormalized = new Set<string>();
-  
-  for (let i = 0; i < sentenceParts.length; i += 2) {
-    const sentence = sentenceParts[i]?.trim();
-    const punctuation = sentenceParts[i + 1] || '';
+  for (const sentence of sentences) {
+    const clean = sentence.trim();
+    if (clean.length < 15) continue;
     
-    if (!sentence || sentence.length < 15) {
-      if (sentence) rebuiltContent.push(sentence + punctuation);
-      continue;
-    }
-    
-    // Aggressive sentence normalization
-    const normalized = sentence.toLowerCase()
+    const normalized = clean.toLowerCase()
       .replace(/[^\w\s]/g, '')
       .replace(/\s+/g, ' ')
-      .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this|these|those)\b/g, '')
       .trim();
     
-    if (normalized.length < 10) {
-      rebuiltContent.push(sentence + punctuation);
-      continue;
-    }
-    
-    if (!seenSentenceNormalized.has(normalized)) {
-      seenSentenceNormalized.add(normalized);
-      rebuiltContent.push(sentence + punctuation);
+    if (!seenNormalized.has(normalized)) {
+      seenNormalized.add(normalized);
+      uniqueSentences.push(clean);
     } else {
-      console.log('SENTENCE DUPLICATE REMOVED:', sentence.substring(0, 60) + '...');
+      console.log('Duplicate sentence removed:', clean.substring(0, 50) + '...');
     }
   }
   
-  const finalResult = rebuiltContent.join('');
-  console.log('Final result length:', finalResult.length, 'vs original:', content.length);
-  console.log('Reduction:', Math.round((1 - finalResult.length / content.length) * 100) + '%');
+  const finalResult = uniqueSentences.join('. ') + '.';
+  console.log('Final length:', finalResult.length, '| Reduction:', Math.round((1 - finalResult.length / content.length) * 100) + '%');
   
   return finalResult;
+}
+
+// Helper function to calculate text similarity
+function calculateSimilarity(text1: string, text2: string): number {
+  if (!text1 || !text2) return 0;
+  
+  // Use longest common subsequence approach
+  const words1 = text1.split(' ');
+  const words2 = text2.split(' ');
+  
+  // Simple similarity check: how many words match in order
+  let matches = 0;
+  const minLength = Math.min(words1.length, words2.length);
+  
+  for (let i = 0; i < minLength; i++) {
+    if (words1[i] === words2[i]) {
+      matches++;
+    }
+  }
+  
+  return matches / Math.max(words1.length, words2.length);
 }
 
 // Configure multer for document uploads
