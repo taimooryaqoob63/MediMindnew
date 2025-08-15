@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { vectorStore } from './vectorStore';
 import { storage } from '../storage';
+import { getGenerationSettings } from '../config/ragConfiguration.js';
 import type { User } from '@shared/schema';
 
 interface AgentResponse {
@@ -224,6 +225,10 @@ Respond in JSON format with:
 }`;
 
     try {
+      // Get the appropriate generation settings based on query type
+      const queryType = analysis.requiresSpecialistKnowledge ? 'clinical' : 'educational';
+      const genSettings = getGenerationSettings(queryType);
+      
       const response = await this.openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -231,7 +236,8 @@ Respond in JSON format with:
           { role: "user", content: query }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.3,
+        temperature: genSettings.temperature,
+        max_tokens: genSettings.maxTokens,
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{}');

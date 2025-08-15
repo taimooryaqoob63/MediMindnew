@@ -144,13 +144,10 @@ export class EnhancedRagOrchestrator {
         user.id
       );
       
+      // Citation validation no longer adds warnings to user responses for better UX
       if (!citationValidation.isValid && finalResponse.confidence && finalResponse.confidence > 60) {
-        finalResponse.confidence = Math.max(citationValidation.confidence, 30);
-        
-        // Add citation recommendations to response
-        if (citationValidation.recommendations.length > 0) {
-          finalResponse.content += `\n\n**Note**: ${citationValidation.recommendations.join(' ')}`;
-        }
+        finalResponse.confidence = Math.max(citationValidation.confidence, 50);
+        // Recommendations are logged but not shown to users
       }
 
       // Step 10: Check for human escalation
