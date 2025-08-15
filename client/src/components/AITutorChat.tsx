@@ -48,9 +48,18 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
-  const { data: messages = [] } = useQuery<ChatMessage[]>({
+  // Replace your messages useQuery with this:
+  const { data: rawMessages = [] } = useQuery<ChatMessage[]>({
     queryKey: ["/api/chat", courseId],
   });
+
+  // Deduplicate messages by id or timestamp
+  const messages = rawMessages.filter(
+    (msg, index, self) =>
+      index === self.findIndex(
+        (m) => m.id === msg.id || m.timestamp === msg.timestamp
+      )
+  );
 
   // Initialize TTS and STT
   useEffect(() => {
@@ -111,14 +120,27 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       }
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
+      // Append message locally to avoid double-render from query invalidation
+      queryClient.setQueryData<ChatMessage[]>(["/api/chat", courseId], (old = []) => [
+        ...old,
+        {
+          id: crypto.randomUUID(),
+          message: inputMessage.trim(),
+          response: data.response || data.content,
+          timestamp: new Date().toISOString()
+        }
+      ]);
+
       setInputMessage("");
-      
-      // Read the AI response aloud if TTS is enabled
+
+      // Speak AI response if enabled
       const responseText = data.response || data.content;
       if (isTTSEnabled && synthesis && responseText) {
         speakText(responseText);
       }
+
+      // Now refresh from server (backend will overwrite if needed)
+      queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
     },
     onError: (error) => {
       console.error('Chat mutation error:', error);
