@@ -31,7 +31,7 @@ function finalDeduplication(content: string): string {
       const secondPart = words.slice(splitPoint).join(' ');
       
       // Check for exact duplication
-      if (firstPart === secondPart && firstPart.length > 100) {
+      if (firstPart === secondPart && firstPart.length > 50) {
         console.log('EXACT WORD-FOR-WORD DUPLICATION DETECTED at offset', offset, '- Using first part');
         const originalWords = content.split(' ');
         const resultWords = originalWords.slice(0, splitPoint);
@@ -50,11 +50,22 @@ function finalDeduplication(content: string): string {
       }
       
       // Check if second part starts with first part (common pattern)
-      if (firstPart.length > 100 && secondPart.startsWith(firstPart.substring(0, 200))) {
+      if (firstPart.length > 50 && secondPart.startsWith(firstPart.substring(0, 100))) {
         console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part');
         const originalWords = content.split(' ');
         const resultWords = originalWords.slice(0, splitPoint);
         return resultWords.join(' ').trim();
+      }
+      
+      // Check for overlapping content (more aggressive)
+      if (firstPart.length > 50 && secondPart.length > 50) {
+        const overlap = findLongestCommonSubstring(firstPart, secondPart);
+        if (overlap.length > Math.min(firstPart.length, secondPart.length) * 0.6) {
+          console.log('MAJOR OVERLAP DETECTED at offset', offset, '- Using first part');
+          const originalWords = content.split(' ');
+          const resultWords = originalWords.slice(0, splitPoint);
+          return resultWords.join(' ').trim();
+        }
       }
     }
   }
@@ -295,10 +306,13 @@ function bruteForceDeduplication(content: string): string {
   
   // Direct string replacement for known repetitive patterns
   const commonDuplicatePatterns = [
-    /(.{100,})\1+/g, // Repeated chunks of 100+ characters
-    /(As there is no specific context provided from[^.]+\.)\s*\1/gi,
+    /(.{50,})\1+/g, // Repeated chunks of 50+ characters
+    /(.{100,})\s*\1/g, // Repeated chunks with optional whitespace
+    /(It appears that there is no specific[^.]+\.)\s*\1/gi,
+    /(As there is no specific context provided[^.]+\.)\s*\1/gi,
     /(Carbon dioxide \(CO2\) is a[^.]+\.)\s*\1/gi,
-    /(As a care worker[^.]+\.)\s*\1/gi
+    /(As a care worker[^.]+\.)\s*\1/gi,
+    /(\w+(?:\s+\w+){10,})\s*\1/g, // Any sequence of 10+ words repeated
   ];
   
   for (const pattern of commonDuplicatePatterns) {
@@ -306,6 +320,40 @@ function bruteForceDeduplication(content: string): string {
     result = result.replace(pattern, '$1');
     if (result.length < beforeLength) {
       console.log('Brute force pattern removal applied, reduced by', beforeLength - result.length, 'characters');
+    }
+  }
+  
+  return result;
+}
+
+// Helper function to find longest common substring
+function findLongestCommonSubstring(str1: string, str2: string): string {
+  const len1 = str1.length;
+  const len2 = str2.length;
+  
+  if (len1 === 0 || len2 === 0) return '';
+  
+  let maxLength = 0;
+  let result = '';
+  
+  for (let i = 0; i < len1; i++) {
+    for (let j = 0; j < len2; j++) {
+      let length = 0;
+      let temp = '';
+      
+      while (
+        i + length < len1 &&
+        j + length < len2 &&
+        str1[i + length].toLowerCase() === str2[j + length].toLowerCase()
+      ) {
+        temp += str1[i + length];
+        length++;
+      }
+      
+      if (length > maxLength) {
+        maxLength = length;
+        result = temp;
+      }
     }
   }
   
