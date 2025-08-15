@@ -22,13 +22,68 @@ function finalDeduplication(content: string): string {
   
   console.log('Final deduplication - Original length:', content.length);
   
+  // STEP -0.5: Simple substring repetition check
+  // Look for cases where the content literally repeats itself
+  const contentLength = content.length;
+  for (let chunkSize = Math.floor(contentLength * 0.3); chunkSize <= Math.floor(contentLength * 0.7); chunkSize += 50) {
+    const chunk = content.substring(0, chunkSize);
+    if (chunkSize > 200 && content.includes(chunk + chunk.substring(0, 100))) {
+      console.log('SIMPLE REPETITION DETECTED - chunk size:', chunkSize, '- Using first occurrence');
+      return formatHeadings(chunk.trim());
+    }
+    
+    // Check if content starts repeating at any point
+    const possibleRepeat = content.substring(chunkSize);
+    if (chunkSize > 200 && possibleRepeat.startsWith(chunk.substring(0, Math.min(300, chunk.length)))) {
+      console.log('CONTENT REPETITION DETECTED - chunk size:', chunkSize, '- Using first part');
+      return formatHeadings(chunk.trim());
+    }
+  }
+  
+  // STEP -0.25: Sliding window repetition detection
+  // Use a sliding window to find repeating content
+  const contentSentences = content.split(/[.!?]+/).filter(s => s.trim().length > 10);
+  if (contentSentences.length > 4) {
+    for (let windowSize = 2; windowSize <= Math.floor(contentSentences.length / 2); windowSize++) {
+      for (let i = 0; i <= contentSentences.length - windowSize * 2; i++) {
+        const window1 = contentSentences.slice(i, i + windowSize).join('.').trim();
+        const window2 = contentSentences.slice(i + windowSize, i + windowSize * 2).join('.').trim();
+        
+        if (window1.length > 100 && window1 === window2) {
+          console.log('SLIDING WINDOW REPETITION DETECTED - window size:', windowSize, 'at position:', i);
+          return formatHeadings(contentSentences.slice(0, i + windowSize).join('.').trim() + '.');
+        }
+      }
+    }
+  }
+  
   // STEP 0: Ultra-aggressive exact duplication detection
   const words = content.split(/\s+/);
   
   // Check if content is repeated exactly (most common case)
   if (words.length > 30) {
-    // Try very broad range of split points
-    for (let offset = -50; offset <= 50; offset += 2) {
+    // First, try to find exact duplication by looking for repeating patterns
+    const contentStr = words.join(' ');
+    
+    // Look for the pattern where text repeats from various starting points
+    for (let startCheck = 0; startCheck < Math.min(words.length / 4, 50); startCheck++) {
+      for (let splitOffset = -50; splitOffset <= 50; splitOffset += 1) {
+        const splitPoint = Math.floor(words.length / 2) + splitOffset;
+        if (splitPoint < 10 || splitPoint > words.length - 10) continue;
+        
+        const firstPart = words.slice(startCheck, splitPoint).join(' ');
+        const secondPart = words.slice(splitPoint + startCheck, splitPoint + startCheck + (splitPoint - startCheck)).join(' ');
+        
+        // Direct string comparison for exact duplication
+        if (firstPart === secondPart && firstPart.length > 80) {
+          console.log('FINAL DEDUP: EXACT WORD-FOR-WORD DUPLICATION DETECTED at split:', splitPoint, 'start:', startCheck, '- Using first part');
+          return formatHeadings(words.slice(startCheck, splitPoint).join(' ').trim());
+        }
+      }
+    }
+    
+    // Fallback: original logic with broader range
+    for (let offset = -100; offset <= 100; offset += 1) {
       const splitPoint = Math.floor(words.length / 2) + offset;
       if (splitPoint < 15 || splitPoint > words.length - 15) continue;
       
