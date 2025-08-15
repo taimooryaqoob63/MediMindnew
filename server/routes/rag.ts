@@ -248,7 +248,68 @@ function finalDeduplication(content: string): string {
   const reductionPercent = Math.round((1 - bestReduction.length / content.length) * 100);
   console.log('Final length:', bestReduction.length, '| Reduction:', reductionPercent + '%');
   
+  // FINAL STEP: Brute force removal of common duplication patterns
+  bestReduction = bruteForceDeduplication(bestReduction);
+  
   return bestReduction;
+}
+
+// Brute force deduplication as final failsafe
+function bruteForceDeduplication(content: string): string {
+  if (!content || content.length < 200) return content;
+  
+  console.log('Running brute force deduplication as final check...');
+  
+  // Split content into paragraphs and sentences
+  const paragraphs = content.split(/\n\s*\n/);
+  const processedParagraphs: string[] = [];
+  
+  for (const paragraph of paragraphs) {
+    if (paragraph.trim().length < 50) {
+      processedParagraphs.push(paragraph);
+      continue;
+    }
+    
+    // Check for repeated sentences within paragraph
+    const sentences = paragraph.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 10);
+    const uniqueSentences: string[] = [];
+    const seenSentences = new Set<string>();
+    
+    for (const sentence of sentences) {
+      const normalized = sentence.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+      
+      if (normalized.length > 20 && !seenSentences.has(normalized)) {
+        seenSentences.add(normalized);
+        uniqueSentences.push(sentence.trim());
+      } else if (normalized.length <= 20) {
+        uniqueSentences.push(sentence.trim());
+      } else {
+        console.log('Brute force removed duplicate sentence:', sentence.substring(0, 60) + '...');
+      }
+    }
+    
+    processedParagraphs.push(uniqueSentences.join(' '));
+  }
+  
+  let result = processedParagraphs.join('\n\n').trim();
+  
+  // Direct string replacement for known repetitive patterns
+  const commonDuplicatePatterns = [
+    /(.{100,})\1+/g, // Repeated chunks of 100+ characters
+    /(As there is no specific context provided from[^.]+\.)\s*\1/gi,
+    /(Carbon dioxide \(CO2\) is a[^.]+\.)\s*\1/gi,
+    /(As a care worker[^.]+\.)\s*\1/gi
+  ];
+  
+  for (const pattern of commonDuplicatePatterns) {
+    const beforeLength = result.length;
+    result = result.replace(pattern, '$1');
+    if (result.length < beforeLength) {
+      console.log('Brute force pattern removal applied, reduced by', beforeLength - result.length, 'characters');
+    }
+  }
+  
+  return result;
 }
 
 // Helper function to remove repeated phrases within text

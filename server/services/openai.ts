@@ -88,10 +88,12 @@ Respond in JSON format with:
         { role: "user", content: userPrompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.2, // Lower temperature for more controlled output
-      max_tokens: 600,
-      presence_penalty: 0.6, // Penalize repetition
-      frequency_penalty: 0.7, // Penalize repeated tokens
+      temperature: 0.05, // Extremely low temperature for maximum control
+      max_tokens: 400,
+      presence_penalty: 2.0, // Maximum penalty for repetition
+      frequency_penalty: 2.0, // Maximum penalty for repeated tokens
+      top_p: 0.5, // Very focused token selection
+      stop: ["As there is no specific", "Carbon dioxide (CO2) is a", "As a care worker"]
     });
 
     const result = JSON.parse(completion.choices[0].message.content || '{}');
