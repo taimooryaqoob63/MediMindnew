@@ -1,6 +1,11 @@
 import OpenAI from 'openai';
 import { vectorStore } from './vectorStore';
 import { storage } from '../storage';
+import { RAG_CONFIG, getGenerationSettings, shouldEscalateToHuman, validateCitations } from '../config/ragConfiguration';
+import { nlpIntentDetector } from './nlpIntentDetector';
+import { hybridSearch } from './hybridSearch';
+import { humanEscalationService } from './humanEscalationService';
+import { citationEnforcementService } from './citationEnforcementService';
 import type { 
   User, ChatResponse, InsertRagAnalytics, InsertChatSummary, InsertQueryCache, 
   InsertIntentClassification, InsertResponseFeedback 
@@ -57,12 +62,7 @@ interface AgentContext {
 
 export class EnhancedRagOrchestrator {
   private openai?: OpenAI;
-  private maxTokenLimit = 8000;
-  private emergencyKeywords = [
-    'emergency', 'urgent', 'immediate', 'critical', 'severe', 'danger',
-    'unconscious', 'seizure', 'stroke', 'heart attack', 'hypoglycemia',
-    'ketoacidosis', 'diabetic coma', 'blood sugar', 'insulin shock'
-  ];
+  private maxTokenLimit = RAG_CONFIG.performance.maxTokensPerQuery;
 
   constructor() {
     if (process.env.OPENAI_API_KEY) {
@@ -81,8 +81,13 @@ export class EnhancedRagOrchestrator {
     const startTime = Date.now();
     
     try {
-      // Step 1: Emergency detection (for educational context, not blocking)
-      const emergencyCheck = this.checkEmergencyKeywords(query);
+      // Step 1: Enhanced emergency and intent detection
+      const intentAnalysis = await nlpIntentDetector.analyzeIntent(query, conversationHistory?.join('\n'));
+      const emergencyCheck = {
+        isEmergency: intentAnalysis.isEmergency,
+        keywords: intentAnalysis.entities,
+        urgencyLevel: intentAnalysis.urgencyLevel
+      };
 
       // Step 2: Check cache
       const cacheResult = await this.checkQueryCache(query);
@@ -131,20 +136,62 @@ export class EnhancedRagOrchestrator {
         retrievalResult
       );
 
-      // Step 9: Add emergency disclaimer if needed
+      // Step 9: Enhanced citation validation with audit trail
+      const citationValidation = await citationEnforcementService.validateCitations(
+        finalResponse.sources || [],
+        analysis.queryType,
+        finalResponse.content,
+        user.id
+      );
+      
+      if (!citationValidation.isValid && finalResponse.confidence && finalResponse.confidence > 60) {
+        finalResponse.confidence = Math.max(citationValidation.confidence, 30);
+        
+        // Add citation recommendations to response
+        if (citationValidation.recommendations.length > 0) {
+          finalResponse.content += `\n\n**Note**: ${citationValidation.recommendations.join(' ')}`;
+        }
+      }
+
+      // Step 10: Check for human escalation
+      const escalationResult = await humanEscalationService.evaluateForEscalation(
+        query,
+        finalResponse,
+        user,
+        conversationHistory?.join('\n'),
+        emergencyCheck.urgencyLevel
+      );
+
+      if (escalationResult.shouldEscalate) {
+        // Return escalation response instead of AI response
+        const escalationResponse = escalationResult.escalationResponse!;
+        
+        await this.logAnalytics({
+          eventType: 'escalation',
+          userId: user.id,
+          queryType: analysis.queryType,
+          confidence: finalResponse.confidence || 0,
+          responseTime: Date.now() - startTime,
+          metadata: { escalationId: escalationResult.escalationId }
+        });
+
+        return escalationResponse;
+      }
+
+      // Step 11: Add emergency disclaimer if needed
       const responseWithDisclaimer = emergencyCheck.isEmergency 
-        ? this.addEmergencyDisclaimer(finalResponse, emergencyCheck.keywords)
+        ? this.addEmergencyDisclaimer(finalResponse, emergencyCheck.keywords, emergencyCheck.urgencyLevel)
         : finalResponse;
 
-      // Step 10: Cache if appropriate (cache original response, not the one with disclaimer)
-      if (analysis.queryType === 'faq' || analysis.confidence > 90) {
+      // Step 12: Cache if appropriate (cache original response, not the one with disclaimer)
+      if (analysis.queryType === 'faq' || (finalResponse.confidence && finalResponse.confidence > RAG_CONFIG.performance.cacheThreshold)) {
         await this.cacheResponse(query, finalResponse);
       }
 
-      // Step 11: Update summaries
+      // Step 13: Update summaries
       await this.updateAgentSummaries(user.id, courseId, query, finalResponse, selectedAgents);
 
-      // Step 12: Log analytics
+      // Step 14: Log analytics
       await this.logAnalytics({
         eventType: 'response',
         userId: user.id,
@@ -192,9 +239,17 @@ export class EnhancedRagOrchestrator {
     }
   }
 
+  // Deprecated - replaced by NLP intent detection
   private checkEmergencyKeywords(query: string): { isEmergency: boolean; keywords: string[] } {
+    // Fallback for when NLP analysis fails
+    const emergencyKeywords = [
+      'emergency', 'urgent', 'immediate', 'critical', 'severe', 'danger',
+      'unconscious', 'seizure', 'stroke', 'heart attack', 'hypoglycemia',
+      'ketoacidosis', 'diabetic coma', 'blood sugar', 'insulin shock'
+    ];
+    
     const queryLower = query.toLowerCase();
-    const foundKeywords = this.emergencyKeywords.filter(keyword => 
+    const foundKeywords = emergencyKeywords.filter(keyword => 
       queryLower.includes(keyword)
     );
     
@@ -204,8 +259,26 @@ export class EnhancedRagOrchestrator {
     };
   }
 
-  private addEmergencyDisclaimer(response: ChatResponse, keywords: string[]): ChatResponse {
-    const emergencyDisclaimer = `
+  private addEmergencyDisclaimer(response: ChatResponse, keywords: string[], urgencyLevel?: string): ChatResponse {
+    let emergencyDisclaimer = '';
+    
+    if (urgencyLevel === 'critical' || urgencyLevel === 'high') {
+      emergencyDisclaimer = `
+
+---
+
+🚨 **CRITICAL SAFETY NOTICE**: This appears to be a high-urgency medical situation (${keywords.join(', ')}).
+
+**IMMEDIATE ACTIONS REQUIRED:**
+• **CALL 999 NOW** if someone is in immediate danger
+• Activate your facility's emergency response protocols
+• Contact your supervising clinician or on-call doctor immediately
+• Begin first aid if trained and safe to do so
+• Document everything for CQC compliance
+
+⚠️ **CRITICAL**: Do not rely solely on AI guidance for emergency situations. Human medical expertise is essential.`;
+    } else {
+      emergencyDisclaimer = `
 
 ---
 
@@ -218,6 +291,7 @@ export class EnhancedRagOrchestrator {
 • Document as required by CQC guidelines
 
 ⚠️ **This is educational content only. AI cannot replace emergency medical care or institutional protocols.**`;
+    }
 
     return {
       ...response,
@@ -512,8 +586,11 @@ Provide JSON response with:
     const contextWindow = this.buildContextWindow(retrieval.sources, analysis);
 
     try {
+      // Get appropriate generation settings based on query analysis
+      const generationSettings = getGenerationSettings(analysis.queryType);
+      
       const response = await this.openai.chat.completions.create({
-        model: "gpt-4o",
+        model: generationSettings.model,
         messages: [
           { role: "system", content: systemPrompt },
           { 
@@ -521,8 +598,9 @@ Provide JSON response with:
             content: `Context: ${contextWindow}\n\nUser Role: ${user.role}\n\nQuery: ${query}\n\nProvide a comprehensive response based on the available context.`
           }
         ],
-        temperature: 0.3,
-        max_tokens: 1000,
+        temperature: generationSettings.temperature,
+        top_p: generationSettings.topP,
+        max_tokens: generationSettings.maxTokens,
       });
 
       const content = response.choices[0]?.message?.content || '';
@@ -577,17 +655,30 @@ Provide JSON response with:
   }
 
   private calculateResponseConfidence(content: string, sources: any[]): number {
-    let confidence = 50;
+    let confidence = RAG_CONFIG.safety.minResponseConfidence;
 
+    // Source quality scoring
     if (sources.length > 0) {
-      confidence += Math.min(30, sources.length * 5);
+      const avgSourceScore = sources.reduce((sum, source) => sum + (source.score || 0), 0) / sources.length;
+      confidence += Math.min(25, avgSourceScore * 25);
+      confidence += Math.min(15, sources.length * 3);
     }
 
-    if (content.length > 200) confidence += 10;
-    if (content.includes('NICE') || content.includes('NHS')) confidence += 10;
-    if (content.includes('CQC')) confidence += 5;
+    // Content quality indicators
+    if (content.length > 200) confidence += 8;
+    if (content.length > 500) confidence += 5;
+    
+    // Authoritative guideline references (weighted higher)
+    if (content.includes('NICE') || content.includes('NHS')) confidence += 12;
+    if (content.includes('CQC')) confidence += 8;
+    
+    // Clinical terminology and structure
+    if (content.includes('mg/dl') || content.includes('mmol/L') || content.includes('HbA1c')) confidence += 5;
+    
+    // Evidence-based language
+    if (content.includes('evidence shows') || content.includes('studies indicate') || content.includes('research demonstrates')) confidence += 8;
 
-    return Math.min(100, confidence);
+    return Math.min(100, Math.max(RAG_CONFIG.safety.minResponseConfidence, confidence));
   }
 
   private extractFollowUpQuestions(content: string): string[] {

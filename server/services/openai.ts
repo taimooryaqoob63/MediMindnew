@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { ragOrchestrator } from "./ragAgents";
+import { RAG_CONFIG } from "../config/ragConfiguration";
 import type { User } from "@shared/schema";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
@@ -29,8 +30,8 @@ export async function getAITutorResponse(question: string, context?: string, use
       try {
         const ragResponse = await ragOrchestrator.processQuery(question, user, courseId);
         
-        // If RAG provides high-confidence response, use it
-        if (ragResponse.confidence > 70) {
+        // Use RAG response if it meets minimum confidence threshold
+        if (ragResponse.confidence && ragResponse.confidence >= RAG_CONFIG.safety.minResponseConfidence) {
           return {
             response: ragResponse.content,
             sources: ragResponse.sources,

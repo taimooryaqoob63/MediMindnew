@@ -4,9 +4,18 @@
 
 MediMind AI is a comprehensive diabetes care training platform designed for healthcare workers in care homes and nursing facilities. The application combines video-based learning modules with an advanced agentic RAG (Retrieval-Augmented Generation) system to provide interactive, evidence-based training on diabetes management. The platform features multi-agent AI reasoning, sophisticated document processing capabilities, and emphasizes compliance with NICE guidelines, NHS best practices, and CQC requirements.
 
-## Recent Changes (August 14, 2025)
+## Recent Changes (August 15, 2025)
 
-### Emergency Detection Enhancement ✅ COMPLETED (Latest)
+### Comprehensive Chatbox Enhancement ✅ COMPLETED (Latest)
+- **Layered Configuration Architecture**: Implemented sophisticated parameter management with operational layers (RAG Retrieval, Generation Settings, Agent Selection, Safety & Compliance, Performance, Audit)
+- **Medical Accuracy Parameters**: Tightened ranges with temperature 0.1 for clinical queries, 0.2 for educational (down from 0.7), top-P 0.9, confidence threshold raised to 70%
+- **Advanced Emergency Detection**: Replaced keyword matching with NLP-based intent analysis using GPT-4o, pattern recognition, and urgency level classification
+- **Hybrid Search Optimization**: Implemented BM25 + vector embeddings (30%/70% weighting) for faster, more accurate retrieval
+- **Citation Enforcement**: Added mandatory authoritative citation requirements with NICE/NHS/CQC validation, audit trails, and compliance reporting
+- **Human-in-the-Loop Escalation**: Confidence-based routing (50-70% triggers supervisor review), escalation dashboard, and emergency override protocols
+- **New Services**: NLP Intent Detector, Hybrid Search, Human Escalation Service, Citation Enforcement Service with comprehensive API routes
+
+### Emergency Detection Enhancement ✅ COMPLETED
 - **Educational Emergency Response**: Modified emergency detection system to provide educational content instead of blocking responses
 - **Safety Compliance Maintained**: Added comprehensive emergency disclaimers to responses containing emergency keywords
 - **Enhanced Learning Experience**: Users now receive helpful educational guidance with appropriate safety warnings
