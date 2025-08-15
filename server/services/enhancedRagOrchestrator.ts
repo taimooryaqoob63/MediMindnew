@@ -589,19 +589,14 @@ Provide JSON response with:
     // Enhance system prompt to emphasize citation requirements and prevent repetition
     const enhancedSystemPrompt = `${systemPrompt}
 
-CRITICAL ANTI-REPETITION REQUIREMENTS:
-1. NEVER repeat any sentence, phrase, concept, or information even slightly
-2. Each sentence must contain completely unique information
-3. If you find yourself about to repeat something, STOP writing instead
-4. Vary sentence structure completely - no repetitive patterns
-5. Do not rephrase the same idea using different words
-6. Maximum response length: 300 tokens to prevent over-elaboration
+EMERGENCY ANTI-REPETITION PROTOCOL:
+🚨 CRITICAL: Each sentence must be 100% unique - NO exceptions
+🚨 STOP IMMEDIATELY if you start repeating any concept
+🚨 Maximum 2-3 sentences total - be extremely concise
+🚨 NO elaboration, NO examples, NO additional context
+🚨 ONE core fact per sentence, then STOP
 
-CITATION REQUIREMENTS:
-7. Reference source materials when available (e.g., "According to NICE guidelines...")
-8. Keep citations brief and integrated naturally
-
-STRUCTURE: Brief definition → Key clinical relevance → Practical application → STOP`;
+FORMAT: Essential answer in 1-2 sentences. Citation if available. DONE.`;
 
     try {
       // Get appropriate generation settings based on query analysis
@@ -613,12 +608,12 @@ STRUCTURE: Brief definition → Key clinical relevance → Practical application
           { role: "system", content: enhancedSystemPrompt },
           { 
             role: "user", 
-            content: `Context from authoritative sources: ${contextWindow}\n\nUser Role: ${user.role}\n\nQuery: ${query}\n\nProvide a comprehensive response based on the available context. Remember to cite the sources and include specific guidance from NICE, NHS, or CQC documentation when available.`
+            content: `Context: ${contextWindow}\n\nRole: ${user.role}\n\nQuery: ${query}\n\nProvide a BRIEF, NON-REPETITIVE response. Maximum 2-3 sentences. Each sentence must be unique. Stop immediately after giving the essential information.`
           }
         ],
         temperature: 0.3, // Increased from very low to allow some creativity in avoiding repetition
         top_p: 0.7, // Increased to allow more diverse token selection
-        max_tokens: 300, // Reduced to force conciseness
+        max_tokens: 150, // Very short to force extreme conciseness
         presence_penalty: 2.0, // Maximum penalty for using same topics
         frequency_penalty: 2.0, // Maximum penalty for repeating tokens
         stop: ["\n\nFor more", "Additionally", "Furthermore", "Moreover", "In addition", "Also", "As mentioned", "As stated above"], // Stop common repetition triggers
