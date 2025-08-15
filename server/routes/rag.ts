@@ -14,6 +14,12 @@ import fs from "fs/promises";
 function finalDeduplication(content: string): string {
   if (!content) return content;
   
+  // STEP -1: Remove unwanted disclaimers first
+  content = removeUnwantedDisclaimers(content);
+  
+  // STEP 0: Fix heading formatting
+  content = formatHeadings(content);
+  
   console.log('Final deduplication - Original length:', content.length);
   
   // STEP 0: Check for simple exact duplication by looking for repeated chunks
@@ -22,8 +28,8 @@ function finalDeduplication(content: string): string {
   
   // Check if content is repeated exactly (most common case)
   if (words.length > 20) {
-    // Try multiple split points to find duplication
-    for (let offset = -10; offset <= 10; offset++) {
+    // Try multiple split points to find duplication with broader range
+    for (let offset = -20; offset <= 20; offset++) {
       const splitPoint = Math.floor(words.length / 2) + offset;
       if (splitPoint < 10 || splitPoint > words.length - 10) continue;
       
@@ -35,7 +41,15 @@ function finalDeduplication(content: string): string {
         console.log('EXACT WORD-FOR-WORD DUPLICATION DETECTED at offset', offset, '- Using first part');
         const originalWords = content.split(' ');
         const resultWords = originalWords.slice(0, splitPoint);
-        return resultWords.join(' ').trim();
+        return formatHeadings(resultWords.join(' ').trim());
+      }
+      
+      // More aggressive check: if content starts and ends with same text
+      if (firstPart.length > 100 && secondPart.startsWith(firstPart.substring(0, 200))) {
+        console.log('CONTENT STARTS AND ENDS WITH SAME TEXT at offset', offset, '- Using first part');
+        const originalWords = content.split(' ');
+        const resultWords = originalWords.slice(0, splitPoint);
+        return formatHeadings(resultWords.join(' ').trim());
       }
       
       // Check for near-exact duplication
@@ -45,7 +59,7 @@ function finalDeduplication(content: string): string {
           console.log('NEAR-EXACT DUPLICATION DETECTED at offset', offset, '(similarity:', similarity, ') - Using first part');
           const originalWords = content.split(' ');
           const resultWords = originalWords.slice(0, splitPoint);
-          return resultWords.join(' ').trim();
+          return formatHeadings(resultWords.join(' ').trim());
         }
       }
       
@@ -54,7 +68,7 @@ function finalDeduplication(content: string): string {
         console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part');
         const originalWords = content.split(' ');
         const resultWords = originalWords.slice(0, splitPoint);
-        return resultWords.join(' ').trim();
+        return formatHeadings(resultWords.join(' ').trim());
       }
       
       // Check for overlapping content (more aggressive)
@@ -64,7 +78,7 @@ function finalDeduplication(content: string): string {
           console.log('MAJOR OVERLAP DETECTED at offset', offset, '- Using first part');
           const originalWords = content.split(' ');
           const resultWords = originalWords.slice(0, splitPoint);
-          return resultWords.join(' ').trim();
+          return formatHeadings(resultWords.join(' ').trim());
         }
       }
     }
@@ -116,7 +130,7 @@ function finalDeduplication(content: string): string {
     if (matchRatio > 0.3) { // Even lower threshold 
       console.log('MAJOR SENTENCE DUPLICATION DETECTED - Using first half only');
       const firstHalfSentences = sentences.slice(0, halfPoint);
-      return firstHalfSentences.join(' ').trim();
+      return formatHeadings(firstHalfSentences.join(' ').trim());
     }
     
     // Also check for exact first sentence matches (most common pattern)
@@ -124,7 +138,7 @@ function finalDeduplication(content: string): string {
         normalizedSentences[0] === normalizedSentences[halfPoint]) {
       console.log('FIRST SENTENCE DUPLICATION DETECTED - Using first half only');
       const firstHalfSentences = sentences.slice(0, halfPoint);
-      return firstHalfSentences.join(' ').trim();
+      return formatHeadings(firstHalfSentences.join(' ').trim());
     }
     
     // Check for any exact sentence matches between halves
@@ -133,7 +147,7 @@ function finalDeduplication(content: string): string {
         if (firstHalfNorm[i].length > 30 && firstHalfNorm[i] === secondHalfNorm[j]) {
           console.log('MATCHING SENTENCE FOUND between halves - Using first half only');
           const firstHalfSentences = sentences.slice(0, halfPoint);
-          return firstHalfSentences.join(' ').trim();
+          return formatHeadings(firstHalfSentences.join(' ').trim());
         }
       }
     }
@@ -263,6 +277,40 @@ function finalDeduplication(content: string): string {
   bestReduction = bruteForceDeduplication(bestReduction);
   
   return bestReduction;
+}
+
+// Remove unwanted disclaimer text
+function removeUnwantedDisclaimers(content: string): string {
+  // Remove the specific NICE/NHS/CQC disclaimer that's being auto-generated
+  const disclaimerPatterns = [
+    /While specific authoritative sources from NICE, NHS, or CQC are not available in the current context,?\s*/gi,
+    /While specific authoritative sources from NICE[^.]*?\.\s*/gi,
+    /As there is no specific context provided[^.]*?\.\s*/gi,
+    /It appears that there is no specific[^.]*?\.\s*/gi
+  ];
+  
+  let result = content;
+  for (const pattern of disclaimerPatterns) {
+    const beforeLength = result.length;
+    result = result.replace(pattern, '');
+    if (result.length < beforeLength) {
+      console.log('Removed unwanted disclaimer, reduced by', beforeLength - result.length, 'characters');
+    }
+  }
+  
+  return result.trim();
+}
+
+// Format headings to be on new lines and bold
+function formatHeadings(content: string): string {
+  // Pattern to match numbered headings like "1.Initial Treatment:" or "2.Recheck Blood Sugar:"
+  const headingPattern = /(\d+)\.([A-Z][^:]+):/g;
+  
+  // Replace with proper formatting: new line + bold heading
+  const result = content.replace(headingPattern, '\n\n**$1. $2:**\n');
+  
+  // Clean up any double new lines at the start
+  return result.replace(/^\n+/, '').trim();
 }
 
 // Brute force deduplication as final failsafe
