@@ -16,17 +16,23 @@ function finalDeduplication(content: string): string {
   
   console.log('Final deduplication - Original length:', content.length);
   
-  // STEP 1: Check for complete duplication (entire response repeated)
-  let bestReduction = content;
+  // STEP 1: Handle content without proper sentence breaks by inserting breaks
+  let processedContent = content
+    .replace(/\.([A-Z])/g, '. $1')  // Add space after period if missing
+    .replace(/\?([A-Z])/g, '? $1')  // Add space after question mark if missing
+    .replace(/!([A-Z])/g, '! $1');  // Add space after exclamation if missing
+  
+  // STEP 2: Check for complete duplication patterns
+  let bestReduction = processedContent;
   let maxReductionFound = false;
   
   // More aggressive sliding window approach
-  for (let splitRatio = 0.4; splitRatio <= 0.6; splitRatio += 0.01) {
-    const splitPoint = Math.floor(content.length * splitRatio);
-    const part1 = content.substring(0, splitPoint).trim();
-    const part2 = content.substring(splitPoint).trim();
+  for (let splitRatio = 0.3; splitRatio <= 0.7; splitRatio += 0.01) {
+    const splitPoint = Math.floor(processedContent.length * splitRatio);
+    const part1 = processedContent.substring(0, splitPoint).trim();
+    const part2 = processedContent.substring(splitPoint).trim();
     
-    if (part1.length < 80 || part2.length < 80) continue;
+    if (part1.length < 60 || part2.length < 60) continue;
     
     // Normalize both parts for comparison
     const normalize = (text: string) => text
@@ -38,12 +44,12 @@ function finalDeduplication(content: string): string {
     const norm1 = normalize(part1);
     const norm2 = normalize(part2);
     
-    // Check for various types of duplication
+    // Check for duplication patterns
     const similarity = calculateTextSimilarity(norm1, norm2);
     console.log(`Split at ${Math.round(splitRatio * 100)}%: similarity = ${similarity}`);
     
-    // Lower threshold for detecting duplication
-    if (similarity > 0.65) {
+    // More sensitive threshold for detecting duplication
+    if (similarity > 0.5 || norm2.startsWith(norm1.substring(0, Math.min(norm1.length, 100)))) {
       console.log('MAJOR DUPLICATION DETECTED - Using first part only');
       bestReduction = part1;
       maxReductionFound = true;
@@ -51,69 +57,79 @@ function finalDeduplication(content: string): string {
     }
   }
   
-  // STEP 2: Advanced sentence-level deduplication
+  // STEP 3: Advanced sentence-level deduplication
   console.log('Performing sentence-level deduplication...');
   
-  // Split by sentences more accurately
-  const sentences = bestReduction.split(/(?<=[.!?])\s+/)
+  // More sophisticated sentence splitting
+  const sentences = bestReduction
+    .split(/(?<=[.!?])\s+/)
     .map(s => s.trim())
-    .filter(s => s.length > 10);
+    .filter(s => s.length > 5);
   
   const uniqueSentences: string[] = [];
   const seenNormalized = new Set<string>();
-  const seenKeyPhrases = new Set<string>();
+  const seenConcepts = new Set<string>();
   
   for (const sentence of sentences) {
-    if (sentence.length < 15) {
+    if (sentence.length < 10) {
       uniqueSentences.push(sentence);
       continue;
     }
     
-    // More aggressive normalization
+    // Ultra-aggressive normalization for duplicate detection
     const normalized = sentence.toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .replace(/\s+/g, ' ')
-      .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this|it|as|can|will|should|must|may|might|could|would|has|have|had)\b/g, '')
+      .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this|it|as|can|will|should|must|may|might|could|would|has|have|had|be|been|being|do|does|did|than|then|when|where|why|how|what|who|which|these|those|they|them|their|there|here|such|some|many|much|more|most|all|any|each|every|both|either|neither|one|two|three|first|second|last|also|just|only|very|really|quite|rather|even|still|yet|already|again|once|never|always|often|sometimes|usually|generally|particularly|especially|specifically|including|regarding|concerning|about|above|below|before|after|during|while|since|until|unless|because|although|however|therefore|thus|hence|moreover|furthermore|additionally|meanwhile|instead|otherwise|nevertheless|nonetheless)\b/g, '')
       .trim();
     
-    // Extract key phrases (3+ consecutive words)
-    const words = normalized.split(' ').filter(w => w.length > 2);
-    const keyPhrases = [];
-    for (let i = 0; i < words.length - 2; i++) {
-      keyPhrases.push(words.slice(i, i + 3).join(' '));
-    }
+    // Extract key concepts (remove very common words)
+    const words = normalized.split(' ')
+      .filter(w => w.length > 3)
+      .filter(w => !['that', 'this', 'they', 'them', 'their', 'there', 'here', 'from', 'into', 'onto', 'upon', 'over', 'under', 'through', 'between', 'among', 'within', 'without', 'across', 'along', 'around', 'behind', 'beside', 'beneath', 'beyond'].includes(w));
+    
+    const conceptString = words.slice(0, 5).join(' '); // First 5 meaningful words
     
     // Check for exact sentence duplication
-    if (seenNormalized.has(normalized)) {
+    if (normalized.length > 5 && seenNormalized.has(normalized)) {
       console.log('Exact duplicate sentence removed:', sentence.substring(0, 60) + '...');
       continue;
     }
     
-    // Check for semantic duplication via key phrases
-    let hasDuplicateContent = false;
-    for (const phrase of keyPhrases) {
-      if (phrase.length > 8 && seenKeyPhrases.has(phrase)) {
-        console.log('Semantic duplicate detected via phrase:', phrase);
-        hasDuplicateContent = true;
-        break;
+    // Check for conceptual duplication
+    if (conceptString.length > 8 && seenConcepts.has(conceptString)) {
+      console.log('Conceptual duplicate removed:', sentence.substring(0, 60) + '...');
+      continue;
+    }
+    
+    // Check for substring matches in existing sentences
+    let isSubstringDuplicate = false;
+    for (const existingNormalized of Array.from(seenNormalized)) {
+      if (existingNormalized.length > 20 && normalized.length > 20) {
+        const longer = existingNormalized.length > normalized.length ? existingNormalized : normalized;
+        const shorter = existingNormalized.length > normalized.length ? normalized : existingNormalized;
+        if (longer.includes(shorter) && shorter.length > longer.length * 0.6) {
+          console.log('Substring duplicate removed:', sentence.substring(0, 60) + '...');
+          isSubstringDuplicate = true;
+          break;
+        }
       }
     }
     
-    if (!hasDuplicateContent) {
+    if (!isSubstringDuplicate) {
       seenNormalized.add(normalized);
-      for (const phrase of keyPhrases) {
-        if (phrase.length > 8) seenKeyPhrases.add(phrase);
-      }
+      if (conceptString.length > 8) seenConcepts.add(conceptString);
       uniqueSentences.push(sentence);
-    } else {
-      console.log('Semantic duplicate removed:', sentence.substring(0, 60) + '...');
     }
   }
   
   bestReduction = uniqueSentences.join(' ');
   
-  // STEP 3: Remove repeated phrases within the content
+  // STEP 4: Remove repeated phrases within the content
   bestReduction = removeRepeatedPhrases(bestReduction);
+  
+  // STEP 5: Final cleanup - remove any obvious repetitions that might remain
+  bestReduction = removeConsecutiveRepeats(bestReduction);
   
   // Ensure proper ending
   if (bestReduction && !bestReduction.match(/[.!?]$/)) {
@@ -160,6 +176,41 @@ function removeRepeatedPhrases(text: string): string {
   
   // Clean up extra whitespace
   return text.replace(/\s+/g, ' ').trim();
+}
+
+// Remove consecutive repeating patterns
+function removeConsecutiveRepeats(text: string): string {
+  // Remove patterns where the same phrase appears consecutively
+  const words = text.split(/\s+/);
+  const cleanedWords: string[] = [];
+  
+  for (let i = 0; i < words.length; i++) {
+    // Look for repeating patterns of 2-10 words
+    let foundRepeat = false;
+    
+    for (let patternLength = 2; patternLength <= Math.min(10, Math.floor((words.length - i) / 2)); patternLength++) {
+      if (i + patternLength * 2 <= words.length) {
+        const pattern1 = words.slice(i, i + patternLength);
+        const pattern2 = words.slice(i + patternLength, i + patternLength * 2);
+        
+        // Check if patterns match
+        if (pattern1.length === pattern2.length && 
+            pattern1.every((word, idx) => word.toLowerCase() === pattern2[idx].toLowerCase())) {
+          console.log('Consecutive repeat pattern removed:', pattern1.join(' '));
+          cleanedWords.push(...pattern1);
+          i += patternLength * 2 - 1; // Skip both patterns, -1 because loop will increment
+          foundRepeat = true;
+          break;
+        }
+      }
+    }
+    
+    if (!foundRepeat) {
+      cleanedWords.push(words[i]);
+    }
+  }
+  
+  return cleanedWords.join(' ');
 }
 
 // Helper function to calculate text similarity

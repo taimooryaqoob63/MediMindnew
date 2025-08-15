@@ -763,21 +763,23 @@ CRITICAL REQUIREMENTS:
             role: "system", 
             content: `You are an expert healthcare information synthesizer. Your critical task:
 
-ANTI-REPETITION RULES (STRICTLY ENFORCE):
-1. NEVER repeat any sentence, phrase, or concept twice
-2. Each piece of information should appear only ONCE in your response
-3. If multiple agents mention the same point, synthesize it into ONE unique sentence
-4. Vary your sentence structure to avoid repetitive patterns
-5. Never use the same medical term or concept redundantly
+CRITICAL ANTI-REPETITION RULES:
+1. NEVER, under any circumstances, repeat the same sentence twice
+2. NEVER duplicate any paragraph or section of text
+3. Each piece of information must appear exactly ONCE in your response
+4. If multiple sources say the same thing, combine into ONE unique sentence
+5. Vary sentence structure completely - avoid any repetitive patterns
+6. Do not restate information using different words
+7. STOP writing immediately if you find yourself about to repeat something
 
-RESPONSE REQUIREMENTS:
+RESPONSE STRUCTURE (NO REPETITION):
 - Maximum ${genSettings.maxTokens} tokens
-- Structure: Brief explanation → Practical example → Key steps → Next action
-- Use concrete, specific language
-- Avoid filler words and redundant explanations
-- Each bullet point must contain unique information
+- Single cohesive response with unique sentences only
+- Brief explanation → Practical example → Key steps → Next action
+- Each sentence must add NEW information
+- No redundant explanations or restatements
 
-QUALITY CHECK: Before finishing, scan your response to ensure no sentence or phrase appears twice.`
+FINAL CHECK: Review your complete response. If ANY sentence appears twice or conveys the same information as another sentence, you have FAILED the task.`
           },
           {
             role: "user",

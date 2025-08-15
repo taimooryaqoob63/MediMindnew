@@ -56,10 +56,12 @@ export async function getAITutorResponse(question: string, context?: string, use
 
 RESPONSE FORMAT REQUIREMENTS:
 - Keep responses concise (4-5 sentences maximum for explanation)
+- NEVER repeat any sentence, phrase, or concept
 - ALWAYS include a practical example from real care scenarios
 - Use bullet points for key steps or takeaways
 - Provide one clear action the user can take
 - Maximum 500 tokens for clinical responses, 600 for educational
+- Each sentence must contain unique information only
 
 STRUCTURE YOUR RESPONSE AS:
 1. Brief explanation (4-5 sentences)
