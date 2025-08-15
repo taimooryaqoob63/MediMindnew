@@ -611,6 +611,25 @@ CRITICAL REQUIREMENTS:
 
       let content = response.choices[0]?.message?.content || '';
       
+      // LOG RAW AI OUTPUT - Critical for debugging duplication source (INDIVIDUAL AGENT)
+      console.log(`=== RAW AI OUTPUT ANALYSIS (${agentType.toUpperCase()}) ===`);
+      console.log(`Raw ${agentType} AI response length:`, content.length);
+      console.log(`Raw ${agentType} AI content (first 500 chars):`, JSON.stringify(content.substring(0, 500)));
+      console.log(`Raw ${agentType} AI content (last 500 chars):`, JSON.stringify(content.substring(Math.max(0, content.length - 500))));
+      
+      // FORENSIC STRING ANALYSIS - Check for invisible characters
+      const forensicAnalysis = this.findStringDifference(content);
+      if (forensicAnalysis.hasIssues) {
+        console.log(`FORENSIC ANALYSIS DETECTED ISSUES IN ${agentType.toUpperCase()}:`, {
+          issues: forensicAnalysis.issues,
+          invisibleCharCount: forensicAnalysis.invisibleChars.length,
+          invisibleChars: forensicAnalysis.invisibleChars.slice(0, 10)
+        });
+        // Use forensically cleaned content
+        content = forensicAnalysis.normalizedContent;
+        console.log(`Using forensically normalized content for ${agentType}:`, content.length, 'chars');
+      }
+      
       // Apply deduplication to individual agent responses
       content = this.deduplicateContent(content);
       
@@ -740,6 +759,7 @@ CRITICAL REQUIREMENTS:
     }
 
     if (agentResponses.length === 1) {
+      console.log('Single agent response - no synthesis needed. Agent:', agentResponses[0].agentName);
       return agentResponses[0];
     }
 
