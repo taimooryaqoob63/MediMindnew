@@ -83,9 +83,8 @@ function finalDeduplication(content: string): string {
     }
   }
   
-  // STEP -0.6: Brute force search for any repeated pattern
+  // STEP -0.6: Enhanced pattern detection for user's exact duplication issue
   const contentWords = content.split(/\s+/);
-  const contentText = contentWords.join(' ');
   
   // Look for any substring that appears twice consecutively
   for (let wordCount = 20; wordCount <= Math.floor(contentWords.length / 2); wordCount += 5) {
@@ -96,6 +95,26 @@ function finalDeduplication(content: string): string {
       console.log('BRUTE FORCE PATTERN FOUND - word count:', wordCount);
       return formatHeadings(testChunk.trim());
     }
+  }
+  
+  // STEP -0.55: Direct check for the exact "Response text here. Response text here." pattern
+  const contentSentenceArray = content.split(/[.!?]+/).filter(s => s.trim().length > 5);
+  const normalizedSentenceArray = contentSentenceArray.map(s => normalizeText(s));
+  
+  // Check for any sentence that appears multiple times
+  const sentenceCounts = new Map<string, number>();
+  normalizedSentenceArray.forEach(sentence => {
+    if (sentence.length > 10) {
+      sentenceCounts.set(sentence, (sentenceCounts.get(sentence) || 0) + 1);
+    }
+  });
+  
+  // If any sentence appears more than once, keep only unique sentences
+  const hasDuplicateSentences = Array.from(sentenceCounts.values()).some(count => count > 1);
+  if (hasDuplicateSentences) {
+    console.log('SENTENCE-LEVEL DUPLICATION DETECTED - removing duplicate sentences');
+    const uniqueSentences = Array.from(new Set(normalizedSentenceArray));
+    return formatHeadings(uniqueSentences.join('. ') + '.');
   }
   
   // STEP -0.5: Simple substring repetition check
@@ -446,13 +465,18 @@ function removeUnwantedDisclaimers(content: string): string {
   return result.trim();
 }
 
-// Robust text normalization to catch invisible character differences
+// Enhanced robust normalization (Gemini's suggestion + more aggressive)
 function normalizeText(text: string): string {
   if (!text) return "";
   return text
     .replace(/\s+/g, ' ') // Collapse whitespace
     .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width spaces and BOM
+    .replace(/[\r\n]+/g, ' ') // Normalize different newline styles
     .replace(/[^\w\s.,!?'"-]/gi, '') // Remove most non-standard punctuation/symbols
+    .replace(/["'"]/g, '"') // Normalize quotes
+    .replace(/['']/g, "'") // Normalize apostrophes
+    .replace(/[–—]/g, '-') // Normalize dashes
+    .replace(/\u00A0/g, ' ') // Replace non-breaking spaces
     .trim()
     .toLowerCase();
 }
@@ -1041,9 +1065,25 @@ export function registerRAGRoutes(app: Express) {
         });
       }
 
-      // 4. Send the unified response
+      // 4. Send the unified response with final safety check
+      let finalContent = response.content || '';
+      
+      // One final check for any remaining duplicates before sending
+      if (finalContent.length > 200) {
+        const words = finalContent.split(' ');
+        const halfPoint = Math.floor(words.length / 2);
+        const firstHalf = words.slice(0, halfPoint).join(' ');
+        const secondHalf = words.slice(halfPoint).join(' ');
+        
+        if (normalizeText(firstHalf) === normalizeText(secondHalf)) {
+          console.log('FINAL SAFETY CHECK: Last-minute duplication caught!');
+          finalContent = firstHalf;
+        }
+      }
+      
       res.json({
         ...response,
+        content: finalContent,
         id: chatMessage.id,
         timestamp: chatMessage.timestamp,
         usedRAG

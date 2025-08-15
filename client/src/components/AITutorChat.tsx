@@ -53,21 +53,50 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     queryKey: ["/api/chat", courseId],
   });
 
-  // Deduplicate messages by id, and if no id, by message content and timestamp
+  // Robust text normalization function (from ChatGPT/Gemini suggestions)
+  const normalizeText = (str: string) => {
+    if (!str) return "";
+    return str
+      .replace(/\s+/g, ' ') // collapse whitespace
+      .replace(/\u200B/g, '') // remove zero-width spaces
+      .replace(/[\u200B-\u200D\uFEFF]/g, '') // remove zero-width spaces and BOM
+      .trim()
+      .toLowerCase();
+  };
+
+  // Enhanced message deduplication with normalization and longer timeout
   const messages = rawMessages.filter(
-    (msg, index, self) =>
-      index === self.findIndex(
+    (msg, index, self) => {
+      const isDuplicate = self.findIndex(
         (m) => {
           // First try to match by ID
           if (msg.id && m.id) {
             return m.id === msg.id;
           }
-          // Fallback: match by message content and similar timestamp (within 1 second)
+          // Fallback: match by normalized content with extended timeout (2s as suggested)
           const timeDiff = Math.abs(new Date(m.timestamp).getTime() - new Date(msg.timestamp).getTime());
-          return m.message === msg.message && m.response === msg.response && timeDiff < 1000;
+          const messageMatch = normalizeText(m.message) === normalizeText(msg.message);
+          const responseMatch = normalizeText(m.response) === normalizeText(msg.response);
+          const timeMatch = timeDiff < 2000;
+          
+          if (messageMatch && responseMatch && timeMatch && index !== self.indexOf(m)) {
+            console.log('FRONTEND: Duplicate detected and filtered:', {
+              original: m.response?.substring(0, 100) + '...',
+              duplicate: msg.response?.substring(0, 100) + '...',
+              timeDiff
+            });
+          }
+          
+          return messageMatch && responseMatch && timeMatch;
         }
-      )
+      );
+      
+      return index === isDuplicate;
+    }
   );
+  
+  // Additional logging for debugging
+  console.log('FRONTEND: Raw messages count:', rawMessages.length, 'Filtered messages count:', messages.length);
 
   // Initialize TTS and STT
   useEffect(() => {
@@ -122,6 +151,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       
       const result = await response.json();
       console.log('Unified chat response:', result); // Debug log
+      console.log('Response content preview:', result.content?.substring(0, 200) + '...');
       return result as ChatResponse;
     },
     onSuccess: (data) => {
@@ -133,8 +163,10 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         speakText(responseText);
       }
 
-      // Just refresh from server to get the actual saved message
-      queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
+      // Debounced query invalidation to prevent race conditions (ChatGPT suggestion)
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
+      }, 200);
     },
     onError: (error) => {
       console.error('Chat mutation error:', error);
