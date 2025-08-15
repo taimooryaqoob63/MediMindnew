@@ -183,9 +183,9 @@ export const RAG_CONFIG: {
     },
     
     citationRequirements: {
-      minCitationsRequired: 0,
-      requireOnlineSources: false,
-      mandatoryGuidelines: [],
+      minCitationsRequired: 1,
+      requireOnlineSources: true,
+      mandatoryGuidelines: ['NICE', 'NHS', 'CQC'],
     },
   },
   

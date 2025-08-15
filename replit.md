@@ -11,6 +11,8 @@ MediMind AI is a comprehensive diabetes care training platform designed for heal
 - **Added Example Requirements**: Every response must include a practical example from real scenarios
 - **Structured Format**: Encourages bullet points and clear takeaways (4-5 sentences max for explanation)
 - **Lower Temperature**: More focused, less verbose responses (0.3 vs 0.7 for all response types)
+- **Hidden Citation Warnings**: Citation enforcement remains fully functional and strict, but warning messages are hidden from users
+- **Citations Still Displayed**: Users see actual citations and sources, just not the validation warning text
 - **Consistent Format**: All responses now follow structured format:
   1. Brief explanation (4-5 sentences)
   2. Practical example: "For example: [specific scenario]"

@@ -144,10 +144,11 @@ export class EnhancedRagOrchestrator {
         user.id
       );
       
-      // Citation validation no longer adds warnings to user responses for better UX
+      // Citation validation affects confidence but warnings are not shown to users
       if (!citationValidation.isValid && finalResponse.confidence && finalResponse.confidence > 60) {
-        finalResponse.confidence = Math.max(citationValidation.confidence, 50);
-        // Recommendations are logged but not shown to users
+        finalResponse.confidence = Math.max(citationValidation.confidence, 30);
+        // Citation enforcement still works internally, but warning messages are not appended to user response
+        // The citations themselves will still be displayed, just not the warning text
       }
 
       // Step 10: Check for human escalation
