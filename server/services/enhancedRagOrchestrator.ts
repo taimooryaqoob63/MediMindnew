@@ -745,23 +745,38 @@ CRITICAL: You must reference and cite the source materials provided in your resp
     ).join('\n\n---\n\n');
 
     try {
+      // Get appropriate token limits based on query type
+      const queryType = analysis.requiresSpecialistKnowledge ? 'clinical' : 'educational';
+      const genSettings = getGenerationSettings(queryType);
+      
       const response = await this.openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system", 
-            content: "You are an expert healthcare information synthesizer. Combine the expert responses into a comprehensive, coherent answer. IMPORTANT: Always end your response with a 'References' section that explicitly lists the source materials mentioned by the experts, formatted as numbered citations."
+            content: `You are an expert healthcare information synthesizer. Your task:
+1. Combine expert responses into ONE coherent, non-repetitive answer
+2. NEVER repeat the same sentence or phrase twice
+3. Keep response concise (max ${genSettings.maxTokens} tokens)
+4. Include practical examples
+5. Use bullet points for key takeaways
+6. End with numbered references if sources are available
+
+CRITICAL: Avoid all repetition. Each sentence must be unique.`
           },
           {
             role: "user",
-            content: `Query Type: ${analysis.queryType}\nComplexity: ${analysis.complexity}\n\nExpert Responses:\n${agentOutputs}\n\nSynthesize these into a unified response.`
+            content: `Query Type: ${analysis.queryType}\nComplexity: ${analysis.complexity}\n\nExpert Responses:\n${agentOutputs}\n\nSynthesize into a unified, non-repetitive response.`
           }
         ],
-        temperature: 0.2,
-        max_tokens: 1200,
+        temperature: genSettings.temperature,
+        max_tokens: genSettings.maxTokens,
       });
 
       let synthesizedContent = response.choices[0]?.message?.content || agentResponses[0].content;
+      
+      // Additional deduplication check for sentences
+      synthesizedContent = this.deduplicateContent(synthesizedContent);
       
       const allSources = agentResponses.flatMap(r => r.sources);
       const uniqueSources = allSources.filter((source, index, array) => 
@@ -878,6 +893,25 @@ CRITICAL: You must reference and cite the source materials provided in your resp
     } catch (error) {
       console.error('Analytics logging error:', error);
     }
+  }
+
+  private deduplicateContent(content: string): string {
+    if (!content) return content;
+    
+    // Split content into sentences
+    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const uniqueSentences: string[] = [];
+    const seenSentences = new Set<string>();
+    
+    for (const sentence of sentences) {
+      const normalizedSentence = sentence.trim().toLowerCase();
+      if (normalizedSentence.length > 10 && !seenSentences.has(normalizedSentence)) {
+        seenSentences.add(normalizedSentence);
+        uniqueSentences.push(sentence.trim());
+      }
+    }
+    
+    return uniqueSentences.join('. ').replace(/\.\s*$/, '') + '.';
   }
 
   private formatCitationSection(sources: any[]): string {
