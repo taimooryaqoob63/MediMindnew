@@ -22,25 +22,38 @@ function finalDeduplication(content: string): string {
   
   // Check if content is repeated exactly (most common case)
   if (words.length > 20) {
-    const halfLength = Math.floor(words.length / 2);
-    const firstHalf = words.slice(0, halfLength).join(' ');
-    const secondHalf = words.slice(halfLength).join(' ');
-    
-    // Check for exact duplication
-    if (firstHalf === secondHalf) {
-      console.log('EXACT WORD-FOR-WORD DUPLICATION DETECTED - Using first half');
-      const originalWords = content.split(' ');
-      const resultWords = originalWords.slice(0, Math.floor(originalWords.length / 2));
-      return resultWords.join(' ').trim();
-    }
-    
-    // Check for duplication with slight variations (up to 95% similarity)
-    if (firstHalf.length > 50 && secondHalf.length > 50) {
-      const similarity = calculateTextSimilarity(firstHalf, secondHalf);
-      if (similarity > 0.9) {
-        console.log('NEAR-EXACT DUPLICATION DETECTED (similarity:', similarity, ') - Using first half');
+    // Try multiple split points to find duplication
+    for (let offset = -10; offset <= 10; offset++) {
+      const splitPoint = Math.floor(words.length / 2) + offset;
+      if (splitPoint < 10 || splitPoint > words.length - 10) continue;
+      
+      const firstPart = words.slice(0, splitPoint).join(' ');
+      const secondPart = words.slice(splitPoint).join(' ');
+      
+      // Check for exact duplication
+      if (firstPart === secondPart && firstPart.length > 100) {
+        console.log('EXACT WORD-FOR-WORD DUPLICATION DETECTED at offset', offset, '- Using first part');
         const originalWords = content.split(' ');
-        const resultWords = originalWords.slice(0, Math.floor(originalWords.length / 2));
+        const resultWords = originalWords.slice(0, splitPoint);
+        return resultWords.join(' ').trim();
+      }
+      
+      // Check for near-exact duplication
+      if (firstPart.length > 50 && secondPart.length > 50) {
+        const similarity = calculateTextSimilarity(firstPart, secondPart);
+        if (similarity > 0.85) {
+          console.log('NEAR-EXACT DUPLICATION DETECTED at offset', offset, '(similarity:', similarity, ') - Using first part');
+          const originalWords = content.split(' ');
+          const resultWords = originalWords.slice(0, splitPoint);
+          return resultWords.join(' ').trim();
+        }
+      }
+      
+      // Check if second part starts with first part (common pattern)
+      if (firstPart.length > 100 && secondPart.startsWith(firstPart.substring(0, 200))) {
+        console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part');
+        const originalWords = content.split(' ');
+        const resultWords = originalWords.slice(0, splitPoint);
         return resultWords.join(' ').trim();
       }
     }
@@ -89,7 +102,7 @@ function finalDeduplication(content: string): string {
     const matchRatio = matchCount / compareLength;
     console.log(`Sentence match ratio: ${matchRatio} (${matchCount}/${compareLength})`);
     
-    if (matchRatio > 0.5) { // Lowered threshold to 50%
+    if (matchRatio > 0.3) { // Even lower threshold 
       console.log('MAJOR SENTENCE DUPLICATION DETECTED - Using first half only');
       const firstHalfSentences = sentences.slice(0, halfPoint);
       return firstHalfSentences.join(' ').trim();
@@ -101,6 +114,17 @@ function finalDeduplication(content: string): string {
       console.log('FIRST SENTENCE DUPLICATION DETECTED - Using first half only');
       const firstHalfSentences = sentences.slice(0, halfPoint);
       return firstHalfSentences.join(' ').trim();
+    }
+    
+    // Check for any exact sentence matches between halves
+    for (let i = 0; i < Math.min(firstHalfNorm.length, 3); i++) {
+      for (let j = 0; j < Math.min(secondHalfNorm.length, 3); j++) {
+        if (firstHalfNorm[i].length > 30 && firstHalfNorm[i] === secondHalfNorm[j]) {
+          console.log('MATCHING SENTENCE FOUND between halves - Using first half only');
+          const firstHalfSentences = sentences.slice(0, halfPoint);
+          return firstHalfSentences.join(' ').trim();
+        }
+      }
     }
   }
   
