@@ -134,15 +134,15 @@ export const RAG_CONFIG: {
   
   generation: {
     clinical: {
-      temperature: 0.1,
+      temperature: 0.3,
       topP: 0.9,
-      maxTokens: 1000,
+      maxTokens: 500,
       model: 'gpt-4o',
     },
     educational: {
-      temperature: 0.2,
+      temperature: 0.3,
       topP: 0.9,
-      maxTokens: 1200,
+      maxTokens: 600,
       model: 'gpt-4o',
     },
     emergency: {

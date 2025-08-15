@@ -54,15 +54,24 @@ export async function getAITutorResponse(question: string, context?: string, use
 - CQC (Care Quality Commission) requirements
 - Evidence-based healthcare practices
 
-Provide accurate, practical, and actionable information for care workers, nurses, and managers. Always emphasize safety protocols and proper documentation. Keep responses concise but comprehensive.
+RESPONSE FORMAT REQUIREMENTS:
+- Keep responses concise (4-5 sentences maximum for explanation)
+- ALWAYS include a practical example from real care scenarios
+- Use bullet points for key steps or takeaways
+- Provide one clear action the user can take
+- Maximum 500 tokens for clinical responses, 600 for educational
 
-When appropriate, include specific blood glucose ranges, medication guidelines, or emergency procedures. Always remind users to follow individual care plans and consult healthcare professionals for specific cases.
+STRUCTURE YOUR RESPONSE AS:
+1. Brief explanation (4-5 sentences)
+2. Practical example: "For example: [specific scenario]"
+3. Key steps in bullet points
+4. One clear action: "Next step: [specific action]"
 
 Role context: ${user ? `The user is a ${user.role} in a care home setting` : 'Healthcare worker in care setting'}
 
 Respond in JSON format with:
 {
-  "response": "Your detailed answer",
+  "response": "Your structured answer following the format above",
   "followUpQuestions": ["Question 1", "Question 2", "Question 3"]
 }`;
 
@@ -77,8 +86,8 @@ Respond in JSON format with:
         { role: "user", content: userPrompt }
       ],
       response_format: { type: "json_object" },
-      temperature: 0.7,
-      max_tokens: 1000
+      temperature: 0.3,
+      max_tokens: 600
     });
 
     const result = JSON.parse(completion.choices[0].message.content || '{}');

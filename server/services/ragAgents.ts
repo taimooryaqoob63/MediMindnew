@@ -192,6 +192,19 @@ User Role: ${user.role}
 Query Complexity: ${analysis.complexity}
 Requires Specialist Knowledge: ${analysis.requiresSpecialistKnowledge}
 
+RESPONSE FORMAT REQUIREMENTS:
+- Keep responses concise (4-5 sentences maximum for explanation)
+- ALWAYS include a practical example from real care scenarios
+- Use bullet points for key steps or takeaways
+- Provide one clear action the user can take
+- Maximum 500 tokens for clinical responses, 600 for educational
+
+STRUCTURE YOUR RESPONSE AS:
+1. Brief explanation (4-5 sentences)
+2. Practical example: "For example: [specific scenario]"
+3. Key steps in bullet points
+4. One clear action: "Next step: [specific action]"
+
 Guidelines:
 - Base responses on NICE guidelines, NHS practices, and CQC requirements
 - Provide practical, actionable advice appropriate for the user's role
@@ -204,7 +217,7 @@ ${context}
 
 Respond in JSON format with:
 {
-  "content": "Your detailed response",
+  "content": "Your structured response following the format above",
   "confidence": 0-100,
   "agentName": "response_generator",
   "followUpQuestions": ["Question 1", "Question 2", "Question 3"]
