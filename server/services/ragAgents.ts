@@ -268,33 +268,38 @@ Respond in JSON format with:
   private deduplicateContent(content: string): string {
     if (!content) return content;
     
-    // First, remove exact duplicate sentences that appear consecutively
+    // Step 1: Remove exact consecutive duplicates
     content = content.replace(/(.{20,}?[.!?])\s*\1+/gi, '$1');
     
-    // Split content into sentences
-    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const uniqueSentences: string[] = [];
-    const seenSentences = new Set<string>();
+    // Step 2: More aggressive duplicate detection
+    const sentenceParts = content.split(/([.!?]+)/);
+    const rebuiltContent: string[] = [];
+    const seenNormalized = new Set<string>();
     
-    for (const sentence of sentences) {
-      const cleanSentence = sentence.trim();
-      if (cleanSentence.length < 10) continue;
+    for (let i = 0; i < sentenceParts.length; i += 2) {
+      const sentence = sentenceParts[i]?.trim();
+      const punctuation = sentenceParts[i + 1] || '';
       
-      // Normalize for comparison (remove extra spaces, punctuation, case)
-      const normalizedSentence = cleanSentence.toLowerCase()
+      if (!sentence || sentence.length < 15) {
+        if (sentence) rebuiltContent.push(sentence + punctuation);
+        continue;
+      }
+      
+      // Create a normalized version for comparison
+      const normalized = sentence.toLowerCase()
         .replace(/[^\w\s]/g, '')
         .replace(/\s+/g, ' ')
+        .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by)\b/g, '')
         .trim();
       
-      if (!seenSentences.has(normalizedSentence)) {
-        seenSentences.add(normalizedSentence);
-        uniqueSentences.push(cleanSentence);
+      // Skip duplicates
+      if (!seenNormalized.has(normalized)) {
+        seenNormalized.add(normalized);
+        rebuiltContent.push(sentence + punctuation);
       }
     }
     
-    // Rejoin sentences properly
-    const result = uniqueSentences.join('. ');
-    return result.endsWith('.') ? result : result + '.';
+    return rebuiltContent.join('');
   }
 
   private async qualityAssurance(

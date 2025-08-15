@@ -905,33 +905,46 @@ CRITICAL: Avoid all repetition. Each sentence must be unique.`
   private deduplicateContent(content: string): string {
     if (!content) return content;
     
-    // First, remove exact duplicate sentences that appear consecutively
+    // Log original content for debugging
+    console.log('Deduplication input:', content.substring(0, 200) + '...');
+    
+    // Step 1: Remove exact consecutive duplicates (handles copy-paste scenarios)
     content = content.replace(/(.{20,}?[.!?])\s*\1+/gi, '$1');
     
-    // Split content into sentences
-    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const uniqueSentences: string[] = [];
-    const seenSentences = new Set<string>();
+    // Step 2: More aggressive duplicate detection
+    // Split by sentence-ending punctuation, preserving the punctuation
+    const sentenceParts = content.split(/([.!?]+)/);
+    const rebuiltContent: string[] = [];
+    const seenNormalized = new Set<string>();
     
-    for (const sentence of sentences) {
-      const cleanSentence = sentence.trim();
-      if (cleanSentence.length < 10) continue;
+    for (let i = 0; i < sentenceParts.length; i += 2) {
+      const sentence = sentenceParts[i]?.trim();
+      const punctuation = sentenceParts[i + 1] || '';
       
-      // Normalize for comparison (remove extra spaces, punctuation, case)
-      const normalizedSentence = cleanSentence.toLowerCase()
+      if (!sentence || sentence.length < 15) {
+        if (sentence) rebuiltContent.push(sentence + punctuation);
+        continue;
+      }
+      
+      // Create a normalized version for comparison
+      const normalized = sentence.toLowerCase()
         .replace(/[^\w\s]/g, '')
         .replace(/\s+/g, ' ')
+        .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by)\b/g, '')
         .trim();
       
-      if (!seenSentences.has(normalizedSentence)) {
-        seenSentences.add(normalizedSentence);
-        uniqueSentences.push(cleanSentence);
+      // Skip if we've seen this normalized sentence before
+      if (!seenNormalized.has(normalized)) {
+        seenNormalized.add(normalized);
+        rebuiltContent.push(sentence + punctuation);
+      } else {
+        console.log('Duplicate detected and removed:', sentence.substring(0, 50) + '...');
       }
     }
     
-    // Rejoin sentences properly
-    const result = uniqueSentences.join('. ');
-    return result.endsWith('.') ? result : result + '.';
+    const result = rebuiltContent.join('');
+    console.log('Deduplication output:', result.substring(0, 200) + '...');
+    return result;
   }
 
   private formatCitationSection(sources: any[]): string {

@@ -10,6 +10,54 @@ import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 
+// Final deduplication function as safety net
+function finalDeduplication(content: string): string {
+  if (!content) return content;
+  
+  console.log('Final deduplication applied to:', content.substring(0, 100) + '...');
+  
+  // Remove exact consecutive duplicates with regex
+  content = content.replace(/(.{15,}?[.!?])\s*\1+/gi, '$1');
+  
+  // Split by sentences and check for near-duplicates
+  const sentenceParts = content.split(/([.!?]+)/);
+  const rebuiltContent: string[] = [];
+  const seenNormalized = new Set<string>();
+  
+  for (let i = 0; i < sentenceParts.length; i += 2) {
+    const sentence = sentenceParts[i]?.trim();
+    const punctuation = sentenceParts[i + 1] || '';
+    
+    if (!sentence || sentence.length < 10) {
+      if (sentence) rebuiltContent.push(sentence + punctuation);
+      continue;
+    }
+    
+    // Very aggressive normalization
+    const normalized = sentence.toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were)\b/g, '')
+      .trim();
+    
+    if (normalized.length < 5) {
+      rebuiltContent.push(sentence + punctuation);
+      continue;
+    }
+    
+    if (!seenNormalized.has(normalized)) {
+      seenNormalized.add(normalized);
+      rebuiltContent.push(sentence + punctuation);
+    } else {
+      console.log('FINAL DEDUP: Removed duplicate sentence:', sentence.substring(0, 50) + '...');
+    }
+  }
+  
+  const result = rebuiltContent.join('');
+  console.log('Final result length:', result.length, 'vs original:', content.length);
+  return result;
+}
+
 // Configure multer for document uploads
 const documentStorage = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -219,6 +267,11 @@ export function registerRAGRoutes(app: Express) {
         courseId, 
         conversationHistory
       );
+
+      // Final deduplication before sending to user (safety net)
+      if (response.content) {
+        response.content = finalDeduplication(response.content);
+      }
 
       // Store the enhanced chat message
       const chatMessage = await storage.createRagChatMessage({
