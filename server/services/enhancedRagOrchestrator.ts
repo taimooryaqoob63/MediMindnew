@@ -80,6 +80,8 @@ export class EnhancedRagOrchestrator {
   ): Promise<ChatResponse> {
     const startTime = Date.now();
     
+    console.log('🔍 RAG PROCESSING STARTED - Query:', query.substring(0, 100) + '...');
+    
     try {
       // Step 1: Enhanced emergency and intent detection
       const intentAnalysis = await nlpIntentDetector.analyzeIntent(query, conversationHistory?.join('\n'));
@@ -92,6 +94,9 @@ export class EnhancedRagOrchestrator {
       // Step 2: Check cache
       const cacheResult = await this.checkQueryCache(query);
       if (cacheResult) {
+        console.log('⚡ CACHE HIT - Returning cached response. Content length:', cacheResult.content.length);
+        console.log('⚡ CACHED CONTENT PREVIEW:', cacheResult.content.substring(0, 200) + '...');
+        
         await this.logAnalytics({
           eventType: 'cache_hit',
           userId: user.id,
@@ -106,6 +111,8 @@ export class EnhancedRagOrchestrator {
         }
         return cacheResult;
       }
+      
+      console.log('🚀 NO CACHE - Proceeding with full RAG processing');
 
       // Step 3: Intent analysis
       const analysis = await this.analyzeQueryWithIntent(query, user);
@@ -120,6 +127,7 @@ export class EnhancedRagOrchestrator {
       const selectedAgents = this.pruneAgents(analysis);
 
       // Step 7: Parallel processing
+      console.log('🤖 PROCESSING AGENTS:', selectedAgents, 'for query type:', analysis.queryType);
       const agentResponses = await this.processAgentsInParallel(
         query, 
         retrievalResult, 
@@ -128,13 +136,16 @@ export class EnhancedRagOrchestrator {
         selectedAgents,
         agentContext
       );
+      console.log('✅ AGENT RESPONSES RECEIVED:', agentResponses.length, 'responses');
 
       // Step 8: Synthesize response
+      console.log('🔧 SYNTHESIZING FINAL RESPONSE from', agentResponses.length, 'agent responses');
       const finalResponse = await this.synthesizeFinalResponse(
         agentResponses, 
         analysis, 
         retrievalResult
       );
+      console.log('🎯 SYNTHESIS COMPLETE - Final content length:', finalResponse.content.length);
 
       // Step 9: Enhanced citation validation with audit trail
       const citationValidation = await citationEnforcementService.validateCitations(
