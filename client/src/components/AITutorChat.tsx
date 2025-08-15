@@ -53,11 +53,19 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     queryKey: ["/api/chat", courseId],
   });
 
-  // Deduplicate messages by id or timestamp
+  // Deduplicate messages by id, and if no id, by message content and timestamp
   const messages = rawMessages.filter(
     (msg, index, self) =>
       index === self.findIndex(
-        (m) => m.id === msg.id || m.timestamp === msg.timestamp
+        (m) => {
+          // First try to match by ID
+          if (msg.id && m.id) {
+            return m.id === msg.id;
+          }
+          // Fallback: match by message content and similar timestamp (within 1 second)
+          const timeDiff = Math.abs(new Date(m.timestamp).getTime() - new Date(msg.timestamp).getTime());
+          return m.message === msg.message && m.response === msg.response && timeDiff < 1000;
+        }
       )
   );
 
@@ -120,19 +128,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       }
     },
     onSuccess: (data) => {
-      // Append message locally to avoid double-render from query invalidation
-      queryClient.setQueryData<ChatMessage[]>(["/api/chat", courseId], (old = []) => [
-        ...old,
-        {
-          id: crypto.randomUUID(),
-          userId: "temp-user", // Will be replaced by server data
-          courseId: courseId,
-          message: inputMessage.trim(),
-          response: data.response || data.content || "",
-          timestamp: new Date().toISOString()
-        }
-      ]);
-
       setInputMessage("");
 
       // Speak AI response if enabled
@@ -141,7 +136,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         speakText(responseText);
       }
 
-      // Now refresh from server (backend will overwrite if needed)
+      // Just refresh from server to get the actual saved message
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
     },
     onError: (error) => {
