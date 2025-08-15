@@ -583,10 +583,13 @@ Provide JSON response with:
     const systemPrompt = agentPrompts[agentType] || agentPrompts.learning_facilitator;
     const contextWindow = this.buildContextWindow(retrieval.sources, analysis);
     
-    // Enhance system prompt to emphasize citation requirements
+    // Enhance system prompt to emphasize citation requirements and prevent repetition
     const enhancedSystemPrompt = `${systemPrompt}
 
-CRITICAL: You must reference and cite the source materials provided in your response. When mentioning information from the context, explicitly reference it (e.g., "According to the NICE guidelines provided..." or "As stated in the NHS documentation..."). This is essential for medical accuracy and compliance.`;
+CRITICAL REQUIREMENTS:
+1. You must reference and cite the source materials provided in your response. When mentioning information from the context, explicitly reference it (e.g., "According to the NICE guidelines provided..." or "As stated in the NHS documentation..."). This is essential for medical accuracy and compliance.
+2. NEVER repeat the same sentence, phrase, or information twice in your response. Each sentence must be unique and add new value.
+3. Keep responses concise and eliminate redundancy.`;
 
     try {
       // Get appropriate generation settings based on query analysis
@@ -606,7 +609,11 @@ CRITICAL: You must reference and cite the source materials provided in your resp
         max_tokens: generationSettings.maxTokens,
       });
 
-      const content = response.choices[0]?.message?.content || '';
+      let content = response.choices[0]?.message?.content || '';
+      
+      // Apply deduplication to individual agent responses
+      content = this.deduplicateContent(content);
+      
       const tokenUsage = {
         prompt: response.usage?.prompt_tokens || 0,
         completion: response.usage?.completion_tokens || 0,
@@ -898,20 +905,33 @@ CRITICAL: Avoid all repetition. Each sentence must be unique.`
   private deduplicateContent(content: string): string {
     if (!content) return content;
     
+    // First, remove exact duplicate sentences that appear consecutively
+    content = content.replace(/(.{20,}?[.!?])\s*\1+/gi, '$1');
+    
     // Split content into sentences
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
     const uniqueSentences: string[] = [];
     const seenSentences = new Set<string>();
     
     for (const sentence of sentences) {
-      const normalizedSentence = sentence.trim().toLowerCase();
-      if (normalizedSentence.length > 10 && !seenSentences.has(normalizedSentence)) {
+      const cleanSentence = sentence.trim();
+      if (cleanSentence.length < 10) continue;
+      
+      // Normalize for comparison (remove extra spaces, punctuation, case)
+      const normalizedSentence = cleanSentence.toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (!seenSentences.has(normalizedSentence)) {
         seenSentences.add(normalizedSentence);
-        uniqueSentences.push(sentence.trim());
+        uniqueSentences.push(cleanSentence);
       }
     }
     
-    return uniqueSentences.join('. ').replace(/\.\s*$/, '') + '.';
+    // Rejoin sentences properly
+    const result = uniqueSentences.join('. ');
+    return result.endsWith('.') ? result : result + '.';
   }
 
   private formatCitationSection(sources: any[]): string {

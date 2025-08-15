@@ -199,6 +199,8 @@ RESPONSE FORMAT REQUIREMENTS:
 - Use bullet points for key steps or takeaways
 - Provide one clear action the user can take
 - Maximum 500 tokens for clinical responses, 600 for educational
+- NEVER repeat the same sentence, phrase, or information twice
+- Each sentence must be unique and add new value
 
 STRUCTURE YOUR RESPONSE AS:
 1. Brief explanation (4-5 sentences)
@@ -242,8 +244,12 @@ Respond in JSON format with:
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
       
+      // Apply deduplication to prevent repetitive sentences
+      let content = result.content || "I couldn't generate a proper response.";
+      content = this.deduplicateContent(content);
+      
       return {
-        content: result.content || "I couldn't generate a proper response.",
+        content,
         confidence: result.confidence || 50,
         sources: [],
         agentName: result.agentName || 'response_generator'
@@ -257,6 +263,38 @@ Respond in JSON format with:
         agentName: 'response_generator'
       };
     }
+  }
+
+  private deduplicateContent(content: string): string {
+    if (!content) return content;
+    
+    // First, remove exact duplicate sentences that appear consecutively
+    content = content.replace(/(.{20,}?[.!?])\s*\1+/gi, '$1');
+    
+    // Split content into sentences
+    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const uniqueSentences: string[] = [];
+    const seenSentences = new Set<string>();
+    
+    for (const sentence of sentences) {
+      const cleanSentence = sentence.trim();
+      if (cleanSentence.length < 10) continue;
+      
+      // Normalize for comparison (remove extra spaces, punctuation, case)
+      const normalizedSentence = cleanSentence.toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (!seenSentences.has(normalizedSentence)) {
+        seenSentences.add(normalizedSentence);
+        uniqueSentences.push(cleanSentence);
+      }
+    }
+    
+    // Rejoin sentences properly
+    const result = uniqueSentences.join('. ');
+    return result.endsWith('.') ? result : result + '.';
   }
 
   private async qualityAssurance(
