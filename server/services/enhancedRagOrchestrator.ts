@@ -80,7 +80,6 @@ export class EnhancedRagOrchestrator {
   ): Promise<ChatResponse> {
     const startTime = Date.now();
     
-    console.log('🔍 RAG PROCESSING STARTED - Query:', query.substring(0, 100) + '...');
     
     try {
       // Step 1: Enhanced emergency and intent detection
@@ -94,8 +93,6 @@ export class EnhancedRagOrchestrator {
       // Step 2: Check cache
       const cacheResult = await this.checkQueryCache(query);
       if (cacheResult) {
-        console.log('⚡ CACHE HIT - Returning cached response. Content length:', cacheResult.content.length);
-        console.log('⚡ CACHED CONTENT PREVIEW:', cacheResult.content.substring(0, 200) + '...');
         
         await this.logAnalytics({
           eventType: 'cache_hit',
@@ -112,7 +109,6 @@ export class EnhancedRagOrchestrator {
         return cacheResult;
       }
       
-      console.log('🚀 NO CACHE - Proceeding with full RAG processing');
 
       // Step 3: Intent analysis
       const analysis = await this.analyzeQueryWithIntent(query, user);
@@ -127,7 +123,6 @@ export class EnhancedRagOrchestrator {
       const selectedAgents = this.pruneAgents(analysis);
 
       // Step 7: Parallel processing
-      console.log('🤖 PROCESSING AGENTS:', selectedAgents, 'for query type:', analysis.queryType);
       const agentResponses = await this.processAgentsInParallel(
         query, 
         retrievalResult, 
@@ -136,16 +131,13 @@ export class EnhancedRagOrchestrator {
         selectedAgents,
         agentContext
       );
-      console.log('✅ AGENT RESPONSES RECEIVED:', agentResponses.length, 'responses');
 
       // Step 8: Synthesize response
-      console.log('🔧 SYNTHESIZING FINAL RESPONSE from', agentResponses.length, 'agent responses');
       const finalResponse = await this.synthesizeFinalResponse(
         agentResponses, 
         analysis, 
         retrievalResult
       );
-      console.log('🎯 SYNTHESIS COMPLETE - Final content length:', finalResponse.content.length);
 
       // Step 9: Enhanced citation validation with audit trail
       const citationValidation = await citationEnforcementService.validateCitations(
@@ -597,10 +589,19 @@ Provide JSON response with:
     // Enhance system prompt to emphasize citation requirements and prevent repetition
     const enhancedSystemPrompt = `${systemPrompt}
 
-CRITICAL REQUIREMENTS:
-1. You must reference and cite the source materials provided in your response. When mentioning information from the context, explicitly reference it (e.g., "According to the NICE guidelines provided..." or "As stated in the NHS documentation..."). This is essential for medical accuracy and compliance.
-2. NEVER repeat the same sentence, phrase, or information twice in your response. Each sentence must be unique and add new value.
-3. Keep responses concise and eliminate redundancy.`;
+CRITICAL ANTI-REPETITION REQUIREMENTS:
+1. NEVER repeat any sentence, phrase, concept, or information even slightly
+2. Each sentence must contain completely unique information
+3. If you find yourself about to repeat something, STOP writing instead
+4. Vary sentence structure completely - no repetitive patterns
+5. Do not rephrase the same idea using different words
+6. Maximum response length: 300 tokens to prevent over-elaboration
+
+CITATION REQUIREMENTS:
+7. Reference source materials when available (e.g., "According to NICE guidelines...")
+8. Keep citations brief and integrated naturally
+
+STRUCTURE: Brief definition → Key clinical relevance → Practical application → STOP`;
 
     try {
       // Get appropriate generation settings based on query analysis
@@ -615,31 +616,16 @@ CRITICAL REQUIREMENTS:
             content: `Context from authoritative sources: ${contextWindow}\n\nUser Role: ${user.role}\n\nQuery: ${query}\n\nProvide a comprehensive response based on the available context. Remember to cite the sources and include specific guidance from NICE, NHS, or CQC documentation when available.`
           }
         ],
-        temperature: generationSettings.temperature,
-        top_p: generationSettings.topP,
-        max_tokens: generationSettings.maxTokens,
+        temperature: 0.3, // Increased from very low to allow some creativity in avoiding repetition
+        top_p: 0.7, // Increased to allow more diverse token selection
+        max_tokens: 300, // Reduced to force conciseness
+        presence_penalty: 2.0, // Maximum penalty for using same topics
+        frequency_penalty: 2.0, // Maximum penalty for repeating tokens
+        stop: ["\n\nFor more", "Additionally", "Furthermore", "Moreover", "In addition", "Also", "As mentioned", "As stated above"], // Stop common repetition triggers
       });
 
       let content = response.choices[0]?.message?.content || '';
       
-      // LOG RAW AI OUTPUT - Critical for debugging duplication source (INDIVIDUAL AGENT)
-      console.log(`=== RAW AI OUTPUT ANALYSIS (${agentType.toUpperCase()}) ===`);
-      console.log(`Raw ${agentType} AI response length:`, content.length);
-      console.log(`Raw ${agentType} AI content (first 500 chars):`, JSON.stringify(content.substring(0, 500)));
-      console.log(`Raw ${agentType} AI content (last 500 chars):`, JSON.stringify(content.substring(Math.max(0, content.length - 500))));
-      
-      // FORENSIC STRING ANALYSIS - Check for invisible characters
-      const forensicAnalysis = this.findStringDifference(content);
-      if (forensicAnalysis.hasIssues) {
-        console.log(`FORENSIC ANALYSIS DETECTED ISSUES IN ${agentType.toUpperCase()}:`, {
-          issues: forensicAnalysis.issues,
-          invisibleCharCount: forensicAnalysis.invisibleChars.length,
-          invisibleChars: forensicAnalysis.invisibleChars.slice(0, 10)
-        });
-        // Use forensically cleaned content
-        content = forensicAnalysis.normalizedContent;
-        console.log(`Using forensically normalized content for ${agentType}:`, content.length, 'chars');
-      }
       
       // Apply deduplication to individual agent responses
       content = this.deduplicateContent(content);
@@ -770,7 +756,6 @@ CRITICAL REQUIREMENTS:
     }
 
     if (agentResponses.length === 1) {
-      console.log('Single agent response - no synthesis needed. Agent:', agentResponses[0].agentName);
       return agentResponses[0];
     }
 
@@ -794,20 +779,20 @@ CRITICAL REQUIREMENTS:
             role: "system", 
             content: `You are an expert healthcare information synthesizer. Your critical task:
 
-CRITICAL ANTI-REPETITION RULES:
-1. NEVER, under any circumstances, repeat the same sentence twice
-2. NEVER duplicate any paragraph or section of text
-3. Each piece of information must appear exactly ONCE in your response
-4. If multiple sources say the same thing, combine into ONE unique sentence
-5. Vary sentence structure completely - avoid any repetitive patterns
-6. Do not restate information using different words
-7. STOP writing immediately if you find yourself about to repeat something
+ULTRA-STRICT ANTI-REPETITION PROTOCOL:
+1. Every sentence must contain COMPLETELY NEW information
+2. IMMEDIATELY STOP if you start to repeat any concept, even in different words
+3. Maximum 250 tokens - force extreme conciseness
+4. NO transition phrases that encourage repetition ("Furthermore", "Additionally", "Also")
+5. NO elaboration or expansion of already stated points
+6. ONE concept per sentence, move on immediately
+7. If sources repeat information, synthesize into ONE unique statement only
 
-RESPONSE STRUCTURE (NO REPETITION):
-- Maximum ${genSettings.maxTokens} tokens
-- Single cohesive response with unique sentences only
-- Brief explanation → Practical example → Key steps → Next action
-- Each sentence must add NEW information
+MANDATORY STRUCTURE:
+- Core definition (1 sentence)
+- Clinical significance (1-2 sentences)
+- Practical application (1-2 sentences)
+- STOP - do not elaborate further
 - No redundant explanations or restatements
 
 FINAL CHECK: Review your complete response. If ANY sentence appears twice or conveys the same information as another sentence, you have FAILED the task.`
