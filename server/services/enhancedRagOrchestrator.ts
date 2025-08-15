@@ -796,6 +796,21 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
 
       let synthesizedContent = response.choices[0]?.message?.content || agentResponses[0].content;
       
+      // LOG RAW AI OUTPUT - Critical for debugging duplication source
+      console.log('=== RAW AI OUTPUT ANALYSIS ===');
+      console.log('Raw AI response length:', synthesizedContent.length);
+      console.log('Raw AI content (first 500 chars):', JSON.stringify(synthesizedContent.substring(0, 500)));
+      console.log('Raw AI content (last 500 chars):', JSON.stringify(synthesizedContent.substring(Math.max(0, synthesizedContent.length - 500))));
+      
+      // FORENSIC STRING ANALYSIS - Check for invisible characters
+      const forensicAnalysis = this.findStringDifference(synthesizedContent);
+      if (forensicAnalysis.hasIssues) {
+        console.log('FORENSIC ANALYSIS DETECTED ISSUES:', forensicAnalysis);
+        // Use normalized content if issues were found
+        synthesizedContent = forensicAnalysis.normalizedContent;
+        console.log('Using forensically normalized content:', synthesizedContent.length, 'chars');
+      }
+      
       console.log('Pre-deduplication synthesized content length:', synthesizedContent.length);
       
       // Apply immediate aggressive deduplication to synthesized content
@@ -929,6 +944,13 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
     console.log('Deduplication input length:', content.length);
     console.log('Content preview:', content.substring(0, 200) + '...');
     
+    // Additional forensic analysis for duplication tracing
+    const hasNonAscii = /[^\x20-\x7E]/.test(content);
+    const charCodes = content.split('').map(c => c.charCodeAt(0)).filter(c => c > 127).slice(0, 20);
+    if (hasNonAscii) {
+      console.log('Non-ASCII characters detected. First 20 codes:', charCodes);
+    }
+    
     // STEP 1: Ultra-aggressive exact duplication detection
     const words = content.split(/\s+/);
     if (words.length > 30) {
@@ -997,8 +1019,11 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
         continue;
       }
       
-      // Aggressive normalization
+      // Aggressive normalization with forensic cleaning
       const normalized = sentence.toLowerCase()
+        .replace(/[\u200B-\u200D\uFEFF\u2060\u2061]/g, '') // Remove zero-width chars
+        .replace(/[\u00A0]/g, ' ') // Replace non-breaking spaces
+        .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Replace unusual spaces
         .replace(/[^\w\s]/g, '')
         .replace(/\s+/g, ' ')
         .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this)\b/g, '')
@@ -1092,7 +1117,11 @@ ${citations}
     const seenLines = new Set<string>();
     
     for (const line of lines) {
-      const normalized = line.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+      const normalized = line.toLowerCase()
+        .replace(/[\u200B-\u200D\uFEFF\u2060\u2061]/g, '') // Remove zero-width chars
+        .replace(/[\u00A0]/g, ' ') // Replace non-breaking spaces
+        .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Replace unusual spaces
+        .replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
       if (normalized.length > 10 && !seenLines.has(normalized)) {
         seenLines.add(normalized);
         uniqueLines.push(line);
@@ -1110,7 +1139,11 @@ ${citations}
     console.log('AGGRESSIVE DEDUPLICATION - Input length:', content.length);
     
     // Step 1: Check for exact half-duplication (most common case)
-    const normalizedContent = content.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const normalizedContent = content.toLowerCase()
+      .replace(/[\u200B-\u200D\uFEFF\u2060\u2061]/g, '') // Remove zero-width chars
+      .replace(/[\u00A0]/g, ' ') // Replace non-breaking spaces
+      .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Replace unusual spaces
+      .replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
     const words = normalizedContent.split(' ');
     
     if (words.length > 40) {
@@ -1162,6 +1195,87 @@ ${citations}
     console.log('AGGRESSIVE DEDUPLICATION - Output length:', result.length, 'reduction:', Math.round((1 - result.length / content.length) * 100) + '%');
     
     return result;
+  }
+
+  /**
+   * Forensic String Analysis - Detects invisible characters and text anomalies
+   * that might be breaking deduplication logic
+   */
+  private findStringDifference(content: string): {
+    hasIssues: boolean;
+    invisibleChars: Array<{char: string, code: number, position: number}>;
+    normalizedContent: string;
+    issues: string[];
+  } {
+    const issues: string[] = [];
+    const invisibleChars: Array<{char: string, code: number, position: number}> = [];
+    
+    // Check for invisible/problematic characters
+    for (let i = 0; i < content.length; i++) {
+      const char = content[i];
+      const charCode = char.charCodeAt(0);
+      
+      // Check for various invisible/problematic characters
+      if (
+        charCode === 8203 || // Zero-width space
+        charCode === 8204 || // Zero-width non-joiner
+        charCode === 8205 || // Zero-width joiner
+        charCode === 65279 || // Byte order mark
+        charCode === 8288 || // Word joiner
+        charCode === 8289 || // Function application
+        (charCode >= 8206 && charCode <= 8207) || // Left-to-right/Right-to-left marks
+        (charCode >= 8234 && charCode <= 8238) || // Directional formatting characters
+        charCode === 160 || // Non-breaking space
+        charCode === 173 // Soft hyphen
+      ) {
+        invisibleChars.push({
+          char: char,
+          code: charCode,
+          position: i
+        });
+      }
+    }
+    
+    if (invisibleChars.length > 0) {
+      issues.push(`Found ${invisibleChars.length} invisible characters`);
+    }
+    
+    // Check for unusual whitespace patterns
+    const unusualWhitespace = content.match(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g);
+    if (unusualWhitespace) {
+      issues.push(`Found ${unusualWhitespace.length} unusual whitespace characters`);
+    }
+    
+    // Check for repeated identical chunks (forensic duplicate detection)
+    const words = content.split(/\s+/);
+    if (words.length > 20) {
+      const midPoint = Math.floor(words.length / 2);
+      const firstHalf = words.slice(0, midPoint).join(' ');
+      const secondHalf = words.slice(midPoint).join(' ');
+      
+      if (firstHalf === secondHalf) {
+        issues.push('Detected exact duplicate halves in content');
+      } else if (secondHalf.startsWith(firstHalf.substring(0, 100))) {
+        issues.push('Detected potential partial duplication pattern');
+      }
+    }
+    
+    // Normalize content by removing invisible characters
+    const normalizedContent = content
+      .replace(/[\u200B-\u200D\uFEFF\u2060\u2061]/g, '') // Remove zero-width chars
+      .replace(/[\u00A0]/g, ' ') // Replace non-breaking spaces with regular spaces
+      .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Replace unusual spaces
+      .replace(/[\u00AD]/g, '') // Remove soft hyphens
+      .replace(/[\u202A-\u202E]/g, '') // Remove directional marks
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+    
+    return {
+      hasIssues: issues.length > 0,
+      invisibleChars,
+      normalizedContent,
+      issues
+    };
   }
 }
 
