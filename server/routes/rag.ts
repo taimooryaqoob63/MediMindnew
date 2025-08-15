@@ -31,14 +31,33 @@ function finalDeduplication(content: string): string {
     
     console.log('Checking direct half-split:', firstHalf.length, 'vs', secondHalf.length);
     
+    // Debug: show the actual content
+    console.log('First half start:', firstHalf.substring(0, 100) + '...');
+    console.log('Second half start:', secondHalf.substring(0, 100) + '...');
+    
     if (firstHalf === secondHalf) {
       console.log('DIRECT HALF DUPLICATION DETECTED - exact match');
+      return formatHeadings(firstHalf);
+    }
+    
+    // Check normalized versions to catch minor variations
+    const norm1 = firstHalf.replace(/\s+/g, ' ').trim().toLowerCase();
+    const norm2 = secondHalf.replace(/\s+/g, ' ').trim().toLowerCase();
+    
+    if (norm1 === norm2 && norm1.length > 100) {
+      console.log('NORMALIZED HALF DUPLICATION DETECTED');
       return formatHeadings(firstHalf);
     }
     
     // Check if second half starts with first half (common pattern)
     if (secondHalf.startsWith(firstHalf.substring(0, Math.min(200, firstHalf.length)))) {
       console.log('DIRECT HALF DUPLICATION DETECTED - second starts with first');
+      return formatHeadings(firstHalf);
+    }
+    
+    // Check normalized starting pattern
+    if (norm2.startsWith(norm1.substring(0, Math.min(200, norm1.length)))) {
+      console.log('NORMALIZED STARTING DUPLICATION DETECTED');
       return formatHeadings(firstHalf);
     }
   }
