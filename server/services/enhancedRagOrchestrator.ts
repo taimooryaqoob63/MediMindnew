@@ -796,8 +796,12 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
 
       let synthesizedContent = response.choices[0]?.message?.content || agentResponses[0].content;
       
+      console.log('Pre-deduplication synthesized content length:', synthesizedContent.length);
+      
       // Additional deduplication check for sentences
       synthesizedContent = this.deduplicateContent(synthesizedContent);
+      
+      console.log('Post-deduplication synthesized content length:', synthesizedContent.length);
       
       const allSources = agentResponses.flatMap(r => r.sources);
       const uniqueSources = allSources.filter((source, index, array) => 
@@ -920,23 +924,45 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
     if (!content) return content;
     
     console.log('Deduplication input length:', content.length);
+    console.log('Content preview:', content.substring(0, 200) + '...');
     
-    // Step 1: Check for complete content duplication (entire response repeated)
-    const contentHalf = Math.floor(content.length / 2);
-    if (contentHalf > 100) {
-      const firstHalf = content.substring(0, contentHalf).trim();
-      const secondHalf = content.substring(contentHalf).trim();
+    // AGGRESSIVE STEP 1: Check for exact complete duplication with multiple split points
+    for (let offset = -20; offset <= 20; offset++) {
+      const splitPoint = Math.floor(content.length / 2) + offset;
+      if (splitPoint < 100 || splitPoint > content.length - 100) continue;
       
-      // Normalize both halves for comparison
-      const normalizedFirst = firstHalf.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
-      const normalizedSecond = secondHalf.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+      const firstPart = content.substring(0, splitPoint).trim();
+      const secondPart = content.substring(splitPoint).trim();
       
-      // If second half is very similar to first half, it's a complete duplication
-      if (normalizedFirst.length > 50 && 
-          (normalizedSecond === normalizedFirst || 
-           normalizedSecond.startsWith(normalizedFirst.substring(0, Math.min(normalizedFirst.length, 200))))) {
-        console.log('COMPLETE CONTENT DUPLICATION DETECTED - Using first half only');
-        content = firstHalf;
+      // Normalize both parts for comparison
+      const normalizedFirst = firstPart.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+      const normalizedSecond = secondPart.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+      
+      // Check for exact duplication
+      if (normalizedFirst.length > 50 && normalizedSecond.length > 50) {
+        if (normalizedFirst === normalizedSecond) {
+          console.log('EXACT COMPLETE DUPLICATION DETECTED at offset', offset, '- Using first part only');
+          content = firstPart;
+          break;
+        }
+        
+        // Check if second part starts with first part  
+        if (normalizedSecond.startsWith(normalizedFirst.substring(0, Math.min(normalizedFirst.length, 300)))) {
+          console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part only');
+          content = firstPart;
+          break;
+        }
+        
+        // Check for high overlap in the first part of text
+        const checkLength = Math.min(normalizedFirst.length, normalizedSecond.length, 200);
+        const firstPortion = normalizedFirst.substring(0, checkLength);
+        const secondPortion = normalizedSecond.substring(0, checkLength);
+        
+        if (firstPortion === secondPortion && firstPortion.length > 100) {
+          console.log('HIGH OVERLAP DUPLICATION DETECTED at offset', offset, '- Using first part only');
+          content = firstPart;
+          break;
+        }
       }
     }
     
