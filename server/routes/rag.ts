@@ -238,6 +238,13 @@ function finalDeduplication(content: string): string {
       continue;
     }
     
+    // Enhanced diabetes-specific concept detection
+    const diabetesConcept = detectDiabetesConcept(sentence);
+    if (diabetesConcept && seenConcepts.has(diabetesConcept)) {
+      console.log('Diabetes concept duplicate removed (' + diabetesConcept + '):', sentence.substring(0, 60) + '...');
+      continue;
+    }
+    
     // Check for substring matches in existing sentences
     let isSubstringDuplicate = false;
     for (const existingNormalized of Array.from(seenNormalized)) {
@@ -255,6 +262,8 @@ function finalDeduplication(content: string): string {
     if (!isSubstringDuplicate) {
       seenNormalized.add(normalized);
       if (conceptString.length > 8) seenConcepts.add(conceptString);
+      // Track diabetes concepts
+      if (diabetesConcept) seenConcepts.add(diabetesConcept);
       uniqueSentences.push(sentence);
     }
   }
@@ -304,6 +313,91 @@ function removeUnwantedDisclaimers(content: string): string {
   }
   
   return result.trim();
+}
+
+// Detect diabetes-specific concepts to prevent semantic repetition
+function detectDiabetesConcept(sentence: string): string | null {
+  const lowerSentence = sentence.toLowerCase();
+  
+  // Define concept patterns for common diabetes topics
+  const concepts = [
+    {
+      key: 'diabetes_definition',
+      patterns: [
+        /diabetes.*chronic.*condition/,
+        /chronic.*health.*condition.*diabetes/,
+        /diabetes.*affects.*body.*food.*energy/,
+        /condition.*affects.*glucose/,
+        /diabetes.*blood.*sugar/,
+        /chronic.*disease.*blood.*glucose/
+      ]
+    },
+    {
+      key: 'insulin_function',
+      patterns: [
+        /insulin.*hormone.*pancreas/,
+        /hormone.*insulin.*produced/,
+        /insulin.*helps.*glucose.*cells/,
+        /pancreas.*produces.*insulin/,
+        /insulin.*glucose.*energy/,
+        /hormone.*helps.*glucose/
+      ]
+    },
+    {
+      key: 'diabetes_types',
+      patterns: [
+        /type.*diabetes.*autoimmune/,
+        /type.*diabetes.*common.*form/,
+        /main.*types.*diabetes/,
+        /two.*types.*diabetes/,
+        /type.*insulin.*dependent/,
+        /type.*lifestyle.*factors/
+      ]
+    },
+    {
+      key: 'diabetes_symptoms',
+      patterns: [
+        /symptoms.*increased.*thirst/,
+        /frequent.*urination.*fatigue/,
+        /blurred.*vision.*symptoms/,
+        /extreme.*fatigue.*diabetes/,
+        /symptoms.*include.*thirst/,
+        /increased.*thirst.*frequent/
+      ]
+    },
+    {
+      key: 'diabetes_management',
+      patterns: [
+        /managing.*diabetes.*monitoring/,
+        /blood.*glucose.*monitoring/,
+        /healthy.*diet.*exercise/,
+        /lifestyle.*changes.*medication/,
+        /diabetes.*care.*involves/,
+        /treatment.*blood.*glucose/
+      ]
+    },
+    {
+      key: 'hyperglycemia',
+      patterns: [
+        /elevated.*glucose.*blood/,
+        /hyperglycemia.*high.*blood/,
+        /blood.*glucose.*levels.*high/,
+        /glucose.*blood.*elevated/,
+        /high.*blood.*sugar.*levels/
+      ]
+    }
+  ];
+  
+  // Check each concept
+  for (const concept of concepts) {
+    for (const pattern of concept.patterns) {
+      if (pattern.test(lowerSentence)) {
+        return concept.key;
+      }
+    }
+  }
+  
+  return null;
 }
 
 // Format headings to be on new lines and bold

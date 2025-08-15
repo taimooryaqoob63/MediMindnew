@@ -125,8 +125,10 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         ...old,
         {
           id: crypto.randomUUID(),
+          userId: "temp-user", // Will be replaced by server data
+          courseId: courseId,
           message: inputMessage.trim(),
-          response: data.response || data.content,
+          response: data.response || data.content || "",
           timestamp: new Date().toISOString()
         }
       ]);
