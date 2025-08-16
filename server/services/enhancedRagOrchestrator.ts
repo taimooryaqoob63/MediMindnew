@@ -455,6 +455,13 @@ Provide JSON response with:
     context: AgentContext
   ): Promise<RetrievalResult> {
     try {
+      console.log(`🔍 [dynamicRetrieval] Starting retrieval for query: "${query.substring(0, 50)}..."`);
+      console.log(`🔍 [dynamicRetrieval] Analysis:`, { 
+        queryType: analysis.queryType, 
+        complexity: analysis.complexity,
+        suggestedFilters: analysis.suggestedFilters 
+      });
+      
       const filters = {
         ...analysis.suggestedFilters,
         ...(analysis.queryType === 'clinical' && { recency_weight: 1.5 }),
@@ -464,7 +471,11 @@ Provide JSON response with:
       const limit = analysis.complexity === 'complex' ? 15 : 
                    analysis.complexity === 'moderate' ? 10 : 5;
 
+      console.log(`🔍 [dynamicRetrieval] Calling vectorStore.searchSimilar with limit: ${limit}, filters:`, filters);
+      
       const results = await vectorStore.searchSimilar(query, limit, filters);
+      
+      console.log(`🔍 [dynamicRetrieval] Vector search returned ${results.length} results`);
       
       const enhancedResults = results.map(result => ({
         ...result,
@@ -483,7 +494,12 @@ Provide JSON response with:
         cacheHit: false,
       };
     } catch (error) {
-      console.error('Dynamic retrieval error:', error);
+      console.error('❌ [dynamicRetrieval] Dynamic retrieval error:', error);
+      console.error('❌ [dynamicRetrieval] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        query: query.substring(0, 100)
+      });
       return {
         sources: [],
         totalRetrieved: 0,

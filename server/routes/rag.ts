@@ -388,6 +388,86 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
+  // Re-index all existing document chunks into vector store
+  app.post("/api/rag/reindex-chunks", isAuthenticated, async (req, res) => {
+    try {
+      if (!process.env.PINECONE_API_KEY) {
+        return res.status(400).json({ 
+          message: "Pinecone API key required for RAG functionality" 
+        });
+      }
+
+      console.log('🔄 Starting re-indexing of all document chunks...');
+      
+      // Initialize vector store
+      await vectorStore.initialize();
+      
+      // Get all document chunks
+      const chunks = await storage.getAllDocumentChunks();
+      console.log(`📚 Found ${chunks.length} chunks to re-index`);
+      
+      let successCount = 0;
+      let errorCount = 0;
+      
+      // Process chunks in batches to avoid overwhelming the system
+      const batchSize = 10;
+      for (let i = 0; i < chunks.length; i += batchSize) {
+        const batch = chunks.slice(i, i + batchSize);
+        console.log(`🔄 Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(chunks.length/batchSize)}`);
+        
+        await Promise.all(batch.map(async (chunk) => {
+          try {
+            // Create embedding for the chunk
+            const embedding = await vectorStore.createEmbedding(chunk.content);
+            
+            // Get document details for metadata
+            const document = await storage.getDocument(chunk.documentId);
+            
+            // Store in vector database
+            await vectorStore.upsertVector(
+              chunk.id,
+              embedding,
+              {
+                documentId: chunk.documentId,
+                chunkIndex: chunk.chunkIndex,
+                content: chunk.content.substring(0, 500), // Store first 500 chars in metadata
+                type: 'document_chunk',
+                title: document?.title || 'Unknown Document',
+                category: document?.category || 'general',
+                documentType: document?.documentType || 'document'
+              }
+            );
+            
+            successCount++;
+            console.log(`✅ Re-indexed chunk ${chunk.id}`);
+          } catch (error) {
+            errorCount++;
+            console.error(`❌ Failed to re-index chunk ${chunk.id}:`, error);
+          }
+        }));
+        
+        // Small delay between batches
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      console.log(`🎉 Re-indexing completed: ${successCount} success, ${errorCount} errors`);
+      
+      res.json({
+        message: "Re-indexing completed",
+        totalChunks: chunks.length,
+        successCount,
+        errorCount,
+        success: errorCount === 0
+      });
+    } catch (error) {
+      console.error("Re-indexing error:", error);
+      res.status(500).json({ 
+        message: "Failed to re-index chunks",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Upload and process document
   app.post("/api/rag/documents/upload", isAuthenticated, upload.single('document'), async (req, res) => {
     try {
