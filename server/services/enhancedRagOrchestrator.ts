@@ -467,13 +467,20 @@ Provide JSON response with:
         ...(analysis.queryType === 'clinical' && { recency_weight: 1.5 }),
         ...(analysis.requiresComplianceCheck && { compliance_focused: true }),
       };
+      
+      // Log the filters for debugging
+      console.log(`🔍 [dynamicRetrieval] Original filters:`, filters);
+      
+      // Temporarily remove restrictive filters to test if vectors can be found
+      const testFilters = {};
+      console.log(`🔍 [dynamicRetrieval] Using simplified filters:`, testFilters);
 
       const limit = analysis.complexity === 'complex' ? 15 : 
                    analysis.complexity === 'moderate' ? 10 : 5;
 
       console.log(`🔍 [dynamicRetrieval] Calling vectorStore.searchSimilar with limit: ${limit}, filters:`, filters);
       
-      const results = await vectorStore.searchSimilar(query, limit, filters);
+      const results = await vectorStore.searchSimilar(query, limit, testFilters);
       
       console.log(`🔍 [dynamicRetrieval] Vector search returned ${results.length} results`);
       
