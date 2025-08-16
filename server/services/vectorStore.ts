@@ -304,6 +304,6 @@ export class VectorStore {
 
 // Initialize global vector store instance
 export const vectorStore = new VectorStore({
-  indexName: process.env.PINECONE_INDEX_NAME || 'medimind-rag',
+  indexName: process.env.PINECONE_INDEX_NAME || 'quickstart',
   dimension: 1536, // text-embedding-3-small dimension
 });

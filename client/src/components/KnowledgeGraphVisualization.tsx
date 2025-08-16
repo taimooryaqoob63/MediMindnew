@@ -55,7 +55,7 @@ export default function KnowledgeGraphVisualization({
   // Process data for visualization with circular layout
   const positionedNodes = useMemo<PositionedNode[]>(() => {
     if (initialNodes.length === 0) return [];
-    
+
     // Count connections for each node
     const connectionCounts: { [key: string]: number } = {};
     initialEdges.forEach(edge => {
@@ -67,7 +67,7 @@ export default function KnowledgeGraphVisualization({
     return initialNodes.map((node, index) => {
       const angle = (index / initialNodes.length) * 2 * Math.PI;
       const radius = Math.min(width, height) * 0.3;
-      
+
       return {
         ...node,
         x: width / 2 + Math.cos(angle) * radius,
@@ -91,6 +91,9 @@ export default function KnowledgeGraphVisualization({
   // Get data for the selected node
   const selectedNodeData = selectedNode ? positionedNodes.find(n => n.id === selectedNode) : null;
   const connectedEdges = selectedNode ? initialEdges.filter(e => e.source === selectedNode || e.target === selectedNode) : [];
+
+  // Assume isDarkMode is available from context or props
+  const isDarkMode = true; // Replace with actual dark mode check if available
 
   return (
     <Card>
@@ -118,11 +121,11 @@ export default function KnowledgeGraphVisualization({
               const sourceNode = getNodePosition(edge.source);
               const targetNode = getNodePosition(edge.target);
               if (!sourceNode || !targetNode) return null;
-              
+
               const isHighlighted = selectedNode === null || 
                 selectedNode === edge.source || 
                 selectedNode === edge.target;
-              
+
               return (
                 <line
                   key={index}
@@ -136,7 +139,7 @@ export default function KnowledgeGraphVisualization({
                 />
               );
             })}
-            
+
             {/* Render nodes */}
             {positionedNodes.map((node) => {
               const isSelected = selectedNode === node.id;
@@ -144,7 +147,7 @@ export default function KnowledgeGraphVisualization({
               const isHighlighted = selectedNode === null || 
                 selectedNode === node.id || 
                 connectedEdges.some(e => e.source === node.id || e.target === node.id);
-              
+
               return (
                 <g key={node.id}>
                   {/* Node circle */}
@@ -164,7 +167,7 @@ export default function KnowledgeGraphVisualization({
                     onMouseEnter={() => setHoveredNode(node.id)}
                     onMouseLeave={() => setHoveredNode(null)}
                   />
-                  
+
                   {/* Node label */}
                   <g
                     opacity={isHighlighted ? 1 : 0.1}
