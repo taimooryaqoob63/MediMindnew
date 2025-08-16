@@ -485,14 +485,29 @@ export function registerRAGRoutes(app: Express) {
       
       for (const document of documents) {
         try {
+          console.log(`Checking document: ${document.title}, ID: ${document.id}`);
+          
           // Check if document has chunks
           const chunks = await storage.getDocumentChunks(document.id);
+          console.log(`Document ${document.title} has ${chunks.length} chunks`);
           
           if (chunks.length === 0) {
             console.log(`Reprocessing document: ${document.title} (no chunks found)`);
+            console.log(`Document source: ${document.source}`);
             
-            // Re-process the document if source file still exists
-            if (document.source && await fs.access(document.source).then(() => true).catch(() => false)) {
+            // Check if source file exists (simplified check)
+            let sourceExists = false;
+            if (document.source) {
+              try {
+                await fs.access(document.source);
+                sourceExists = true;
+                console.log(`Source file exists for ${document.title}`);
+              } catch (error) {
+                console.log(`Source file missing for ${document.title}: ${document.source}`);
+              }
+            }
+            
+            if (sourceExists) {
               // Create processing job
               const job = await storage.createProcessingJob({
                 status: 'processing',
