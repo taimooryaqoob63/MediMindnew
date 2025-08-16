@@ -338,7 +338,7 @@ export function registerRAGRoutes(app: Express) {
       console.error("Force reinitialize error:", error);
       res.status(500).json({ 
         message: "Failed to force reinitialize vector store",
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -875,15 +875,9 @@ export function registerRAGRoutes(app: Express) {
         }
       }
       
-      // Clear processing jobs
+      // Clear processing jobs (note: individual job deletion not implemented)
       const jobs = await storage.getProcessingJobs();
-      for (const job of jobs) {
-        try {
-          await storage.deleteProcessingJob(job.id);
-        } catch (error) {
-          console.warn(`Failed to delete job ${job.id}:`, error);
-        }
-      }
+      console.log(`Found ${jobs.length} processing jobs (deletion not implemented)`);
       
       console.log(`Bulk deletion complete. Deleted: ${deletedCount}, Errors: ${errorCount}`);
       
