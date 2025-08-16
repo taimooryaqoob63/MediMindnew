@@ -1415,7 +1415,7 @@ ${citations}
     
     console.log('Applying final response cleanup...');
     
-    // Simple approach using string methods and basic regex
+    // Simple approach using string methods only
     let cleaned = content
       // Remove placeholder text first
       .replace(/\\[BAD\\]/gi, '')
@@ -1434,20 +1434,18 @@ ${citations}
       .replace(/\\n{3,}/g, '\\n\\n')
       .trim();
     
-    // Fix asterisk repetition patterns manually
-    const words = ['Infections', 'Retinopathy', 'Medication', 'Diabetes', 'Treatment', 'Management', 'Care', 'Patient'];
-    for (const word of words) {
-      // Fix patterns like "Word*Word*"
-      const duplicatePattern = `${word}*${word}*`;
-      cleaned = cleaned.replace(new RegExp(duplicatePattern.replace(/\\*/g, '\\\\*'), 'gi'), `**${word}**`);
-      
-      // Fix patterns like "Word*Word*:"
-      const colonPattern = `${word}*${word}*:`;
-      cleaned = cleaned.replace(new RegExp(colonPattern.replace(/\\*/g, '\\\\*'), 'gi'), `**${word}**:`);
+    // Fix asterisk repetition patterns using simple string replacements
+    const commonWords = ['Infections', 'Retinopathy', 'Medication', 'Diabetes', 'Treatment', 'Management', 'Care', 'Patient', 'Blood', 'Sugar', 'Insulin', 'Glucose'];
+    for (const word of commonWords) {
+      // Simple string replacements to avoid regex issues
+      cleaned = cleaned.split(`${word}*${word}*`).join(`**${word}**`);
+      cleaned = cleaned.split(`${word}*${word}*:`).join(`**${word}**:`);
+      cleaned = cleaned.split(`${word}***${word}***`).join(`**${word}**`);
+      cleaned = cleaned.split(`${word}***${word}***:`).join(`**${word}**:`);
     }
     
-    // Remove any remaining standalone asterisks between letters using simple replacement
-    cleaned = cleaned.replace(/([a-zA-Z])\\*([a-zA-Z])/g, '$1 $2');
+    // Remove standalone asterisks (safer pattern)
+    cleaned = cleaned.replace(/\\b\\*\\b/g, '');
     
     // Remove empty bold markers
     cleaned = cleaned.replace(/\\*\\*\\s*\\*\\*/g, '');
