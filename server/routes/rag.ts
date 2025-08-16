@@ -714,9 +714,9 @@ export function registerRAGRoutes(app: Express) {
         errorName: error instanceof Error ? error.name : 'Unknown',
         errorStack: error instanceof Error ? error.stack : null,
         timestamp: new Date().toISOString(),
-        message: message?.substring(0, 100),
-        courseId: courseId,
-        userId: user?.claims?.sub
+        message: req.body.message?.substring(0, 100),
+        courseId: req.body.courseId,
+        userId: (req.user as any)?.claims?.sub
       });
       
       res.status(500).json({ 
