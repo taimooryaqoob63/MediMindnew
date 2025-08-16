@@ -658,10 +658,14 @@ For any emergency-related content, use this structure:
 - Write as if explaining to a caring family member
 
 ## CRITICAL TEXT FORMATTING RULES:
-- NEVER repeat the same word with asterisks (e.g., "Word*Word*")
-- Use proper markdown: **bold text** not *text*text*
-- All headings must use proper markdown (## or ###)
+- NEVER repeat the same word with asterisks (e.g., "Word*Word*", "InfectionsInfections", "MildMild*")
+- Use proper markdown: **bold text** not *text*text* or mixed asterisks
+- All headings must use proper markdown (## or ###) with NO trailing colons
 - NEVER include placeholder text like "[BAD]", "[citation needed]", or "[source required]"
+- NEVER include standalone words like "Information" without context
+- NEVER include document references like "(document-123456-789.json)"
+- Use consistent bullet point formatting with proper spacing
+- Avoid trailing colons on headings (use "## Glucose Management" not "## Glucose Management:")
 - Each sentence must be unique and add new information
 
 CONTENT REQUIREMENTS:
@@ -1435,6 +1439,10 @@ ${citations}
     cleaned = cleaned.replace(/^#### /gm, '### ');
     cleaned = cleaned.replace(/^##### /gm, '### ');
     
+    // Fix headers with colons that might not be caught
+    cleaned = cleaned.replace(/^## ([^:]+):\s*$/gm, '## $1');
+    cleaned = cleaned.replace(/^### ([^:]+):\s*$/gm, '### $1');
+    
     // Step 4: Comprehensive word duplication cleanup
     const medicalTerms = [
       'Infections', 'Retinopathy', 'Medication', 'Diabetes', 'Treatment', 'Management', 
@@ -1496,6 +1504,18 @@ ${citations}
     // Step 9: Clean up any remaining formatting artifacts
     cleaned = cleaned.replace(/:\s*:/g, ':'); // Double colons
     cleaned = cleaned.replace(/\*\s*\*/g, ''); // Spaced asterisks
+    
+    // Fix standalone "Information" lines and artifacts
+    cleaned = cleaned.replace(/^Information\s*$/gm, ''); // Remove standalone "Information"
+    cleaned = cleaned.replace(/^\s*Information\s*$/gm, ''); // Remove padded "Information"
+    cleaned = cleaned.replace(/^\s*�\s*$/gm, ''); // Remove standalone special characters
+    
+    // Fix inconsistent bullet point formatting
+    cleaned = cleaned.replace(/^([A-Z][^:]*):([^\n]*)/gm, '- **$1**:$2'); // Convert "Term: description" to bullet
+    cleaned = cleaned.replace(/^\s*-\s*([A-Z][^:]*):([^\n]*)/gm, '- **$1**:$2'); // Fix existing bullets
+    
+    // Clean up multiple consecutive line breaks after cleanup
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
     
     console.log('Comprehensive cleanup complete - removed duplications, document references, and formatting artifacts');
     return cleaned.trim();
