@@ -594,6 +594,14 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <Button
                 onClick={() => {
                   console.log('🖱️ Send button clicked');
+                  console.log('🔍 Send button state:', {
+                    inputMessage: inputMessage,
+                    trimmed: inputMessage.trim(),
+                    hasMessage: !!inputMessage.trim(),
+                    isPending: chatMutation.isPending,
+                    courseId: courseId,
+                    disabled: !inputMessage.trim() || chatMutation.isPending
+                  });
                   handleSendMessage();
                 }}
                 disabled={!inputMessage.trim() || chatMutation.isPending}
