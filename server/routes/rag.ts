@@ -304,6 +304,45 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
+  // Force reinitialize vector store with new credentials
+  app.post("/api/rag/force-reinitialize", isAuthenticated, async (req, res) => {
+    try {
+      if (!process.env.PINECONE_API_KEY) {
+        return res.status(400).json({ 
+          message: "Pinecone API key required for RAG functionality" 
+        });
+      }
+      
+      console.log('Force reinitializing vector store with new credentials...');
+      console.log('Using index:', process.env.PINECONE_INDEX_NAME || 'medimind-rag');
+      
+      // Create a fresh vector store instance
+      const { VectorStore } = await import('../services/vectorStore.js');
+      const newVectorStore = new VectorStore({
+        indexName: process.env.PINECONE_INDEX_NAME || 'medimind-rag',
+        dimension: 1536,
+      });
+      
+      await newVectorStore.initialize();
+      
+      // Test connection
+      const testEmbedding = await newVectorStore.createEmbedding("test connection");
+      console.log('Test embedding created successfully');
+      
+      res.json({ 
+        message: "Vector store force reinitialized successfully",
+        indexName: process.env.PINECONE_INDEX_NAME || 'medimind-rag',
+        testConnectionSuccess: true
+      });
+    } catch (error) {
+      console.error("Force reinitialize error:", error);
+      res.status(500).json({ 
+        message: "Failed to force reinitialize vector store",
+        error: error.message
+      });
+    }
+  });
+
   // Get verification data
   app.get("/api/rag/verification", isAuthenticated, async (req, res) => {
     try {
@@ -681,6 +720,65 @@ export function registerRAGRoutes(app: Express) {
     } catch (error) {
       console.error("Error verifying documents:", error);
       res.status(500).json({ message: "Failed to verify documents" });
+    }
+  });
+
+  // Bulk delete all documents and vectors (admin only)
+  app.delete("/api/rag/documents/bulk-delete", isAuthenticated, async (req, res) => {
+    try {
+      console.log('Starting bulk document deletion...');
+      
+      // Get all documents
+      const documents = await storage.getAllDocuments();
+      let deletedCount = 0;
+      let errorCount = 0;
+      
+      for (const document of documents) {
+        try {
+          // Delete document chunks and vectors
+          const chunks = await storage.getDocumentChunks(document.id);
+          for (const chunk of chunks) {
+            if (chunk.vectorId) {
+              try {
+                await vectorStore.deleteVector(chunk.vectorId);
+              } catch (vectorError) {
+                console.warn(`Failed to delete vector ${chunk.vectorId}:`, vectorError);
+              }
+            }
+            await storage.deleteDocumentChunk(chunk.id);
+          }
+          
+          // Delete document
+          await storage.deleteDocument(document.id);
+          deletedCount++;
+          console.log(`Deleted document: ${document.title}`);
+        } catch (error) {
+          console.error(`Error deleting document ${document.id}:`, error);
+          errorCount++;
+        }
+      }
+      
+      // Clear processing jobs
+      const jobs = await storage.getProcessingJobs();
+      for (const job of jobs) {
+        try {
+          await storage.deleteProcessingJob(job.id);
+        } catch (error) {
+          console.warn(`Failed to delete job ${job.id}:`, error);
+        }
+      }
+      
+      console.log(`Bulk deletion complete. Deleted: ${deletedCount}, Errors: ${errorCount}`);
+      
+      res.json({ 
+        message: "Bulk deletion completed",
+        deletedDocuments: deletedCount,
+        errors: errorCount,
+        totalProcessed: documents.length
+      });
+    } catch (error) {
+      console.error("Bulk deletion error:", error);
+      res.status(500).json({ message: "Failed to perform bulk deletion" });
     }
   });
 
