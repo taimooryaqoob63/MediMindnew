@@ -383,3 +383,84 @@ export const vectorStore = new VectorStore({
   indexName: process.env.PINECONE_INDEX_NAME || 'quickstart',
   dimension: 1536, // text-embedding-3-small dimension
 });
+
+// Re-index all existing document chunks into vector store
+export async function reindexAllChunks() {
+  try {
+    console.log('🔄 Starting re-indexing of all document chunks...');
+    
+    // Initialize vector store first
+    await vectorStore.initialize();
+    
+    // Import storage here to avoid circular dependency
+    const { storage } = await import('../storage');
+    
+    // Get all document chunks
+    const chunks = await storage.getAllDocumentChunks();
+    console.log(`📚 Found ${chunks.length} chunks to re-index`);
+    
+    if (chunks.length === 0) {
+      console.log('⚠️  No chunks found to index');
+      return { success: true, message: 'No chunks to index' };
+    }
+    
+    let successCount = 0;
+    let errorCount = 0;
+    
+    // Process chunks in batches to avoid overwhelming the system
+    const batchSize = 5; // Smaller batches for stability
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      const batch = chunks.slice(i, i + batchSize);
+      console.log(`🔄 Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(chunks.length/batchSize)}`);
+      
+      for (const chunk of batch) {
+        try {
+          // Create embedding for the chunk
+          const embedding = await vectorStore.createEmbedding(chunk.content);
+          
+          // Get document details for metadata
+          const document = await storage.getDocument(chunk.documentId);
+          
+          // Store in vector database
+          await vectorStore.upsertVector(
+            chunk.id,
+            embedding,
+            {
+              documentId: chunk.documentId,
+              chunkIndex: chunk.chunkIndex,
+              content: chunk.content.substring(0, 500), // Store first 500 chars in metadata
+              type: 'document_chunk',
+              title: document?.title || 'Unknown Document',
+              category: document?.category || 'general',
+              documentType: document?.documentType || 'document'
+            }
+          );
+          
+          successCount++;
+          console.log(`✅ Re-indexed chunk ${successCount}/${chunks.length}`);
+        } catch (error) {
+          errorCount++;
+          console.error(`❌ Failed to re-index chunk ${chunk.id}:`, error);
+        }
+      }
+      
+      // Small delay between batches
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    
+    console.log(`🎉 Re-indexing completed: ${successCount} success, ${errorCount} errors`);
+    
+    return {
+      success: errorCount === 0,
+      totalChunks: chunks.length,
+      successCount,
+      errorCount
+    };
+  } catch (error) {
+    console.error('❌ Re-indexing error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}

@@ -388,8 +388,8 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
-  // Re-index all existing document chunks into vector store
-  app.post("/api/rag/reindex-chunks", isAuthenticated, async (req, res) => {
+  // Re-index all existing document chunks into vector store (admin endpoint)
+  app.post("/api/rag/reindex-chunks", async (req, res) => {
     try {
       if (!process.env.PINECONE_API_KEY) {
         return res.status(400).json({ 
