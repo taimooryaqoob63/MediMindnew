@@ -14,207 +14,28 @@ import fs from "fs/promises";
 function finalDeduplication(content: string): string {
   if (!content) return content;
   
-  // STEP -1: Remove unwanted disclaimers first
-  content = removeUnwantedDisclaimers(content);
-  
-  // STEP 0: Fix heading formatting
-  content = formatHeadings(content);
-  
   console.log('Final deduplication - Original length:', content.length);
-  console.log('Content preview for debugging:', content.substring(0, 200) + '...');
   
-  // FORENSIC STRING ANALYSIS - Check for invisible characters causing deduplication failures
-  const forensicAnalysis = findStringDifference(content);
-  if (forensicAnalysis.hasIssues) {
-    console.log('FORENSIC ANALYSIS DETECTED ISSUES:', {
-      issues: forensicAnalysis.issues,
-      invisibleCharCount: forensicAnalysis.invisibleChars.length,
-      invisibleChars: forensicAnalysis.invisibleChars.slice(0, 10) // Show first 10
-    });
-    // Use forensically cleaned content
-    content = forensicAnalysis.normalizedContent;
-    console.log('Using forensically normalized content:', content.length, 'chars');
-  }
-  
-  // STEP -1: Most direct duplication check - look for exact half duplication
-  const halfLength = Math.floor(content.length / 2);
-  if (halfLength > 100) {
-    const firstHalf = content.substring(0, halfLength).trim();
-    const secondHalf = content.substring(halfLength).trim();
-    
-    console.log('Checking direct half-split:', firstHalf.length, 'vs', secondHalf.length);
-    
-    // Debug: show the actual content
-    console.log('First half start:', firstHalf.substring(0, 100) + '...');
-    console.log('Second half start:', secondHalf.substring(0, 100) + '...');
-    
-    if (firstHalf === secondHalf) {
-      console.log('DIRECT HALF DUPLICATION DETECTED - exact match');
-      return formatHeadings(firstHalf);
-    }
-    
-    // Check normalized versions to catch minor variations and invisible characters
-    const norm1 = normalizeText(firstHalf);
-    const norm2 = normalizeText(secondHalf);
-    
-    if (norm1 === norm2 && norm1.length > 100) {
-      console.log('ROBUST NORMALIZED DUPLICATION DETECTED');
-      return formatHeadings(firstHalf);
-    }
-    
-    // Check if second half starts with first half (common pattern)
-    if (secondHalf.startsWith(firstHalf.substring(0, Math.min(200, firstHalf.length)))) {
-      console.log('DIRECT HALF DUPLICATION DETECTED - second starts with first');
-      return formatHeadings(firstHalf);
-    }
-    
-    // Check normalized starting pattern
-    if (norm2.startsWith(norm1.substring(0, Math.min(200, norm1.length)))) {
-      console.log('NORMALIZED STARTING DUPLICATION DETECTED');
-      return formatHeadings(firstHalf);
-    }
-    
-    // Additional check for near-identical content (allowing for small split differences)
-    const similarity = calculateTextSimilarity(norm1, norm2);
-    if (similarity > 0.95 && norm1.length > 100) {
-      console.log('HIGH SIMILARITY DUPLICATION DETECTED - similarity:', similarity);
-      return formatHeadings(firstHalf);
-    }
-  }
-  
-  // STEP -0.75: Try different split points around the middle
-  for (let offset = -100; offset <= 100; offset += 10) {
-    const splitPoint = halfLength + offset;
-    if (splitPoint < 50 || splitPoint > content.length - 50) continue;
-    
-    const part1 = content.substring(0, splitPoint).trim();
-    const part2 = content.substring(splitPoint).trim();
-    
-    if (part1.length > 100 && part1 === part2) {
-      console.log('OFFSET DUPLICATION DETECTED at offset:', offset);
-      return formatHeadings(part1);
-    }
-  }
-  
-  // STEP -0.6: Enhanced pattern detection for user's exact duplication issue
-  const contentWords = content.split(/\s+/);
-  
-  // Look for any substring that appears twice consecutively
-  for (let wordCount = 20; wordCount <= Math.floor(contentWords.length / 2); wordCount += 5) {
-    const testChunk = contentWords.slice(0, wordCount).join(' ');
-    const remainingText = contentWords.slice(wordCount).join(' ');
-    
-    if (testChunk.length > 100 && remainingText.startsWith(testChunk.substring(0, Math.min(300, testChunk.length)))) {
-      console.log('BRUTE FORCE PATTERN FOUND - word count:', wordCount);
-      return formatHeadings(testChunk.trim());
-    }
-  }
-  
-  // STEP -0.55: Direct check for the exact "Response text here. Response text here." pattern
-  const contentSentenceArray = content.split(/[.!?]+/).filter(s => s.trim().length > 5);
-  const normalizedSentenceArray = contentSentenceArray.map(s => normalizeText(s));
-  
-  // Check for any sentence that appears multiple times
-  const sentenceCounts = new Map<string, number>();
-  normalizedSentenceArray.forEach(sentence => {
-    if (sentence.length > 10) {
-      sentenceCounts.set(sentence, (sentenceCounts.get(sentence) || 0) + 1);
-    }
-  });
-  
-  // If any sentence appears more than once, keep only unique sentences
-  const hasDuplicateSentences = Array.from(sentenceCounts.values()).some(count => count > 1);
-  if (hasDuplicateSentences) {
-    console.log('SENTENCE-LEVEL DUPLICATION DETECTED - removing duplicate sentences');
-    const uniqueSentences = Array.from(new Set(normalizedSentenceArray));
-    return formatHeadings(uniqueSentences.join('. ') + '.');
-  }
-  
-  // STEP -0.5: Simple substring repetition check
-  // Look for cases where the content literally repeats itself
-  const contentLength = content.length;
-  for (let chunkSize = Math.floor(contentLength * 0.3); chunkSize <= Math.floor(contentLength * 0.7); chunkSize += 50) {
-    const chunk = content.substring(0, chunkSize);
-    if (chunkSize > 200 && content.includes(chunk + chunk.substring(0, 100))) {
-      console.log('SIMPLE REPETITION DETECTED - chunk size:', chunkSize, '- Using first occurrence');
-      return formatHeadings(chunk.trim());
-    }
-    
-    // Check if content starts repeating at any point
-    const possibleRepeat = content.substring(chunkSize);
-    if (chunkSize > 200 && possibleRepeat.startsWith(chunk.substring(0, Math.min(300, chunk.length)))) {
-      console.log('CONTENT REPETITION DETECTED - chunk size:', chunkSize, '- Using first part');
-      return formatHeadings(chunk.trim());
-    }
-  }
-  
-  // STEP -0.25: Sliding window repetition detection
-  // Use a sliding window to find repeating content
-  const contentSentences = content.split(/[.!?]+/).filter(s => s.trim().length > 10);
-  if (contentSentences.length > 4) {
-    for (let windowSize = 2; windowSize <= Math.floor(contentSentences.length / 2); windowSize++) {
-      for (let i = 0; i <= contentSentences.length - windowSize * 2; i++) {
-        const window1 = contentSentences.slice(i, i + windowSize).join('.').trim();
-        const window2 = contentSentences.slice(i + windowSize, i + windowSize * 2).join('.').trim();
-        
-        if (window1.length > 100 && window1 === window2) {
-          console.log('SLIDING WINDOW REPETITION DETECTED - window size:', windowSize, 'at position:', i);
-          return formatHeadings(contentSentences.slice(0, i + windowSize).join('.').trim() + '.');
-        }
-      }
-    }
-  }
-  
-  // STEP 0: Ultra-aggressive exact duplication detection
-  const words = content.split(/\s+/);
+  // STEP 0: Check for simple exact duplication by looking for repeated chunks
+  const contentLower = content.toLowerCase().replace(/\s+/g, ' ').trim();
+  const words = contentLower.split(' ');
   
   // Check if content is repeated exactly (most common case)
-  if (words.length > 30) {
-    // First, try to find exact duplication by looking for repeating patterns
-    const contentStr = words.join(' ');
-    
-    // Look for the pattern where text repeats from various starting points
-    for (let startCheck = 0; startCheck < Math.min(words.length / 4, 50); startCheck++) {
-      for (let splitOffset = -50; splitOffset <= 50; splitOffset += 1) {
-        const splitPoint = Math.floor(words.length / 2) + splitOffset;
-        if (splitPoint < 10 || splitPoint > words.length - 10) continue;
-        
-        const firstPart = words.slice(startCheck, splitPoint).join(' ');
-        const secondPart = words.slice(splitPoint + startCheck, splitPoint + startCheck + (splitPoint - startCheck)).join(' ');
-        
-        // Direct string comparison for exact duplication
-        if (firstPart === secondPart && firstPart.length > 80) {
-          console.log('FINAL DEDUP: EXACT WORD-FOR-WORD DUPLICATION DETECTED at split:', splitPoint, 'start:', startCheck, '- Using first part');
-          return formatHeadings(words.slice(startCheck, splitPoint).join(' ').trim());
-        }
-      }
-    }
-    
-    // Fallback: original logic with broader range
-    for (let offset = -100; offset <= 100; offset += 1) {
+  if (words.length > 20) {
+    // Try multiple split points to find duplication
+    for (let offset = -10; offset <= 10; offset++) {
       const splitPoint = Math.floor(words.length / 2) + offset;
-      if (splitPoint < 15 || splitPoint > words.length - 15) continue;
+      if (splitPoint < 10 || splitPoint > words.length - 10) continue;
       
       const firstPart = words.slice(0, splitPoint).join(' ');
       const secondPart = words.slice(splitPoint).join(' ');
       
-      // Direct string comparison for exact duplication
-      if (firstPart === secondPart && firstPart.length > 100) {
-        console.log('FINAL DEDUP: EXACT WORD-FOR-WORD DUPLICATION DETECTED at offset', offset, '- Using first part');
-        return formatHeadings(firstPart.trim());
-      }
-      
-      // Check if second part starts with substantial portion of first part
-      if (firstPart.length > 200 && secondPart.startsWith(firstPart.substring(0, 300))) {
-        console.log('FINAL DEDUP: SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part');
-        return formatHeadings(firstPart.trim());
-      }
-      
-      // Character-level similarity check
-      const similarity = calculateTextSimilarity(firstPart, secondPart);
-      if (similarity > 0.95 && firstPart.length > 150) {
-        console.log('FINAL DEDUP: HIGH SIMILARITY DETECTED at offset', offset, 'similarity:', similarity, '- Using first part');
-        return formatHeadings(firstPart.trim());
+      // Check for exact duplication
+      if (firstPart === secondPart && firstPart.length > 50) {
+        console.log('EXACT WORD-FOR-WORD DUPLICATION DETECTED at offset', offset, '- Using first part');
+        const originalWords = content.split(' ');
+        const resultWords = originalWords.slice(0, splitPoint);
+        return resultWords.join(' ').trim();
       }
       
       // Check for near-exact duplication
@@ -224,7 +45,7 @@ function finalDeduplication(content: string): string {
           console.log('NEAR-EXACT DUPLICATION DETECTED at offset', offset, '(similarity:', similarity, ') - Using first part');
           const originalWords = content.split(' ');
           const resultWords = originalWords.slice(0, splitPoint);
-          return formatHeadings(resultWords.join(' ').trim());
+          return resultWords.join(' ').trim();
         }
       }
       
@@ -233,7 +54,7 @@ function finalDeduplication(content: string): string {
         console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part');
         const originalWords = content.split(' ');
         const resultWords = originalWords.slice(0, splitPoint);
-        return formatHeadings(resultWords.join(' ').trim());
+        return resultWords.join(' ').trim();
       }
       
       // Check for overlapping content (more aggressive)
@@ -243,7 +64,7 @@ function finalDeduplication(content: string): string {
           console.log('MAJOR OVERLAP DETECTED at offset', offset, '- Using first part');
           const originalWords = content.split(' ');
           const resultWords = originalWords.slice(0, splitPoint);
-          return formatHeadings(resultWords.join(' ').trim());
+          return resultWords.join(' ').trim();
         }
       }
     }
@@ -295,7 +116,7 @@ function finalDeduplication(content: string): string {
     if (matchRatio > 0.3) { // Even lower threshold 
       console.log('MAJOR SENTENCE DUPLICATION DETECTED - Using first half only');
       const firstHalfSentences = sentences.slice(0, halfPoint);
-      return formatHeadings(firstHalfSentences.join(' ').trim());
+      return firstHalfSentences.join(' ').trim();
     }
     
     // Also check for exact first sentence matches (most common pattern)
@@ -303,7 +124,7 @@ function finalDeduplication(content: string): string {
         normalizedSentences[0] === normalizedSentences[halfPoint]) {
       console.log('FIRST SENTENCE DUPLICATION DETECTED - Using first half only');
       const firstHalfSentences = sentences.slice(0, halfPoint);
-      return formatHeadings(firstHalfSentences.join(' ').trim());
+      return firstHalfSentences.join(' ').trim();
     }
     
     // Check for any exact sentence matches between halves
@@ -312,7 +133,7 @@ function finalDeduplication(content: string): string {
         if (firstHalfNorm[i].length > 30 && firstHalfNorm[i] === secondHalfNorm[j]) {
           console.log('MATCHING SENTENCE FOUND between halves - Using first half only');
           const firstHalfSentences = sentences.slice(0, halfPoint);
-          return formatHeadings(firstHalfSentences.join(' ').trim());
+          return firstHalfSentences.join(' ').trim();
         }
       }
     }
@@ -401,13 +222,6 @@ function finalDeduplication(content: string): string {
       continue;
     }
     
-    // Enhanced diabetes-specific concept detection
-    const diabetesConcept = detectDiabetesConcept(sentence);
-    if (diabetesConcept && seenConcepts.has(diabetesConcept)) {
-      console.log('Diabetes concept duplicate removed (' + diabetesConcept + '):', sentence.substring(0, 60) + '...');
-      continue;
-    }
-    
     // Check for substring matches in existing sentences
     let isSubstringDuplicate = false;
     for (const existingNormalized of Array.from(seenNormalized)) {
@@ -425,8 +239,6 @@ function finalDeduplication(content: string): string {
     if (!isSubstringDuplicate) {
       seenNormalized.add(normalized);
       if (conceptString.length > 8) seenConcepts.add(conceptString);
-      // Track diabetes concepts
-      if (diabetesConcept) seenConcepts.add(diabetesConcept);
       uniqueSentences.push(sentence);
     }
   }
@@ -450,228 +262,7 @@ function finalDeduplication(content: string): string {
   // FINAL STEP: Brute force removal of common duplication patterns
   bestReduction = bruteForceDeduplication(bestReduction);
   
-  // Final ultra-aggressive check
-  bestReduction = ultimateDeduplicationCheck(bestReduction);
-  
   return bestReduction;
-}
-
-// Remove unwanted disclaimer text
-function removeUnwantedDisclaimers(content: string): string {
-  // Remove the specific NICE/NHS/CQC disclaimer that's being auto-generated
-  const disclaimerPatterns = [
-    /While specific authoritative sources from NICE, NHS, or CQC are not available in the current context,?\s*/gi,
-    /While specific authoritative sources from NICE[^.]*?\.\s*/gi,
-    /As there is no specific context provided[^.]*?\.\s*/gi,
-    /It appears that there is no specific[^.]*?\.\s*/gi
-  ];
-  
-  let result = content;
-  for (const pattern of disclaimerPatterns) {
-    const beforeLength = result.length;
-    result = result.replace(pattern, '');
-    if (result.length < beforeLength) {
-      console.log('Removed unwanted disclaimer, reduced by', beforeLength - result.length, 'characters');
-    }
-  }
-  
-  return result.trim();
-}
-
-/**
- * Forensic String Analysis - Detects invisible characters and text anomalies
- * that might be breaking deduplication logic
- */
-function findStringDifference(content: string): {
-  hasIssues: boolean;
-  invisibleChars: Array<{char: string, code: number, position: number}>;
-  normalizedContent: string;
-  issues: string[];
-} {
-  const issues: string[] = [];
-  const invisibleChars: Array<{char: string, code: number, position: number}> = [];
-  
-  // Check for invisible/problematic characters
-  for (let i = 0; i < content.length; i++) {
-    const char = content[i];
-    const charCode = char.charCodeAt(0);
-    
-    // Check for various invisible/problematic characters
-    if (
-      charCode === 8203 || // Zero-width space
-      charCode === 8204 || // Zero-width non-joiner
-      charCode === 8205 || // Zero-width joiner
-      charCode === 65279 || // Byte order mark
-      charCode === 8288 || // Word joiner
-      charCode === 8289 || // Function application
-      (charCode >= 8206 && charCode <= 8207) || // Left-to-right/Right-to-left marks
-      (charCode >= 8234 && charCode <= 8238) || // Directional formatting characters
-      charCode === 160 || // Non-breaking space
-      charCode === 173 // Soft hyphen
-    ) {
-      invisibleChars.push({
-        char: char,
-        code: charCode,
-        position: i
-      });
-    }
-  }
-  
-  if (invisibleChars.length > 0) {
-    issues.push(`Found ${invisibleChars.length} invisible characters`);
-  }
-  
-  // Check for unusual whitespace patterns
-  const unusualWhitespace = content.match(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g);
-  if (unusualWhitespace) {
-    issues.push(`Found ${unusualWhitespace.length} unusual whitespace characters`);
-  }
-  
-  // Check for repeated identical chunks (forensic duplicate detection)
-  const words = content.split(/\s+/);
-  if (words.length > 20) {
-    const midPoint = Math.floor(words.length / 2);
-    const firstHalf = words.slice(0, midPoint).join(' ');
-    const secondHalf = words.slice(midPoint).join(' ');
-    
-    if (firstHalf === secondHalf) {
-      issues.push('Detected exact duplicate halves in content');
-    } else if (secondHalf.startsWith(firstHalf.substring(0, 100))) {
-      issues.push('Detected potential partial duplication pattern');
-    }
-  }
-  
-  // Normalize content by removing invisible characters
-  const normalizedContent = content
-    .replace(/[\u200B-\u200D\uFEFF\u2060\u2061]/g, '') // Remove zero-width chars
-    .replace(/[\u00A0]/g, ' ') // Replace non-breaking spaces with regular spaces
-    .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Replace unusual spaces
-    .replace(/[\u00AD]/g, '') // Remove soft hyphens
-    .replace(/[\u202A-\u202E]/g, '') // Remove directional marks
-    .replace(/\s+/g, ' ') // Normalize whitespace
-    .trim();
-  
-  return {
-    hasIssues: issues.length > 0,
-    invisibleChars,
-    normalizedContent,
-    issues
-  };
-}
-
-// Enhanced robust normalization with forensic-level invisible character removal
-function normalizeText(text: string): string {
-  if (!text) return "";
-  return text
-    .replace(/[\u200B-\u200D\uFEFF\u2060\u2061]/g, '') // Remove zero-width chars, word joiners
-    .replace(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Replace all unusual spaces
-    .replace(/[\u00AD]/g, '') // Remove soft hyphens
-    .replace(/[\u202A-\u202E]/g, '') // Remove directional marks
-    .replace(/\s+/g, ' ') // Collapse whitespace
-    .replace(/[\r\n]+/g, ' ') // Normalize different newline styles
-    .replace(/[^\w\s.,!?'"-]/gi, '') // Remove most non-standard punctuation/symbols
-    .replace(/["'"]/g, '"') // Normalize quotes
-    .replace(/['']/g, "'") // Normalize apostrophes
-    .replace(/[–—]/g, '-') // Normalize dashes
-    .trim()
-    .toLowerCase();
-}
-
-// Detect diabetes-specific concepts to prevent semantic repetition
-function detectDiabetesConcept(sentence: string): string | null {
-  const lowerSentence = sentence.toLowerCase();
-  
-  // Define concept patterns for common diabetes topics
-  const concepts = [
-    {
-      key: 'diabetes_definition',
-      patterns: [
-        /diabetes.*chronic.*condition/,
-        /chronic.*health.*condition.*diabetes/,
-        /diabetes.*affects.*body.*food.*energy/,
-        /condition.*affects.*glucose/,
-        /diabetes.*blood.*sugar/,
-        /chronic.*disease.*blood.*glucose/
-      ]
-    },
-    {
-      key: 'insulin_function',
-      patterns: [
-        /insulin.*hormone.*pancreas/,
-        /hormone.*insulin.*produced/,
-        /insulin.*helps.*glucose.*cells/,
-        /pancreas.*produces.*insulin/,
-        /insulin.*glucose.*energy/,
-        /hormone.*helps.*glucose/
-      ]
-    },
-    {
-      key: 'diabetes_types',
-      patterns: [
-        /type.*diabetes.*autoimmune/,
-        /type.*diabetes.*common.*form/,
-        /main.*types.*diabetes/,
-        /two.*types.*diabetes/,
-        /type.*insulin.*dependent/,
-        /type.*lifestyle.*factors/
-      ]
-    },
-    {
-      key: 'diabetes_symptoms',
-      patterns: [
-        /symptoms.*increased.*thirst/,
-        /frequent.*urination.*fatigue/,
-        /blurred.*vision.*symptoms/,
-        /extreme.*fatigue.*diabetes/,
-        /symptoms.*include.*thirst/,
-        /increased.*thirst.*frequent/
-      ]
-    },
-    {
-      key: 'diabetes_management',
-      patterns: [
-        /managing.*diabetes.*monitoring/,
-        /blood.*glucose.*monitoring/,
-        /healthy.*diet.*exercise/,
-        /lifestyle.*changes.*medication/,
-        /diabetes.*care.*involves/,
-        /treatment.*blood.*glucose/
-      ]
-    },
-    {
-      key: 'hyperglycemia',
-      patterns: [
-        /elevated.*glucose.*blood/,
-        /hyperglycemia.*high.*blood/,
-        /blood.*glucose.*levels.*high/,
-        /glucose.*blood.*elevated/,
-        /high.*blood.*sugar.*levels/
-      ]
-    }
-  ];
-  
-  // Check each concept
-  for (const concept of concepts) {
-    for (const pattern of concept.patterns) {
-      if (pattern.test(lowerSentence)) {
-        return concept.key;
-      }
-    }
-  }
-  
-  return null;
-}
-
-// Format headings to be on new lines and bold
-function formatHeadings(content: string): string {
-  // Pattern to match numbered headings like "1.Initial Treatment:" or "2.Recheck Blood Sugar:"
-  const headingPattern = /(\d+)\.([A-Z][^:]+):/g;
-  
-  // Replace with proper formatting: new line + bold heading
-  const result = content.replace(headingPattern, '\n\n**$1. $2:**\n');
-  
-  // Clean up any double new lines at the start
-  return result.replace(/^\n+/, '').trim();
 }
 
 // Brute force deduplication as final failsafe
@@ -713,27 +304,15 @@ function bruteForceDeduplication(content: string): string {
   
   let result = processedParagraphs.join('\n\n').trim();
   
-  // Enhanced pattern matching for all types of duplications
+  // Direct string replacement for known repetitive patterns
   const commonDuplicatePatterns = [
-    // Exact duplications of various sizes
-    /(.{200,})\s*\1+/gi, // Large chunk duplicates
-    /(.{100,})\s*\1+/gi, // Medium chunk duplicates  
-    /(.{50,})\s*\1+/gi,  // Small chunk duplicates
-    
-    // Sentence-level duplicates
-    /(.{30,}?[.!?])\s*\1+/gi,
-    
-    // Specific repetitive disclaimer patterns
-    /(I'm sorry, but there is no specific[^.]+\.)\s*\1+/gi,
-    /(While specific authoritative sources[^.]+\.)\s*\1+/gi,
-    /(However, I can offer[^.]+\.)\s*\1+/gi,
-    /(As a care worker[^.]+\.)\s*\1+/gi,
-    
-    // Word sequence duplicates (10+ words)
-    /(\w+(?:\s+\w+){9,})\s*\1+/gi,
-    
-    // Paragraph-level duplicates
-    /([^\n]{100,}\n?)\s*\1+/gi
+    /(.{50,})\1+/g, // Repeated chunks of 50+ characters
+    /(.{100,})\s*\1/g, // Repeated chunks with optional whitespace
+    /(It appears that there is no specific[^.]+\.)\s*\1/gi,
+    /(As there is no specific context provided[^.]+\.)\s*\1/gi,
+    /(Carbon dioxide \(CO2\) is a[^.]+\.)\s*\1/gi,
+    /(As a care worker[^.]+\.)\s*\1/gi,
+    /(\w+(?:\s+\w+){10,})\s*\1/g, // Any sequence of 10+ words repeated
   ];
   
   for (const pattern of commonDuplicatePatterns) {
@@ -1069,133 +648,6 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
-  // Unified chat endpoint that handles RAG fallback internally (recommended)
-  app.post("/api/chat/generate", isAuthenticated, async (req, res) => {
-    try {
-      const { message, courseId, context, conversationHistory } = req.body;
-      const user = req.user as any;
-
-      if (!message) {
-        return res.status(400).json({ message: "Message is required" });
-      }
-
-      // Create user object for the enhanced orchestrator
-      const userObj = {
-        id: user.claims.sub,
-        email: user.claims.email || user.claims.global_name || null,
-        firstName: user.claims.given_name || null,
-        lastName: user.claims.family_name || null,
-        profileImageUrl: user.claims.picture || null,
-        role: 'care_worker' as const,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      let response;
-      let usedRAG = true;
-
-      try {
-        // 1. Attempt the preferred RAG model first
-        console.log('Attempting RAG chat for unified endpoint...');
-        response = await enhancedRagOrchestrator.processQuery(
-          message, 
-          userObj, 
-          courseId, 
-          conversationHistory
-        );
-        
-        // Apply deduplication to the RAG response
-        if (response.content) {
-          response.content = finalDeduplication(response.content);
-        }
-        
-      } catch (ragError) {
-        // 2. If RAG fails, fallback to basic model within the SAME request
-        console.log('RAG model failed, falling back to basic chat within unified endpoint:', ragError);
-        usedRAG = false;
-        
-        // Import the basic AI function
-        const { getAITutorResponse } = await import('../services/openai');
-        const aiResponse = await getAITutorResponse(message, context);
-        
-        // Convert to RAG-like response format
-        response = {
-          content: aiResponse.response,
-          confidence: 0.5,
-          sources: [],
-          usedRAG: false,
-          agentsUsed: ['basic_fallback'],
-          responseTime: Date.now()
-        };
-        
-        // Apply deduplication to the basic response too
-        if (response.content) {
-          response.content = finalDeduplication(response.content);
-        }
-      }
-
-      // 3. Save the message (use appropriate storage based on what was used)
-      let chatMessage;
-      if (usedRAG) {
-        chatMessage = await storage.createRagChatMessage({
-          userId: user.claims.sub,
-          courseId: courseId || null,
-          message,
-          response: response.content || '',
-          sources: response.sources || [],
-          confidence: response.confidence || 0,
-          agentTrace: { 
-            agents: response.agentsUsed || [],
-            responseTime: response.responseTime || 0,
-            cacheHit: response.cacheHit || false,
-            usedRAG: response.usedRAG || true
-          }
-        });
-      } else {
-        chatMessage = await storage.createChatMessage({
-          userId: user.claims.sub,
-          courseId: courseId || '',
-          message,
-          response: response.content || '',
-          timestamp: new Date().toISOString()
-        });
-      }
-
-      // 4. Send the unified response with final safety check
-      let finalContent = response.content || '';
-      
-      // One final check for any remaining duplicates before sending
-      if (finalContent.length > 200) {
-        const words = finalContent.split(' ');
-        const halfPoint = Math.floor(words.length / 2);
-        const firstHalf = words.slice(0, halfPoint).join(' ');
-        const secondHalf = words.slice(halfPoint).join(' ');
-        
-        if (normalizeText(firstHalf) === normalizeText(secondHalf)) {
-          console.log('FINAL SAFETY CHECK: Last-minute duplication caught!');
-          finalContent = firstHalf;
-        }
-      }
-      
-      res.json({
-        ...response,
-        content: finalContent,
-        id: chatMessage.id,
-        timestamp: chatMessage.timestamp,
-        usedRAG
-      });
-    } catch (error) {
-      console.error("Unified chat endpoint error:", error);
-      res.status(500).json({ 
-        message: "I'm experiencing technical difficulties. Please consult your local healthcare guidelines for immediate assistance.",
-        confidence: 0,
-        sources: [],
-        usedRAG: false,
-        agentsUsed: ['error_handler']
-      });
-    }
-  });
-
   // Enhanced RAG chat endpoint with multi-agent processing
   app.post("/api/rag/chat", isAuthenticated, async (req, res) => {
     try {
@@ -1466,64 +918,4 @@ export function registerRAGRoutes(app: Express) {
       res.status(500).json({ message: "Failed to fetch analytics" });
     }
   });
-}
-
-// Ultimate final check to catch any remaining duplications
-function ultimateDeduplicationCheck(content: string): string {
-  if (!content || content.length < 100) return content;
-  
-  console.log('ULTIMATE DEDUPLICATION CHECK - Input length:', content.length);
-  
-  // Step 1: Check for exact half-duplication one more time
-  const sentences = content.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 10);
-  
-  if (sentences.length > 6) {
-    const halfPoint = Math.floor(sentences.length / 2);
-    
-    for (let offset = -3; offset <= 3; offset++) {
-      const splitPoint = halfPoint + offset;
-      if (splitPoint < 2 || splitPoint > sentences.length - 2) continue;
-      
-      const firstHalf = sentences.slice(0, splitPoint).join(' ').trim();
-      const secondHalf = sentences.slice(splitPoint).join(' ').trim();
-      
-      // Normalize for comparison
-      const norm1 = firstHalf.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
-      const norm2 = secondHalf.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
-      
-      if (norm1 === norm2 && norm1.length > 100) {
-        console.log('ULTIMATE CHECK: Exact sentence-level duplication found at offset', offset);
-        return firstHalf;
-      }
-      
-      // Check for high similarity
-      if (norm1.length > 100 && norm2.length > 100) {
-        const similarity = calculateTextSimilarity(norm1, norm2);
-        if (similarity > 0.9) {
-          console.log('ULTIMATE CHECK: High similarity duplication found at offset', offset, 'similarity:', similarity);
-          return firstHalf;
-        }
-      }
-    }
-  }
-  
-  // Step 2: Final regex cleanup for any missed patterns
-  let result = content;
-  const finalPatterns = [
-    /(.{100,}?[.!?])\s*\1+/gi,    // Any sentence duplicated
-    /(.{200,})\s*\1+/gi,          // Large chunk duplicated
-    /(.*?)(\1){2,}/gi             // Any pattern repeated 3+ times
-  ];
-  
-  for (const pattern of finalPatterns) {
-    const beforeLength = result.length;
-    result = result.replace(pattern, '$1');
-    if (result.length < beforeLength) {
-      console.log('ULTIMATE CHECK: Final pattern cleanup applied, reduced by:', beforeLength - result.length, 'characters');
-    }
-  }
-  
-  console.log('ULTIMATE DEDUPLICATION CHECK - Output length:', result.length, 'final reduction:', Math.round((1 - result.length / content.length) * 100) + '%');
-  
-  return result;
 }

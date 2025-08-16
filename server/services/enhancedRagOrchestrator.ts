@@ -80,7 +80,6 @@ export class EnhancedRagOrchestrator {
   ): Promise<ChatResponse> {
     const startTime = Date.now();
     
-    
     try {
       // Step 1: Enhanced emergency and intent detection
       const intentAnalysis = await nlpIntentDetector.analyzeIntent(query, conversationHistory?.join('\n'));
@@ -93,7 +92,6 @@ export class EnhancedRagOrchestrator {
       // Step 2: Check cache
       const cacheResult = await this.checkQueryCache(query);
       if (cacheResult) {
-        
         await this.logAnalytics({
           eventType: 'cache_hit',
           userId: user.id,
@@ -108,7 +106,6 @@ export class EnhancedRagOrchestrator {
         }
         return cacheResult;
       }
-      
 
       // Step 3: Intent analysis
       const analysis = await this.analyzeQueryWithIntent(query, user);
@@ -589,19 +586,10 @@ Provide JSON response with:
     // Enhance system prompt to emphasize citation requirements and prevent repetition
     const enhancedSystemPrompt = `${systemPrompt}
 
-CRITICAL ANTI-REPETITION REQUIREMENTS:
-1. NEVER repeat any sentence, phrase, concept, or information even slightly
-2. Each sentence must contain completely unique information
-3. If you find yourself about to repeat something, STOP writing instead
-4. Vary sentence structure completely - no repetitive patterns
-5. Do not rephrase the same idea using different words
-6. Maximum response length: 300 tokens to prevent over-elaboration
-
-CITATION REQUIREMENTS:
-7. Reference source materials when available (e.g., "According to NICE guidelines...")
-8. Keep citations brief and integrated naturally
-
-STRUCTURE: Brief definition → Key clinical relevance → Practical application → STOP`;
+CRITICAL REQUIREMENTS:
+1. You must reference and cite the source materials provided in your response. When mentioning information from the context, explicitly reference it (e.g., "According to the NICE guidelines provided..." or "As stated in the NHS documentation..."). This is essential for medical accuracy and compliance.
+2. NEVER repeat the same sentence, phrase, or information twice in your response. Each sentence must be unique and add new value.
+3. Keep responses concise and eliminate redundancy.`;
 
     try {
       // Get appropriate generation settings based on query analysis
@@ -616,16 +604,12 @@ STRUCTURE: Brief definition → Key clinical relevance → Practical application
             content: `Context from authoritative sources: ${contextWindow}\n\nUser Role: ${user.role}\n\nQuery: ${query}\n\nProvide a comprehensive response based on the available context. Remember to cite the sources and include specific guidance from NICE, NHS, or CQC documentation when available.`
           }
         ],
-        temperature: 0.3, // Increased from very low to allow some creativity in avoiding repetition
-        top_p: 0.7, // Increased to allow more diverse token selection
-        max_tokens: 300, // Reduced to force conciseness
-        presence_penalty: 2.0, // Maximum penalty for using same topics
-        frequency_penalty: 2.0, // Maximum penalty for repeating tokens
-        stop: ["\n\nFor more", "Additionally", "Furthermore", "Moreover", "In addition", "Also", "As mentioned", "As stated above"], // Stop common repetition triggers
+        temperature: generationSettings.temperature,
+        top_p: generationSettings.topP,
+        max_tokens: generationSettings.maxTokens,
       });
 
       let content = response.choices[0]?.message?.content || '';
-      
       
       // Apply deduplication to individual agent responses
       content = this.deduplicateContent(content);
@@ -779,20 +763,20 @@ STRUCTURE: Brief definition → Key clinical relevance → Practical application
             role: "system", 
             content: `You are an expert healthcare information synthesizer. Your critical task:
 
-ULTRA-STRICT ANTI-REPETITION PROTOCOL:
-1. Every sentence must contain COMPLETELY NEW information
-2. IMMEDIATELY STOP if you start to repeat any concept, even in different words
-3. Maximum 250 tokens - force extreme conciseness
-4. NO transition phrases that encourage repetition ("Furthermore", "Additionally", "Also")
-5. NO elaboration or expansion of already stated points
-6. ONE concept per sentence, move on immediately
-7. If sources repeat information, synthesize into ONE unique statement only
+CRITICAL ANTI-REPETITION RULES:
+1. NEVER, under any circumstances, repeat the same sentence twice
+2. NEVER duplicate any paragraph or section of text
+3. Each piece of information must appear exactly ONCE in your response
+4. If multiple sources say the same thing, combine into ONE unique sentence
+5. Vary sentence structure completely - avoid any repetitive patterns
+6. Do not restate information using different words
+7. STOP writing immediately if you find yourself about to repeat something
 
-MANDATORY STRUCTURE:
-- Core definition (1 sentence)
-- Clinical significance (1-2 sentences)
-- Practical application (1-2 sentences)
-- STOP - do not elaborate further
+RESPONSE STRUCTURE (NO REPETITION):
+- Maximum ${genSettings.maxTokens} tokens
+- Single cohesive response with unique sentences only
+- Brief explanation → Practical example → Key steps → Next action
+- Each sentence must add NEW information
 - No redundant explanations or restatements
 
 FINAL CHECK: Review your complete response. If ANY sentence appears twice or conveys the same information as another sentence, you have FAILED the task.`
@@ -812,25 +796,7 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
 
       let synthesizedContent = response.choices[0]?.message?.content || agentResponses[0].content;
       
-      // LOG RAW AI OUTPUT - Critical for debugging duplication source
-      console.log('=== RAW AI OUTPUT ANALYSIS ===');
-      console.log('Raw AI response length:', synthesizedContent.length);
-      console.log('Raw AI content (first 500 chars):', JSON.stringify(synthesizedContent.substring(0, 500)));
-      console.log('Raw AI content (last 500 chars):', JSON.stringify(synthesizedContent.substring(Math.max(0, synthesizedContent.length - 500))));
-      
-      // FORENSIC STRING ANALYSIS - Check for invisible characters
-      const forensicAnalysis = this.findStringDifference(synthesizedContent);
-      if (forensicAnalysis.hasIssues) {
-        console.log('FORENSIC ANALYSIS DETECTED ISSUES:', forensicAnalysis);
-        // Use normalized content if issues were found
-        synthesizedContent = forensicAnalysis.normalizedContent;
-        console.log('Using forensically normalized content:', synthesizedContent.length, 'chars');
-      }
-      
       console.log('Pre-deduplication synthesized content length:', synthesizedContent.length);
-      
-      // Apply immediate aggressive deduplication to synthesized content
-      synthesizedContent = this.aggressiveDeduplication(synthesizedContent);
       
       // Additional deduplication check for sentences
       synthesizedContent = this.deduplicateContent(synthesizedContent);
@@ -960,68 +926,54 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
     console.log('Deduplication input length:', content.length);
     console.log('Content preview:', content.substring(0, 200) + '...');
     
-    // Additional forensic analysis for duplication tracing
-    const hasNonAscii = /[^\x20-\x7E]/.test(content);
-    const charCodes = content.split('').map(c => c.charCodeAt(0)).filter(c => c > 127).slice(0, 20);
-    if (hasNonAscii) {
-      console.log('Non-ASCII characters detected. First 20 codes:', charCodes);
-    }
-    
-    // STEP 1: Ultra-aggressive exact duplication detection
-    const words = content.split(/\s+/);
-    if (words.length > 30) {
-      // Check for word-level exact duplication with wide range
-      for (let offset = -30; offset <= 30; offset++) {
-        const splitPoint = Math.floor(words.length / 2) + offset;
-        if (splitPoint < 10 || splitPoint > words.length - 10) continue;
+    // AGGRESSIVE STEP 1: Check for exact complete duplication with multiple split points
+    for (let offset = -20; offset <= 20; offset++) {
+      const splitPoint = Math.floor(content.length / 2) + offset;
+      if (splitPoint < 100 || splitPoint > content.length - 100) continue;
+      
+      const firstPart = content.substring(0, splitPoint).trim();
+      const secondPart = content.substring(splitPoint).trim();
+      
+      // Normalize both parts for comparison
+      const normalizedFirst = firstPart.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+      const normalizedSecond = secondPart.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+      
+      // Check for exact duplication
+      if (normalizedFirst.length > 50 && normalizedSecond.length > 50) {
+        if (normalizedFirst === normalizedSecond) {
+          console.log('EXACT COMPLETE DUPLICATION DETECTED at offset', offset, '- Using first part only');
+          content = firstPart;
+          break;
+        }
         
-        const firstWords = words.slice(0, splitPoint);
-        const secondWords = words.slice(splitPoint);
+        // Check if second part starts with first part  
+        if (normalizedSecond.startsWith(normalizedFirst.substring(0, Math.min(normalizedFirst.length, 300)))) {
+          console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part only');
+          content = firstPart;
+          break;
+        }
         
-        // Check for exact word sequence match
-        if (firstWords.length > 20 && secondWords.length > 20) {
-          const firstText = firstWords.join(' ').trim();
-          const secondText = secondWords.join(' ').trim();
-          
-          // Direct text comparison (most accurate)
-          if (firstText === secondText && firstText.length > 100) {
-            console.log('EXACT WORD-FOR-WORD DUPLICATION DETECTED at offset', offset, '- Using first part only');
-            return firstText;
-          }
-          
-          // Check if second part starts with first part exactly
-          if (secondText.startsWith(firstText.substring(0, Math.min(firstText.length, 500)))) {
-            console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part only');
-            return firstText;
-          }
-          
-          // Check for 95%+ similarity
-          const similarity = this.calculateExactSimilarity(firstText, secondText);
-          if (similarity > 0.95 && firstText.length > 200) {
-            console.log('HIGH SIMILARITY DUPLICATION DETECTED at offset', offset, 'similarity:', similarity, '- Using first part only');
-            return firstText;
-          }
+        // Check for high overlap in the first part of text
+        const checkLength = Math.min(normalizedFirst.length, normalizedSecond.length, 200);
+        const firstPortion = normalizedFirst.substring(0, checkLength);
+        const secondPortion = normalizedSecond.substring(0, checkLength);
+        
+        if (firstPortion === secondPortion && firstPortion.length > 100) {
+          console.log('HIGH OVERLAP DUPLICATION DETECTED at offset', offset, '- Using first part only');
+          content = firstPart;
+          break;
         }
       }
     }
     
-    // Step 2: Remove exact consecutive duplicates with multiple regex patterns
+    // Step 2: Remove exact consecutive duplicates with aggressive regex
     const originalLength = content.length;
-    
-    // Pattern 1: Large chunk duplication
-    content = content.replace(/(.{50,}?)\s*\1+/gi, '$1');
-    
-    // Pattern 2: Sentence-ending duplication
     content = content.replace(/(.{30,}?[.!?])\s*\1+/gi, '$1');
-    
-    // Pattern 3: Paragraph-level duplication
-    content = content.replace(/(.*?[.!?])\s*\1+/gi, '$1');
-    
     if (content.length !== originalLength) {
-      console.log('REGEX DUPLICATES REMOVED, reduced by:', originalLength - content.length, 'characters');
+      console.log('REGEX DUPLICATES REMOVED');
     }
     
-    // Step 3: Enhanced sentence-level deduplication
+    // Step 3: Sentence-level deduplication
     const sentenceParts = content.split(/([.!?]+)/);
     const rebuiltContent: string[] = [];
     const seenNormalized = new Set<string>();
@@ -1035,11 +987,8 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
         continue;
       }
       
-      // Aggressive normalization with forensic cleaning
+      // Aggressive normalization
       const normalized = sentence.toLowerCase()
-        .replace(/[\u200B-\u200D\uFEFF\u2060\u2061]/g, '') // Remove zero-width chars
-        .replace(/[\u00A0]/g, ' ') // Replace non-breaking spaces
-        .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Replace unusual spaces
         .replace(/[^\w\s]/g, '')
         .replace(/\s+/g, ' ')
         .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this)\b/g, '')
@@ -1055,9 +1004,7 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
     
     const result = rebuiltContent.join('');
     console.log('Deduplication output length:', result.length, 'reduction:', Math.round((1 - result.length / content.length) * 100) + '%');
-    
-    // Final safety check for any remaining exact duplications
-    return this.finalSafetyDeduplication(result);
+    return result;
   }
 
   private formatCitationSection(sources: any[]): string {
@@ -1099,199 +1046,6 @@ ${citations}
     } catch (error) {
       console.error('Feedback collection error:', error);
     }
-  }
-
-  private calculateExactSimilarity(text1: string, text2: string): number {
-    if (!text1 || !text2) return 0;
-    
-    const words1 = text1.toLowerCase().split(/\s+/);
-    const words2 = text2.toLowerCase().split(/\s+/);
-    
-    if (words1.length === 0 || words2.length === 0) return 0;
-    
-    // Calculate sequential word matches from the beginning
-    let matches = 0;
-    const minLength = Math.min(words1.length, words2.length);
-    
-    for (let i = 0; i < minLength; i++) {
-      if (words1[i] === words2[i]) {
-        matches++;
-      } else {
-        break; // Stop at first mismatch for more accurate similarity
-      }
-    }
-    
-    return matches / minLength;
-  }
-  
-  private finalSafetyDeduplication(content: string): string {
-    if (!content) return content;
-    
-    // Final brute-force check for exact repetition
-    const lines = content.split('\n').filter(line => line.trim());
-    const uniqueLines: string[] = [];
-    const seenLines = new Set<string>();
-    
-    for (const line of lines) {
-      const normalized = line.toLowerCase()
-        .replace(/[\u200B-\u200D\uFEFF\u2060\u2061]/g, '') // Remove zero-width chars
-        .replace(/[\u00A0]/g, ' ') // Replace non-breaking spaces
-        .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Replace unusual spaces
-        .replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
-      if (normalized.length > 10 && !seenLines.has(normalized)) {
-        seenLines.add(normalized);
-        uniqueLines.push(line);
-      } else if (normalized.length <= 10) {
-        uniqueLines.push(line);
-      }
-    }
-    
-    return uniqueLines.join('\n');
-  }
-
-  private aggressiveDeduplication(content: string): string {
-    if (!content) return content;
-    
-    console.log('AGGRESSIVE DEDUPLICATION - Input length:', content.length);
-    
-    // Step 1: Check for exact half-duplication (most common case)
-    const normalizedContent = content.toLowerCase()
-      .replace(/[\u200B-\u200D\uFEFF\u2060\u2061]/g, '') // Remove zero-width chars
-      .replace(/[\u00A0]/g, ' ') // Replace non-breaking spaces
-      .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Replace unusual spaces
-      .replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
-    const words = normalizedContent.split(' ');
-    
-    if (words.length > 40) {
-      const halfPoint = Math.floor(words.length / 2);
-      
-      // Try multiple offsets around the midpoint
-      for (let offset = -15; offset <= 15; offset++) {
-        const splitPoint = halfPoint + offset;
-        if (splitPoint < 10 || splitPoint > words.length - 10) continue;
-        
-        const firstHalf = words.slice(0, splitPoint).join(' ');
-        const secondHalf = words.slice(splitPoint).join(' ');
-        
-        // Check for exact match
-        if (firstHalf === secondHalf && firstHalf.length > 100) {
-          console.log('EXACT HALF-DUPLICATION DETECTED at offset', offset, '- Using first half');
-          const originalWords = content.split(' ');
-          return originalWords.slice(0, splitPoint).join(' ').trim();
-        }
-        
-        // Check for high similarity
-        if (firstHalf.length > 100 && secondHalf.length > 100) {
-          const similarity = this.calculateExactSimilarity(firstHalf, secondHalf);
-          if (similarity > 0.9) {
-            console.log('HIGH SIMILARITY HALF-DUPLICATION DETECTED at offset', offset, 'similarity:', similarity, '- Using first half');
-            const originalWords = content.split(' ');
-            return originalWords.slice(0, splitPoint).join(' ').trim();
-          }
-        }
-      }
-    }
-    
-    // Step 2: Remove consecutive exact duplicates
-    let result = content;
-    const patterns = [
-      /(.{100,}?[.!?])\s*\1+/gi,  // Large sentence duplicates
-      /(.{50,}?)\s*\1+/gi,        // Medium chunk duplicates
-      /(.{30,}?[.!?])\s*\1+/gi    // Small sentence duplicates
-    ];
-    
-    for (const pattern of patterns) {
-      const beforeLength = result.length;
-      result = result.replace(pattern, '$1');
-      if (result.length < beforeLength) {
-        console.log('Pattern duplicate removed, reduced by:', beforeLength - result.length, 'characters');
-      }
-    }
-    
-    console.log('AGGRESSIVE DEDUPLICATION - Output length:', result.length, 'reduction:', Math.round((1 - result.length / content.length) * 100) + '%');
-    
-    return result;
-  }
-
-  /**
-   * Forensic String Analysis - Detects invisible characters and text anomalies
-   * that might be breaking deduplication logic
-   */
-  private findStringDifference(content: string): {
-    hasIssues: boolean;
-    invisibleChars: Array<{char: string, code: number, position: number}>;
-    normalizedContent: string;
-    issues: string[];
-  } {
-    const issues: string[] = [];
-    const invisibleChars: Array<{char: string, code: number, position: number}> = [];
-    
-    // Check for invisible/problematic characters
-    for (let i = 0; i < content.length; i++) {
-      const char = content[i];
-      const charCode = char.charCodeAt(0);
-      
-      // Check for various invisible/problematic characters
-      if (
-        charCode === 8203 || // Zero-width space
-        charCode === 8204 || // Zero-width non-joiner
-        charCode === 8205 || // Zero-width joiner
-        charCode === 65279 || // Byte order mark
-        charCode === 8288 || // Word joiner
-        charCode === 8289 || // Function application
-        (charCode >= 8206 && charCode <= 8207) || // Left-to-right/Right-to-left marks
-        (charCode >= 8234 && charCode <= 8238) || // Directional formatting characters
-        charCode === 160 || // Non-breaking space
-        charCode === 173 // Soft hyphen
-      ) {
-        invisibleChars.push({
-          char: char,
-          code: charCode,
-          position: i
-        });
-      }
-    }
-    
-    if (invisibleChars.length > 0) {
-      issues.push(`Found ${invisibleChars.length} invisible characters`);
-    }
-    
-    // Check for unusual whitespace patterns
-    const unusualWhitespace = content.match(/[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g);
-    if (unusualWhitespace) {
-      issues.push(`Found ${unusualWhitespace.length} unusual whitespace characters`);
-    }
-    
-    // Check for repeated identical chunks (forensic duplicate detection)
-    const words = content.split(/\s+/);
-    if (words.length > 20) {
-      const midPoint = Math.floor(words.length / 2);
-      const firstHalf = words.slice(0, midPoint).join(' ');
-      const secondHalf = words.slice(midPoint).join(' ');
-      
-      if (firstHalf === secondHalf) {
-        issues.push('Detected exact duplicate halves in content');
-      } else if (secondHalf.startsWith(firstHalf.substring(0, 100))) {
-        issues.push('Detected potential partial duplication pattern');
-      }
-    }
-    
-    // Normalize content by removing invisible characters
-    const normalizedContent = content
-      .replace(/[\u200B-\u200D\uFEFF\u2060\u2061]/g, '') // Remove zero-width chars
-      .replace(/[\u00A0]/g, ' ') // Replace non-breaking spaces with regular spaces
-      .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, ' ') // Replace unusual spaces
-      .replace(/[\u00AD]/g, '') // Remove soft hyphens
-      .replace(/[\u202A-\u202E]/g, '') // Remove directional marks
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .trim();
-    
-    return {
-      hasIssues: issues.length > 0,
-      invisibleChars,
-      normalizedContent,
-      issues
-    };
   }
 }
 

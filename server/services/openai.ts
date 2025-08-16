@@ -96,14 +96,7 @@ Respond in JSON format with:
       stop: ["As there is no specific", "Carbon dioxide (CO2) is a", "As a care worker"]
     });
 
-    // LOG RAW AI OUTPUT - Critical for debugging duplication source (FALLBACK)
-    const rawContent = completion.choices[0].message.content || '{}';
-    console.log('=== FALLBACK AI OUTPUT ANALYSIS ===');
-    console.log('Raw fallback AI response length:', rawContent.length);
-    console.log('Raw fallback AI content (first 300 chars):', JSON.stringify(rawContent.substring(0, 300)));
-    console.log('Raw fallback AI content (last 300 chars):', JSON.stringify(rawContent.substring(Math.max(0, rawContent.length - 300))));
-    
-    const result = JSON.parse(rawContent);
+    const result = JSON.parse(completion.choices[0].message.content || '{}');
     
     return {
       response: result.response || "I apologize, but I couldn't generate a proper response. Please try rephrasing your question.",

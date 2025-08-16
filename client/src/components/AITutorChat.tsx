@@ -48,55 +48,9 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
-  // Replace your messages useQuery with this:
-  const { data: rawMessages = [] } = useQuery<ChatMessage[]>({
+  const { data: messages = [] } = useQuery<ChatMessage[]>({
     queryKey: ["/api/chat", courseId],
   });
-
-  // Robust text normalization function (from ChatGPT/Gemini suggestions)
-  const normalizeText = (str: string) => {
-    if (!str) return "";
-    return str
-      .replace(/\s+/g, ' ') // collapse whitespace
-      .replace(/\u200B/g, '') // remove zero-width spaces
-      .replace(/[\u200B-\u200D\uFEFF]/g, '') // remove zero-width spaces and BOM
-      .trim()
-      .toLowerCase();
-  };
-
-  // Enhanced message deduplication with normalization and longer timeout
-  const messages = rawMessages.filter(
-    (msg, index, self) => {
-      const isDuplicate = self.findIndex(
-        (m) => {
-          // First try to match by ID
-          if (msg.id && m.id) {
-            return m.id === msg.id;
-          }
-          // Fallback: match by normalized content with extended timeout (2s as suggested)
-          const timeDiff = Math.abs(new Date(m.timestamp).getTime() - new Date(msg.timestamp).getTime());
-          const messageMatch = normalizeText(m.message) === normalizeText(msg.message);
-          const responseMatch = normalizeText(m.response) === normalizeText(msg.response);
-          const timeMatch = timeDiff < 2000;
-          
-          if (messageMatch && responseMatch && timeMatch && index !== self.indexOf(m)) {
-            console.log('FRONTEND: Duplicate detected and filtered:', {
-              original: m.response?.substring(0, 100) + '...',
-              duplicate: msg.response?.substring(0, 100) + '...',
-              timeDiff
-            });
-          }
-          
-          return messageMatch && responseMatch && timeMatch;
-        }
-      );
-      
-      return index === isDuplicate;
-    }
-  );
-  
-  // Additional logging for debugging
-  console.log('FRONTEND: Raw messages count:', rawMessages.length, 'Filtered messages count:', messages.length);
 
   // Initialize TTS and STT
   useEffect(() => {
@@ -138,35 +92,33 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const chatMutation = useMutation({
     mutationFn: async (data: { message: string; courseId: string; context?: string }) => {
-      // Use the unified endpoint that handles RAG fallback internally
-      const response = await apiRequest("POST", "/api/chat/generate", {
-        message: data.message,
-        courseId: data.courseId,
-        context: data.context
-      });
-      
-      if (!response.ok) {
-        throw new Error("Failed to get chat response");
+      // Try RAG-enhanced chat first
+      try {
+        const ragResponse = await apiRequest("POST", "/api/rag/chat", {
+          message: data.message,
+          courseId: data.courseId
+        });
+        const result = await ragResponse.json();
+        console.log('RAG response:', result); // Debug log
+        return { ...result, usedRAG: true } as ChatResponse;
+      } catch (ragError) {
+        console.log('RAG chat failed, falling back to basic chat:', ragError);
+        // Fallback to basic chat
+        const response = await apiRequest("POST", "/api/chat", data);
+        const result = await response.json();
+        console.log('Basic chat response:', result); // Debug log
+        return { ...result, usedRAG: false } as ChatResponse;
       }
-      
-      const result = await response.json();
-      console.log('Unified chat response:', result); // Debug log
-      console.log('Response content preview:', result.content?.substring(0, 200) + '...');
-      return result as ChatResponse;
     },
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       setInputMessage("");
-
-      // Speak AI response if enabled
+      
+      // Read the AI response aloud if TTS is enabled
       const responseText = data.response || data.content;
       if (isTTSEnabled && synthesis && responseText) {
         speakText(responseText);
       }
-
-      // Debounced query invalidation to prevent race conditions (ChatGPT suggestion)
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
-      }, 200);
     },
     onError: (error) => {
       console.error('Chat mutation error:', error);
