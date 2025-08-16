@@ -395,8 +395,15 @@ export async function reindexAllChunks() {
     // Import storage here to avoid circular dependency
     const { storage } = await import('../storage');
     
-    // Get all document chunks
-    const chunks = await storage.getAllDocumentChunks();
+    // Get all documents first, then get all their chunks
+    const documents = await storage.getAllDocuments();
+    console.log(`📄 Found ${documents.length} documents`);
+    
+    const chunks = [];
+    for (const document of documents) {
+      const documentChunks = await storage.getDocumentChunks(document.id);
+      chunks.push(...documentChunks);
+    }
     console.log(`📚 Found ${chunks.length} chunks to re-index`);
     
     if (chunks.length === 0) {
