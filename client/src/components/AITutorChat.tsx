@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Mic, MicOff, Volume2, VolumeX, ChevronDown, Stethoscope, Heart, BookOpen, AlertCircle } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Bot, Send, Mic, MicOff, Volume2, VolumeX, ChevronDown, Stethoscope, Heart, BookOpen, AlertCircle, Copy, RotateCcw, ThumbsUp, ThumbsDown, Search, Download, Sparkles, Clock, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarkdownRenderer } from "@/components/ui/markdown";
@@ -35,6 +35,16 @@ interface ChatResponse {
 
 export default function AITutorChat({ courseId, currentModule, isMobile, isOpen, onClose }: AITutorChatProps) {
   const [inputMessage, setInputMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const [recentQueries, setRecentQueries] = useState<string[]>([]);
+  const [quickReplies] = useState([
+    "What are the symptoms of diabetes?",
+    "How to manage blood sugar levels?",
+    "What medications are used for Type 2 diabetes?",
+    "Signs of diabetic complications?",
+    "Diet recommendations for diabetics?"
+  ]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
   // TTS and STT state
@@ -278,17 +288,95 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = useCallback(() => {
     if (!inputMessage.trim()) return;
+    
+    const trimmedMessage = inputMessage.trim();
+    
+    // Add to recent queries
+    setRecentQueries(prev => {
+      const updated = [trimmedMessage, ...prev.filter(q => q !== trimmedMessage)].slice(0, 5);
+      localStorage.setItem('medimind-recent-queries', JSON.stringify(updated));
+      return updated;
+    });
     
     const context = currentModule ? `Current module: ${currentModule.title} - ${currentModule.description}` : undefined;
     
     chatMutation.mutate({
-      message: inputMessage.trim(),
+      message: trimmedMessage,
       courseId,
       context,
     });
-  };
+  }, [inputMessage, currentModule, courseId, chatMutation]);
+
+  // Load recent queries on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('medimind-recent-queries');
+    if (saved) {
+      try {
+        setRecentQueries(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse recent queries:', e);
+      }
+    }
+  }, []);
+
+  // Auto-resize textarea
+  const adjustTextareaHeight = useCallback(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+      const scrollHeight = inputRef.current.scrollHeight;
+      inputRef.current.style.height = `${Math.min(scrollHeight, 120)}px`;
+    }
+  }, []);
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [inputMessage, adjustTextareaHeight]);
+
+  const copyMessageText = useCallback((text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      // You could add a toast notification here
+      console.log('Copied to clipboard');
+    });
+  }, []);
+
+  const regenerateResponse = useCallback((originalMessage: string) => {
+    const context = currentModule ? `Current module: ${currentModule.title} - ${currentModule.description}` : undefined;
+    
+    chatMutation.mutate({
+      message: originalMessage + " (regenerate)",
+      courseId,
+      context,
+    });
+  }, [currentModule, courseId, chatMutation]);
+
+  const exportChatHistory = useCallback(() => {
+    if (!messages.length) return;
+    
+    const chatData = messages.map(msg => ({
+      timestamp: msg.timestamp,
+      user: msg.message,
+      ai: msg.response
+    }));
+    
+    const blob = new Blob([JSON.stringify(chatData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `medimind-chat-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [messages]);
+
+  const filteredMessages = showSearch && searchQuery 
+    ? messages.filter(msg => 
+        msg.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        msg.response.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : messages;
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -337,6 +425,25 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => setShowSearch(!showSearch)}
+              className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 border border-white/20"
+              title="Search Chat History"
+            >
+              <Search className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={exportChatHistory}
+              className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 border border-white/20"
+              title="Export Chat History"
+              disabled={!messages.length}
+            >
+              <Download className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setIsTTSEnabled(!isTTSEnabled)}
               className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 border border-white/20"
               title={isTTSEnabled ? "Disable Text-to-Speech" : "Enable Text-to-Speech"}
@@ -356,6 +463,22 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           </div>
         </div>
       </div>
+
+      {/* Search Bar */}
+      {showSearch && (
+        <div className="px-6 py-3 border-b border-white/20 bg-gradient-to-r from-medical-blue/10 to-healthcare-green/10">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search messages..."
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-medical-blue transition-colors"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Enhanced Chat Messages Area */}
       <div 
