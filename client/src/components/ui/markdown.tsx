@@ -7,6 +7,22 @@ interface MarkdownRendererProps {
 }
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className = "" }) => {
+  // Clean the content first to remove unwanted patterns
+  const cleanContent = (text: string): string => {
+    if (!text) return text;
+    
+    // Remove document reference patterns like (document-1755207658373-265114598)
+    let cleaned = text.replace(/\(document-[0-9]+-[0-9]+\)/g, '');
+    
+    // Remove any leftover whitespace from removed references
+    cleaned = cleaned.replace(/\s{2,}/g, ' ');
+    
+    // Clean up any hanging punctuation after removed references
+    cleaned = cleaned.replace(/\s+([.!?])/g, '$1');
+    
+    return cleaned.trim();
+  };
+
   // Enhanced markdown parser with improved formatting and visual elements
   const parseMarkdown = (text: string) => {
     const lines = text.split('\n');
@@ -58,7 +74,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         if (inTable) {
           processTable();
         }
-        elements.push(<div key={`spacer-${lineIndex}`} className="h-2" />);
+        elements.push(<div key={`spacer-${lineIndex}`} className="h-4" />);
         return;
       }
 
@@ -105,19 +121,21 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         };
 
         const headingClasses = {
-          1: 'text-2xl font-bold text-gray-900 mt-6 mb-4 pb-2 border-b-2 border-medical-blue',
-          2: 'text-xl font-semibold text-gray-800 mt-5 mb-3 flex items-center gap-2',
-          3: 'text-lg font-semibold text-gray-700 mt-4 mb-2 flex items-center gap-2',
-          4: 'text-base font-semibold text-gray-600 mt-3 mb-2',
-          5: 'text-sm font-semibold text-gray-600 mt-2 mb-1',
+          1: 'text-2xl font-bold text-gray-900 mt-8 mb-6 pb-2 border-b-2 border-medical-blue',
+          2: 'text-xl font-semibold text-gray-800 mt-6 mb-4 flex items-center gap-2',
+          3: 'text-lg font-semibold text-gray-700 mt-5 mb-3 flex items-center gap-2',
+          4: 'text-base font-semibold text-gray-600 mt-4 mb-2',
+          5: 'text-sm font-semibold text-gray-600 mt-3 mb-2',
           6: 'text-sm font-medium text-gray-500 mt-2 mb-1'
         };
 
         elements.push(
-          <HeadingTag key={`heading-${lineIndex}`} className={headingClasses[level as keyof typeof headingClasses] || headingClasses[6]}>
-            {level <= 3 && getHeadingIcon(title)}
-            {title}
-          </HeadingTag>
+          <div key={`heading-wrapper-${lineIndex}`} className="my-2">
+            <HeadingTag className={headingClasses[level as keyof typeof headingClasses] || headingClasses[6]}>
+              {level <= 3 && getHeadingIcon(title)}
+              {title}
+            </HeadingTag>
+          </div>
         );
         return;
       }
@@ -395,7 +413,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
 
   return (
     <div className={`whitespace-pre-wrap ${className}`}>
-      {parseMarkdown(content)}
+      {parseMarkdown(cleanContent(content))}
     </div>
   );
 };

@@ -11,10 +11,29 @@ import path from "path";
 import fs from "fs/promises";
 
 // Enhanced deduplication function to eliminate repetitive sentences
+// Clean up document references and format markdown properly
+function cleanResponseContent(content: string): string {
+  if (!content) return content;
+  
+  // Remove document reference patterns like (document-1755207658373-265114598)
+  let cleaned = content.replace(/\(document-[0-9]+-[0-9]+\)/g, '');
+  
+  // Clean up extra whitespace from removed references
+  cleaned = cleaned.replace(/\s{2,}/g, ' ');
+  
+  // Clean up any hanging punctuation after removed references
+  cleaned = cleaned.replace(/\s+([.!?])/g, '$1');
+  
+  return cleaned.trim();
+}
+
 // Simplified deduplication (semantic deduplication already handled in orchestrator)
 function finalDeduplication(content: string): string {
   if (!content) return content;
 
+  // First clean the content
+  content = cleanResponseContent(content);
+  
   console.log('Simple safety deduplication - Original length:', content.length);
 
   // Only check for obvious exact duplications as a safety net
