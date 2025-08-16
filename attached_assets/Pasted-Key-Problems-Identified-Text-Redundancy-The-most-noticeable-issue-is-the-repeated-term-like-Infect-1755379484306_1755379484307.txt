@@ -1,0 +1,79 @@
+Key Problems Identified
+Text Redundancy: The most noticeable issue is the repeated term, like Infections*Inactions* or Retinopathy*Retinopathy*. This looks like a data processing or display bug and immediately makes the text look messy.
+
+Unprocessed Markdown: The ### before headings (e.g., ### Skin Complications) is raw Markdown that hasn't been rendered into a proper heading. This makes it look like code instead of a clean title.
+
+Visual Clutter: The combination of long paragraphs, in-line citations [WHO, 2020], and dense text blocks makes the information hard to scan quickly.
+
+Inconsistent Styling: The use of bold, italics, and the asterisk * seems inconsistent. For example, **Important** *Important*: is repetitive.
+
+Placeholder Text: There's a [BAD] tag in the text about eye complications, which appears to be a placeholder or an error.
+
+Recommendations for a Cleaner Look
+Here are actionable steps to improve the design.
+
+1. Fix a_nd Simplify Headings
+Instead of ### Skin Complications, your chatbot should render this as a distinct visual heading.
+
+Use Bolding and Spacing: Make the heading bold and give it space above and below.
+
+Add an Icon/Emoji: An emoji makes the section instantly recognizable.
+
+Before:
+### Skin Complications
+
+After:
+dermatology: Skin Complications
+(or use a simple line separator)
+--- Skin Complications ---
+
+2. Eliminate Redundancy
+This is the most crucial fix. Your display template should only show the term once, styled appropriately.
+
+Before:
+● **Infections***Infections*:
+
+After:
+● **Infections:**
+
+3. Use Whitespace and Shorter Paragraphs
+Break up long blocks of text. A chatbot message should be easily scannable. Use line breaks to create more "breathing room" between points.
+
+Before:
+● **Retinopathy***Retinopathy*: Diabetes can cause damage to the blood vessels in the retina, leading to conditions such as proliferative retinopathy, which requires urgent referral to a specialist. [NICE Guidelines]
+
+After (with improved spacing and citation handling):
+👁️ **Retinopathy:**
+Diabetes can damage the blood vessels in the retina. Severe cases may require urgent referral to a specialist.
+*[Source: NICE Guidelines]*
+
+4. Handle Citations Gracefully
+In-line citations like [WHO, 2020] clutter the main text. Move them to the end of a point or the end of the entire message in a less prominent style (e.g., smaller, italicized text).
+
+5. Use Icons for Key Sections
+You are already doing this well with the ℹ️ Information and ⚠️ Important boxes. Expand on this! Assign a relevant emoji to each complication to make the list more visual and engaging.
+
+Example Redesign
+Here is a mockup of how a portion of your message could look after applying these changes.
+
+Original Snippet:
+
+Skin Complications
+● InfectionsInfections: People with diabetes are prone to infections, particularly of the urinary tract and skin. Severe infections can lead to amputations. [Diabetes UK, 2019; WHO, 2020]
+● Necrobiosis LipoidicaNecrobiosis Lipoidica: This uncommon inflammatory condition causes shiny, reddish-brown or yellowish patches on the skin. [BAD]
+
+Proposed Redesign:
+
+Complications of Diabetes
+Understanding these is crucial for effective management and prevention.
+
+dermatology: Skin Complications
+Infections
+People with diabetes are more prone to skin and urinary tract infections, which can become severe if left untreated.
+
+Necrobiosis Lipoidica
+An uncommon condition causing shiny, reddish-brown patches on the skin.
+
+👁️ Eye Complications
+Retinopathy
+Damage to the blood vessels in the retina. Severe cases require urgent specialist referral.
