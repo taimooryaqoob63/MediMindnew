@@ -82,17 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create or update module with video - Protected
-  app.post('/api/modules', isAuthenticated, async (req: any, res) => {
-    try {
-      const moduleData = insertModuleSchema.parse(req.body);
-      const module = await storage.createModule(moduleData);
-      res.json(module);
-    } catch (error) {
-      console.error('Module creation error:', error);
-      res.status(500).json({ message: 'Failed to create module' });
-    }
-  });
+  // Create or update module with video - Protected (duplicate removed, keeping the more robust one below)
 
   // Update module - Protected
   app.put('/api/modules/:id', isAuthenticated, async (req: any, res) => {
