@@ -1430,8 +1430,10 @@ ${citations}
     cleaned = cleaned.replace(/\[citation needed\]/gi, '');
     cleaned = cleaned.replace(/\[source required\]/gi, '');
     
-    // Step 3: Fix markdown headers
+    // Step 3: Fix markdown headers and formatting
     cleaned = cleaned.replace(/^### /gm, '## ');
+    cleaned = cleaned.replace(/^#### /gm, '### ');
+    cleaned = cleaned.replace(/^##### /gm, '### ');
     
     // Step 4: Comprehensive word duplication cleanup
     const medicalTerms = [
@@ -1471,6 +1473,10 @@ ${citations}
     cleaned = cleaned.replace(/\*\*\*([^*]+)\*\*\*/g, '**$1**'); // Triple to double
     cleaned = cleaned.replace(/\*([^*]+)\*\*/g, '**$1**'); // Mixed asterisks
     cleaned = cleaned.replace(/\*\*([^*]+)\*/g, '**$1**'); // Mixed asterisks reverse
+    
+    // Convert single asterisk emphasis to proper bold for important terms
+    cleaned = cleaned.replace(/\*([A-Z][^*]*[a-z][^*]*)\*/g, '**$1**'); // Capitalize terms
+    cleaned = cleaned.replace(/\*([^*]*(?:diet|nutrition|diabetes|blood|sugar|weight|energy|fluid)[^*]*)\*/gi, '**$1**'); // Medical terms
     
     // Step 6: Remove standalone asterisks and empty bold markers
     cleaned = cleaned.replace(/\b\*\b/g, '');
