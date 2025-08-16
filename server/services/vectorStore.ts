@@ -30,48 +30,65 @@ export class VectorStore {
   }
 
   async initialize(): Promise<void> {
+    console.log(`🔄 VectorStore.initialize() called for index: ${this.config.indexName}`);
+    
     if (!this.pinecone) {
-      throw new Error('Pinecone API key not configured. Please add PINECONE_API_KEY to your environment variables.');
+      const error = 'Pinecone API key not configured. Please add PINECONE_API_KEY to your environment variables.';
+      console.error('❌', error);
+      throw new Error(error);
     }
     
     if (!this.openai) {
-      throw new Error('OpenAI API key not configured. Please add OPENAI_API_KEY to your environment variables.');
+      const error = 'OpenAI API key not configured. Please add OPENAI_API_KEY to your environment variables.';
+      console.error('❌', error);
+      throw new Error(error);
     }
     
     try {
       console.log(`🌲 Initializing Pinecone index: ${this.config.indexName}`);
+      console.log(`🔑 API Keys available: Pinecone=${!!process.env.PINECONE_API_KEY}, OpenAI=${!!process.env.OPENAI_API_KEY}`);
       
-      // Check if index exists, create if not
+      // Check if index exists
       const indexList = await this.pinecone.listIndexes();
-      console.log('📝 Available indexes:', indexList.indexes?.map(i => i.name) || []);
+      const availableIndexes = indexList.indexes?.map(i => i.name) || [];
+      console.log('📝 Available indexes:', availableIndexes);
       
-      const indexExists = indexList.indexes?.some(index => index.name === this.config.indexName);
+      const indexExists = availableIndexes.includes(this.config.indexName);
+      console.log(`🔍 Index "${this.config.indexName}" exists: ${indexExists}`);
 
       if (!indexExists) {
-        console.log(`🏗️ Creating new index: ${this.config.indexName}`);
-        await this.pinecone.createIndex({
-          name: this.config.indexName,
-          dimension: this.config.dimension,
-          metric: 'cosine',
-          spec: {
-            serverless: {
-              cloud: 'aws',
-              region: 'us-east-1'
+        // Try to use medimind-rag if quickstart doesn't exist
+        if (this.config.indexName === 'quickstart' && availableIndexes.includes('medimind-rag')) {
+          console.log('🔄 Switching to medimind-rag index as it exists');
+          this.config.indexName = 'medimind-rag';
+        } else {
+          console.log(`🏗️ Creating new index: ${this.config.indexName}`);
+          await this.pinecone.createIndex({
+            name: this.config.indexName,
+            dimension: this.config.dimension,
+            metric: 'cosine',
+            spec: {
+              serverless: {
+                cloud: 'aws',
+                region: 'us-east-1'
+              }
             }
-          }
-        });
-        
-        // Wait for index to be ready
-        await this.waitForIndexReady();
-        console.log(`✅ Index ${this.config.indexName} created and ready`);
+          });
+          
+          // Wait for index to be ready
+          await this.waitForIndexReady();
+          console.log(`✅ Index ${this.config.indexName} created and ready`);
+        }
       } else {
         console.log(`✅ Index ${this.config.indexName} already exists`);
         
         // Test the existing index
         const index = this.pinecone.index(this.config.indexName);
         const stats = await index.describeIndexStats();
-        console.log(`📊 Index stats - Total vectors: ${stats.totalVectorCount || 0}`);
+        console.log(`📊 Index stats - Total vectors: ${stats.totalVectorCount || 0}, Dimension: ${stats.dimension}`);
       }
+      
+      console.log('✅ VectorStore initialization completed successfully');
     } catch (error) {
       console.error('❌ Error initializing vector store:', error);
       

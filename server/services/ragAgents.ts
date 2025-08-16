@@ -45,19 +45,19 @@ export class RagAgentOrchestrator {
     try {
       // Step 1: Analyze the query
       const analysis = await this.analyzeQuery(query, user);
-      
+
       // Step 2: Retrieve relevant documents
       const retrievalResult = await this.retrieveDocuments(query, analysis);
-      
+
       // Step 3: Synthesize context
       const context = await this.synthesizeContext(retrievalResult.sources);
-      
+
       // Step 4: Generate response
       const response = await this.generateResponse(query, context, user, analysis);
-      
+
       // Step 5: Quality assurance
       const finalResponse = await this.qualityAssurance(response, analysis);
-      
+
       return {
         ...finalResponse,
         sources: retrievalResult.sources,
@@ -77,7 +77,7 @@ export class RagAgentOrchestrator {
     if (!this.openai) {
       throw new Error('OpenAI not configured');
     }
-    
+
     const prompt = `Analyze this healthcare query from a ${user.role} in a care home setting:
 
 Query: "${query}"
@@ -127,7 +127,7 @@ Focus on diabetes care, NICE guidelines, NHS practices, and CQC requirements.`;
     try {
       // Create query embedding
       const queryEmbedding = await vectorStore.createEmbedding(query);
-      
+
       // Search with filters based on analysis
       const searchResults = await vectorStore.queryVectors(
         queryEmbedding,
@@ -186,7 +186,7 @@ Focus on diabetes care, NICE guidelines, NHS practices, and CQC requirements.`;
     if (!this.openai) {
       throw new Error('OpenAI not configured');
     }
-    
+
     const systemPrompt = `You are MediMind AI, a specialized healthcare assistant for diabetes care in care homes and nursing facilities.
 
 User Role: ${user.role}
@@ -230,7 +230,7 @@ Respond in JSON format with:
       // Get the appropriate generation settings based on query type
       const queryType = analysis.requiresSpecialistKnowledge ? 'clinical' : 'educational';
       const genSettings = getGenerationSettings(queryType);
-      
+
       const response = await this.openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -243,11 +243,11 @@ Respond in JSON format with:
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
-      
+
       // Apply deduplication to prevent repetitive sentences
       let content = result.content || "I couldn't generate a proper response.";
       content = this.deduplicateContent(content);
-      
+
       return {
         content,
         confidence: result.confidence || 50,
@@ -267,38 +267,38 @@ Respond in JSON format with:
 
   private deduplicateContent(content: string): string {
     if (!content) return content;
-    
+
     // Step 1: Remove exact consecutive duplicates
     content = content.replace(/(.{20,}?[.!?])\s*\1+/gi, '$1');
-    
+
     // Step 2: More aggressive duplicate detection
     const sentenceParts = content.split(/([.!?]+)/);
     const rebuiltContent: string[] = [];
     const seenNormalized = new Set<string>();
-    
+
     for (let i = 0; i < sentenceParts.length; i += 2) {
       const sentence = sentenceParts[i]?.trim();
       const punctuation = sentenceParts[i + 1] || '';
-      
+
       if (!sentence || sentence.length < 15) {
         if (sentence) rebuiltContent.push(sentence + punctuation);
         continue;
       }
-      
+
       // Create a normalized version for comparison
       const normalized = sentence.toLowerCase()
         .replace(/[^\w\s]/g, '')
         .replace(/\s+/g, ' ')
         .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by)\b/g, '')
         .trim();
-      
+
       // Skip duplicates
       if (!seenNormalized.has(normalized)) {
         seenNormalized.add(normalized);
         rebuiltContent.push(sentence + punctuation);
       }
     }
-    
+
     return rebuiltContent.join('');
   }
 
@@ -309,7 +309,7 @@ Respond in JSON format with:
     if (!this.openai) {
       throw new Error('OpenAI not configured');
     }
-    
+
     // Simple quality checks
     const qaPrompt = `Review this healthcare response for accuracy and safety:
 
@@ -334,7 +334,7 @@ Provide a JSON response with:
       });
 
       const qa = JSON.parse(qaResponse.choices[0].message.content || '{}');
-      
+
       if (!qa.approved) {
         return {
           ...response,
@@ -358,4 +358,15 @@ Provide a JSON response with:
   }
 }
 
-export const ragOrchestrator = new RagAgentOrchestrator();
+// Initialize RAG orchestrator with proper error handling
+let ragOrchestrator: RagAgentOrchestrator;
+
+try {
+  ragOrchestrator = new RagAgentOrchestrator();
+} catch (error) {
+  console.error('Failed to initialize RAG orchestrator:', error);
+  // Create a fallback orchestrator that will handle errors gracefully
+  ragOrchestrator = new RagAgentOrchestrator();
+}
+
+export { ragOrchestrator };

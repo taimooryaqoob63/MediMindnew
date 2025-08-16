@@ -14,28 +14,28 @@ import fs from "fs/promises";
 // Simplified deduplication (semantic deduplication already handled in orchestrator)
 function finalDeduplication(content: string): string {
   if (!content) return content;
-  
+
   console.log('Simple safety deduplication - Original length:', content.length);
-  
+
   // Only check for obvious exact duplications as a safety net
   // Most deduplication should already be handled by semantic processing
-  
+
   // Quick check for exact half-and-half duplication (most common pattern)
   const contentLower = content.toLowerCase().replace(/\s+/g, ' ').trim();
   const words = contentLower.split(' ');
-  
+
   if (words.length > 20) {
     const midPoint = Math.floor(words.length / 2);
     const firstHalf = words.slice(0, midPoint).join(' ');
     const secondHalf = words.slice(midPoint).join(' ');
-    
+
     // Check for exact duplication
     if (firstHalf === secondHalf && firstHalf.length > 50) {
       console.log('Exact half-duplication found - using first half only');
       const originalWords = content.split(' ');
       return originalWords.slice(0, midPoint).join(' ').trim();
     }
-    
+
     // Check if second half starts with first half (another common pattern)
     if (firstHalf.length > 50 && secondHalf.startsWith(firstHalf.substring(0, 100))) {
       console.log('Second half starts with first half - using first half only');
@@ -43,7 +43,7 @@ function finalDeduplication(content: string): string {
       return originalWords.slice(0, midPoint).join(' ').trim();
     }
   }
-  
+
   console.log('No obvious duplication found - content appears clean');
   return content;
 }
@@ -51,27 +51,27 @@ function finalDeduplication(content: string): string {
 // Brute force deduplication as final failsafe
 function bruteForceDeduplication(content: string): string {
   if (!content || content.length < 200) return content;
-  
+
   console.log('Running brute force deduplication as final check...');
-  
+
   // Split content into paragraphs and sentences
   const paragraphs = content.split(/\n\s*\n/);
   const processedParagraphs: string[] = [];
-  
+
   for (const paragraph of paragraphs) {
     if (paragraph.trim().length < 50) {
       processedParagraphs.push(paragraph);
       continue;
     }
-    
+
     // Check for repeated sentences within paragraph
     const sentences = paragraph.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 10);
     const uniqueSentences: string[] = [];
     const seenSentences = new Set<string>();
-    
+
     for (const sentence of sentences) {
       const normalized = sentence.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
-      
+
       if (normalized.length > 20 && !seenSentences.has(normalized)) {
         seenSentences.add(normalized);
         uniqueSentences.push(sentence.trim());
@@ -81,12 +81,12 @@ function bruteForceDeduplication(content: string): string {
         console.log('Brute force removed duplicate sentence:', sentence.substring(0, 60) + '...');
       }
     }
-    
+
     processedParagraphs.push(uniqueSentences.join(' '));
   }
-  
+
   let result = processedParagraphs.join('\n\n').trim();
-  
+
   // Direct string replacement for known repetitive patterns
   const commonDuplicatePatterns = [
     /(.{50,})\1+/g, // Repeated chunks of 50+ characters
@@ -97,7 +97,7 @@ function bruteForceDeduplication(content: string): string {
     /(As a care worker[^.]+\.)\s*\1/gi,
     /(\w+(?:\s+\w+){10,})\s*\1/g, // Any sequence of 10+ words repeated
   ];
-  
+
   for (const pattern of commonDuplicatePatterns) {
     const beforeLength = result.length;
     result = result.replace(pattern, '$1');
@@ -105,7 +105,7 @@ function bruteForceDeduplication(content: string): string {
       console.log('Brute force pattern removal applied, reduced by', beforeLength - result.length, 'characters');
     }
   }
-  
+
   return result;
 }
 
@@ -113,17 +113,17 @@ function bruteForceDeduplication(content: string): string {
 function findLongestCommonSubstring(str1: string, str2: string): string {
   const len1 = str1.length;
   const len2 = str2.length;
-  
+
   if (len1 === 0 || len2 === 0) return '';
-  
+
   let maxLength = 0;
   let result = '';
-  
+
   for (let i = 0; i < len1; i++) {
     for (let j = 0; j < len2; j++) {
       let length = 0;
       let temp = '';
-      
+
       while (
         i + length < len1 &&
         j + length < len2 &&
@@ -132,14 +132,14 @@ function findLongestCommonSubstring(str1: string, str2: string): string {
         temp += str1[i + length];
         length++;
       }
-      
+
       if (length > maxLength) {
         maxLength = length;
         result = temp;
       }
     }
   }
-  
+
   return result;
 }
 
@@ -148,13 +148,13 @@ function removeRepeatedPhrases(text: string): string {
   // Find and remove repeated phrases (5+ words that appear multiple times)
   const words = text.split(/\s+/);
   const phrases = new Map<string, number>();
-  
+
   // Collect all 5-word phrases
   for (let i = 0; i <= words.length - 5; i++) {
     const phrase = words.slice(i, i + 5).join(' ').toLowerCase();
     phrases.set(phrase, (phrases.get(phrase) || 0) + 1);
   }
-  
+
   // Remove phrases that appear more than once - use forEach to avoid iteration issues
   phrases.forEach((count, phrase) => {
     if (count > 1 && phrase.length > 20) {
@@ -174,7 +174,7 @@ function removeRepeatedPhrases(text: string): string {
       }
     }
   });
-  
+
   // Clean up extra whitespace
   return text.replace(/\s+/g, ' ').trim();
 }
@@ -184,16 +184,16 @@ function removeConsecutiveRepeats(text: string): string {
   // Remove patterns where the same phrase appears consecutively
   const words = text.split(/\s+/);
   const cleanedWords: string[] = [];
-  
+
   for (let i = 0; i < words.length; i++) {
     // Look for repeating patterns of 2-10 words
     let foundRepeat = false;
-    
+
     for (let patternLength = 2; patternLength <= Math.min(10, Math.floor((words.length - i) / 2)); patternLength++) {
       if (i + patternLength * 2 <= words.length) {
         const pattern1 = words.slice(i, i + patternLength);
         const pattern2 = words.slice(i + patternLength, i + patternLength * 2);
-        
+
         // Check if patterns match
         if (pattern1.length === pattern2.length && 
             pattern1.every((word, idx) => word.toLowerCase() === pattern2[idx].toLowerCase())) {
@@ -205,28 +205,28 @@ function removeConsecutiveRepeats(text: string): string {
         }
       }
     }
-    
+
     if (!foundRepeat) {
       cleanedWords.push(words[i]);
     }
   }
-  
+
   return cleanedWords.join(' ');
 }
 
 // Helper function to calculate text similarity
 function calculateTextSimilarity(text1: string, text2: string): number {
   if (!text1 || !text2) return 0;
-  
+
   const words1 = text1.split(' ').filter(w => w.length > 2);
   const words2 = text2.split(' ').filter(w => w.length > 2);
-  
+
   if (words1.length === 0 || words2.length === 0) return 0;
-  
+
   // Method 1: Check if text2 starts with a significant portion of text1
   const shorterLength = Math.min(words1.length, words2.length);
   const checkLength = Math.min(shorterLength, 50); // Check first 50 words
-  
+
   let sequentialMatches = 0;
   for (let i = 0; i < checkLength; i++) {
     if (i < words1.length && i < words2.length && words1[i] === words2[i]) {
@@ -235,9 +235,9 @@ function calculateTextSimilarity(text1: string, text2: string): number {
       break; // Stop at first mismatch
     }
   }
-  
+
   const sequentialSimilarity = sequentialMatches / checkLength;
-  
+
   // Method 2: Overall word overlap
   const set1 = new Set(words1);
   const set2 = new Set(words2);
@@ -246,7 +246,7 @@ function calculateTextSimilarity(text1: string, text2: string): number {
   const intersection = set1Array.filter(x => set2.has(x));
   const union = Array.from(new Set([...set1Array, ...set2Array]));
   const overlapSimilarity = intersection.length / union.length;
-  
+
   // Combine both methods - prioritize sequential matching
   return Math.max(sequentialSimilarity, overlapSimilarity * 0.7);
 }
@@ -277,7 +277,7 @@ const upload = multer({
     // Allow PDFs, DOCX, HTML, TXT, and JSON files
     const allowedTypes = ['.pdf', '.docx', '.html', '.htm', '.txt', '.json'];
     const ext = path.extname(file.originalname).toLowerCase();
-    
+
     if (allowedTypes.includes(ext)) {
       cb(null, true);
     } else {
@@ -295,7 +295,7 @@ export function registerRAGRoutes(app: Express) {
           message: "Pinecone API key required for RAG functionality" 
         });
       }
-      
+
       await vectorStore.initialize();
       res.json({ message: "Vector store initialized successfully" });
     } catch (error) {
@@ -312,23 +312,23 @@ export function registerRAGRoutes(app: Express) {
           message: "Pinecone API key required for RAG functionality" 
         });
       }
-      
+
       console.log('Force reinitializing vector store with new credentials...');
       console.log('Using index:', process.env.PINECONE_INDEX_NAME || 'medimind-rag');
-      
+
       // Create a fresh vector store instance
       const { VectorStore } = await import('../services/vectorStore.js');
       const newVectorStore = new VectorStore({
         indexName: process.env.PINECONE_INDEX_NAME || 'medimind-rag',
         dimension: 1536,
       });
-      
+
       await newVectorStore.initialize();
-      
+
       // Test connection
       const testEmbedding = await newVectorStore.createEmbedding("test connection");
       console.log('Test embedding created successfully');
-      
+
       res.json({ 
         message: "Vector store force reinitialized successfully",
         indexName: process.env.PINECONE_INDEX_NAME || 'medimind-rag',
@@ -349,11 +349,11 @@ export function registerRAGRoutes(app: Express) {
       // Get document counts
       const documents = await storage.getAllDocuments();
       const jobs = await storage.getProcessingJobs();
-      
+
       // Count documents with chunks
       let documentsWithChunks = 0;
       let totalChunks = 0;
-      
+
       for (const doc of documents) {
         const chunks = await storage.getDocumentChunks(doc.id);
         if (chunks.length > 0) {
@@ -474,27 +474,27 @@ export function registerRAGRoutes(app: Express) {
   app.post("/api/rag/reprocess-documents", isAuthenticated, async (req, res) => {
     try {
       console.log('Starting document reprocessing...');
-      
+
       // Get all documents
       const documents = await storage.getAllDocuments();
       console.log(`Found ${documents.length} documents to check`);
-      
+
       let reprocessedCount = 0;
       let skippedCount = 0;
       const results = [];
-      
+
       for (const document of documents) {
         try {
           console.log(`Checking document: ${document.title}, ID: ${document.id}`);
-          
+
           // Check if document has chunks
           const chunks = await storage.getDocumentChunks(document.id);
           console.log(`Document ${document.title} has ${chunks.length} chunks`);
-          
+
           if (chunks.length === 0) {
             console.log(`Reprocessing document: ${document.title} (no chunks found)`);
             console.log(`Document source: ${document.source}`);
-            
+
             // Check if source file exists (simplified check)
             let sourceExists = false;
             if (document.source) {
@@ -506,7 +506,7 @@ export function registerRAGRoutes(app: Express) {
                 console.log(`Source file missing for ${document.title}: ${document.source}`);
               }
             }
-            
+
             if (sourceExists) {
               // Create processing job
               const job = await storage.createProcessingJob({
@@ -519,7 +519,7 @@ export function registerRAGRoutes(app: Express) {
                   reprocessing: true 
                 }
               });
-              
+
               // Start reprocessing in background
               documentProcessor.processDocument(
                 document.source,
@@ -544,7 +544,7 @@ export function registerRAGRoutes(app: Express) {
                   errorMessage: `Reprocessing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
                 });
               });
-              
+
               results.push({
                 documentId: document.id,
                 title: document.title,
@@ -581,9 +581,9 @@ export function registerRAGRoutes(app: Express) {
           });
         }
       }
-      
+
       console.log(`Reprocessing summary: ${reprocessedCount} started, ${skippedCount} skipped`);
-      
+
       res.json({
         message: 'Document reprocessing initiated',
         summary: {
@@ -604,6 +604,7 @@ export function registerRAGRoutes(app: Express) {
 
   // Enhanced RAG chat endpoint with multi-agent processing
   app.post("/api/rag/chat", isAuthenticated, async (req, res) => {
+    console.log('RAG chat request received:', { message: req.body.message?.substring(0, 100) });
     try {
       const { message, courseId, conversationHistory } = req.body;
       const user = req.user as any;
@@ -675,7 +676,7 @@ export function registerRAGRoutes(app: Express) {
     try {
       const user = req.user as any;
       const { courseId } = req.params;
-      
+
       const messages = await storage.getRagChatMessages(user.claims.sub, courseId);
       res.json(messages);
     } catch (error) {
@@ -749,7 +750,7 @@ export function registerRAGRoutes(app: Express) {
     try {
       const documents = await storage.getDocuments();
       const jobs = await storage.getProcessingJobs();
-      
+
       const documentStats = {
         totalDocuments: documents.length,
         documentsWithChunks: 0,
@@ -771,14 +772,14 @@ export function registerRAGRoutes(app: Express) {
     try {
       const documents = await storage.getDocuments();
       const jobs = await storage.getProcessingJobs();
-      
+
       // Get documents from the last hour
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
       const recentDocs = documents.filter(doc => doc.createdAt && new Date(doc.createdAt) > oneHourAgo);
-      
+
       // Get recent jobs
       const recentJobs = jobs.filter(job => job.createdAt && new Date(job.createdAt) > oneHourAgo);
-      
+
       const status = {
         recentDocuments: recentDocs.length,
         recentJobs: recentJobs.length,
@@ -803,7 +804,7 @@ export function registerRAGRoutes(app: Express) {
           };
         }))
       };
-      
+
       res.json(status);
     } catch (error) {
       console.error("Error getting recent status:", error);
@@ -818,17 +819,17 @@ export function registerRAGRoutes(app: Express) {
           documentStats.documentsWithChunks++;
         }
         documentStats.totalChunks += chunks.length;
-        
+
         // Check if chunks have vector IDs
         const hasVectors = chunks.some(chunk => chunk.vectorId);
-        
+
         documentStats.chunkDistribution.push({
           documentId: doc.id,
           title: doc.title,
           chunkCount: chunks.length,
           hasVectors
         });
-        
+
         // Categorize by document category and type
         documentStats.documentsByCategory[doc.category] = (documentStats.documentsByCategory[doc.category] || 0) + 1;
         documentStats.documentsByType[doc.documentType] = (documentStats.documentsByType[doc.documentType] || 0) + 1;
@@ -859,12 +860,12 @@ export function registerRAGRoutes(app: Express) {
   app.delete("/api/rag/documents/bulk-delete", isAuthenticated, async (req, res) => {
     try {
       console.log('Starting bulk document deletion...');
-      
+
       // Get all documents
       const documents = await storage.getAllDocuments();
       let deletedCount = 0;
       let errorCount = 0;
-      
+
       for (const document of documents) {
         try {
           // Delete document chunks and vectors
@@ -879,7 +880,7 @@ export function registerRAGRoutes(app: Express) {
             }
             await storage.deleteDocumentChunk(chunk.id);
           }
-          
+
           // Delete document
           await storage.deleteDocument(document.id);
           deletedCount++;
@@ -889,13 +890,13 @@ export function registerRAGRoutes(app: Express) {
           errorCount++;
         }
       }
-      
+
       // Clear processing jobs (note: individual job deletion not implemented)
       const jobs = await storage.getProcessingJobs();
       console.log(`Found ${jobs.length} processing jobs (deletion not implemented)`);
-      
+
       console.log(`Bulk deletion complete. Deleted: ${deletedCount}, Errors: ${errorCount}`);
-      
+
       res.json({ 
         message: "Bulk deletion completed",
         deletedDocuments: deletedCount,
@@ -912,11 +913,11 @@ export function registerRAGRoutes(app: Express) {
   app.get("/api/rag/analytics", isAuthenticated, async (req, res) => {
     try {
       const user = req.user as any;
-      
+
       // Simple role check - in production would need proper admin role verification
       if (user.claims.email && user.claims.email.includes('admin')) {
         const analytics = await storage.getRagAnalytics();
-        
+
         // Enhanced analytics with graph data
         const enhancedAnalytics = {
           ...analytics,
@@ -948,7 +949,7 @@ export function registerRAGRoutes(app: Express) {
             { type: 'General', count: 80, avgResponseTime: 500 },
           ]
         };
-        
+
         res.json(enhancedAnalytics);
       } else {
         res.status(403).json({ message: "Access denied" });

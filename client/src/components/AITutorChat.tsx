@@ -92,22 +92,43 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const chatMutation = useMutation({
     mutationFn: async (data: { message: string; courseId: string; context?: string }) => {
+      console.log('Starting chat mutation with data:', { message: data.message?.substring(0, 50), courseId: data.courseId });
+      
+      // Check if RAG is available
+      if (!process.env.PINECONE_API_KEY) {
+        console.log('PINECONE_API_KEY not found, using basic chat');
+        const response = await apiRequest("POST", "/api/chat", data);
+        const result = await response.json();
+        return { ...result, usedRAG: false } as ChatResponse;
+      }
+
       // Try RAG-enhanced chat first
       try {
+        console.log('Attempting RAG chat...');
         const ragResponse = await apiRequest("POST", "/api/rag/chat", {
           message: data.message,
           courseId: data.courseId
         });
+        
+        if (!ragResponse.ok) {
+          throw new Error(`RAG API returned ${ragResponse.status}: ${ragResponse.statusText}`);
+        }
+        
         const result = await ragResponse.json();
-        console.log('RAG response:', result); // Debug log
+        console.log('✅ RAG response successful:', { hasResponse: !!result.response || !!result.content, confidence: result.confidence });
         return { ...result, usedRAG: true } as ChatResponse;
       } catch (ragError) {
-        console.log('RAG chat failed, falling back to basic chat:', ragError);
+        console.error('❌ RAG chat failed, falling back to basic chat:', ragError);
         // Fallback to basic chat
-        const response = await apiRequest("POST", "/api/chat", data);
-        const result = await response.json();
-        console.log('Basic chat response:', result); // Debug log
-        return { ...result, usedRAG: false } as ChatResponse;
+        try {
+          const response = await apiRequest("POST", "/api/chat", data);
+          const result = await response.json();
+          console.log('✅ Basic chat fallback successful');
+          return { ...result, usedRAG: false } as ChatResponse;
+        } catch (basicError) {
+          console.error('❌ Basic chat also failed:', basicError);
+          throw basicError;
+        }
       }
     },
     onSuccess: (data) => {
