@@ -203,7 +203,7 @@ export class EnhancedRagOrchestrator {
       });
 
       return {
-        content: this.cleanupFinalResponse(responseWithDisclaimer.content),
+        content: this.cleanupFinalResponse(responseWithDisclaimer.content || finalResponse.content || ''),
         sources: responseWithDisclaimer.sources || finalResponse.sources,
         confidence: responseWithDisclaimer.confidence || finalResponse.confidence,
         followUpQuestions: finalResponse.followUpQuestions,
@@ -1415,29 +1415,45 @@ ${citations}
     
     console.log('Applying final response cleanup...');
     
+    // Simple approach using string methods and basic regex
     let cleaned = content
-      // Fix asterisk repetition patterns like "Infections*Infections*"
-      .replace(/(\\w+)\\*+\\1\\**/gi, '**$1**')
-      // Fix colon patterns like "Infections*Infections*:"
-      .replace(/(\\w+)\\*+\\1\\*+:/gi, '**$1**:')
-      // Remove standalone asterisks
-      .replace(/(?<!\\*)\\*(?!\\*)/g, '')
-      // Remove placeholder text
-      .replace(/\\[BAD\\]|\\[PLACEHOLDER\\]|\\[TODO\\]|\\[MISSING\\]|\\[citation needed\\]|\\[source required\\]/gi, '')
-      // Fix malformed markdown headers
+      // Remove placeholder text first
+      .replace(/\\[BAD\\]/gi, '')
+      .replace(/\\[PLACEHOLDER\\]/gi, '')
+      .replace(/\\[TODO\\]/gi, '')
+      .replace(/\\[MISSING\\]/gi, '')
+      .replace(/\\[citation needed\\]/gi, '')
+      .replace(/\\[source required\\]/gi, '')
+      // Fix malformed markdown headers (convert ### to ##)
       .replace(/^### /gm, '## ')
       // Clean up multiple spaces
-      .replace(/\\s{2,}/g, ' ')
+      .replace(/  +/g, ' ')
       // Clean up punctuation spacing
-      .replace(/\\s+([.!?])/g, '$1')
-      // Remove empty bold markers
-      .replace(/\\*\\*\\s*\\*\\*/g, '')
-      // Clean up line breaks
+      .replace(/ +([.!?])/g, '$1')
+      // Clean up excessive line breaks
       .replace(/\\n{3,}/g, '\\n\\n')
       .trim();
     
+    // Fix asterisk repetition patterns manually
+    const words = ['Infections', 'Retinopathy', 'Medication', 'Diabetes', 'Treatment', 'Management', 'Care', 'Patient'];
+    for (const word of words) {
+      // Fix patterns like "Word*Word*"
+      const duplicatePattern = `${word}*${word}*`;
+      cleaned = cleaned.replace(new RegExp(duplicatePattern.replace(/\\*/g, '\\\\*'), 'gi'), `**${word}**`);
+      
+      // Fix patterns like "Word*Word*:"
+      const colonPattern = `${word}*${word}*:`;
+      cleaned = cleaned.replace(new RegExp(colonPattern.replace(/\\*/g, '\\\\*'), 'gi'), `**${word}**:`);
+    }
+    
+    // Remove any remaining standalone asterisks between letters using simple replacement
+    cleaned = cleaned.replace(/([a-zA-Z])\\*([a-zA-Z])/g, '$1 $2');
+    
+    // Remove empty bold markers
+    cleaned = cleaned.replace(/\\*\\*\\s*\\*\\*/g, '');
+    
     console.log('Final cleanup complete');
-    return cleaned;
+    return cleaned.trim();
   }
 
   async collectFeedback(
