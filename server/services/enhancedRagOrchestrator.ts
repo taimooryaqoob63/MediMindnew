@@ -611,8 +611,18 @@ CRITICAL REQUIREMENTS:
 
       let content = response.choices[0]?.message?.content || '';
       
-      // Apply deduplication to individual agent responses
-      content = this.deduplicateContent(content);
+      // Apply basic semantic deduplication to individual agent responses
+      console.log('Applying deduplication to individual agent response...');
+      const tempResponse: EnhancedAgentResponse = {
+        content,
+        confidence: 0,
+        sources: [],
+        agentName: agentType,
+        responseTime: 0,
+        tokenUsage: { prompt: 0, completion: 0 }
+      };
+      const dedupedResponse = this.basicSemanticDeduplication([tempResponse])[0];
+      content = dedupedResponse.content;
       
       const tokenUsage = {
         prompt: response.usage?.prompt_tokens || 0,
@@ -739,17 +749,19 @@ CRITICAL REQUIREMENTS:
       throw new Error('No agent responses to synthesize');
     }
 
-    if (agentResponses.length === 1) {
-      return agentResponses[0];
+    // Step 1: Apply semantic deduplication to agent responses (even for single responses)
+    console.log('Applying semantic deduplication to agent responses...');
+    const dedupedResponses = await this.semanticDeduplicateAgentResponses(agentResponses);
+
+    if (dedupedResponses.length === 1) {
+      console.log('Returning single deduped response');
+      return dedupedResponses[0];
     }
 
     if (!this.openai) {
-      return agentResponses[0];
+      console.log('No OpenAI configured, returning first deduped response');
+      return dedupedResponses[0];
     }
-
-    // Step 1: Apply semantic deduplication to agent responses before synthesis
-    console.log('Applying semantic deduplication to agent responses...');
-    const dedupedResponses = await this.semanticDeduplicateAgentResponses(agentResponses);
     
     const agentOutputs = dedupedResponses.map(response => 
       `${response.agentName}: ${response.content}`
