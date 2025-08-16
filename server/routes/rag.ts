@@ -470,6 +470,123 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
+  // Reprocess existing documents to ensure proper Pinecone indexing
+  app.post("/api/rag/reprocess-documents", isAuthenticated, async (req, res) => {
+    try {
+      console.log('Starting document reprocessing...');
+      
+      // Get all documents
+      const documents = await storage.getAllDocuments();
+      console.log(`Found ${documents.length} documents to check`);
+      
+      let reprocessedCount = 0;
+      let skippedCount = 0;
+      const results = [];
+      
+      for (const document of documents) {
+        try {
+          // Check if document has chunks
+          const chunks = await storage.getDocumentChunks(document.id);
+          
+          if (chunks.length === 0) {
+            console.log(`Reprocessing document: ${document.title} (no chunks found)`);
+            
+            // Re-process the document if source file still exists
+            if (document.source && await fs.access(document.source).then(() => true).catch(() => false)) {
+              // Create processing job
+              const job = await storage.createProcessingJob({
+                status: 'processing',
+                jobType: 'document_reprocessing',
+                progress: 0,
+                metadata: { 
+                  documentId: document.id,
+                  title: document.title,
+                  reprocessing: true 
+                }
+              });
+              
+              // Start reprocessing in background
+              documentProcessor.processDocument(
+                document.source,
+                document.documentType,
+                document.category,
+                { 
+                  extractEntities: true, 
+                  buildKnowledgeGraph: true 
+                }
+              ).then(async (newDocumentId) => {
+                console.log(`Successfully reprocessed: ${document.title}`);
+                await storage.updateProcessingJob(job.id, { 
+                  status: 'completed',
+                  progress: 100,
+                  errorMessage: 'Document reprocessed successfully'
+                });
+              }).catch(async (error) => {
+                console.error(`Failed to reprocess ${document.title}:`, error);
+                await storage.updateProcessingJob(job.id, { 
+                  status: 'failed',
+                  progress: 0,
+                  errorMessage: `Reprocessing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+                });
+              });
+              
+              results.push({
+                documentId: document.id,
+                title: document.title,
+                status: 'reprocessing_started',
+                jobId: job.id
+              });
+              reprocessedCount++;
+            } else {
+              console.log(`Skipping ${document.title} - source file not found`);
+              results.push({
+                documentId: document.id,
+                title: document.title,
+                status: 'skipped_no_source'
+              });
+              skippedCount++;
+            }
+          } else {
+            console.log(`Skipping ${document.title} - already has ${chunks.length} chunks`);
+            results.push({
+              documentId: document.id,
+              title: document.title,
+              status: 'skipped_already_processed',
+              chunkCount: chunks.length
+            });
+            skippedCount++;
+          }
+        } catch (error) {
+          console.error(`Error checking document ${document.title}:`, error);
+          results.push({
+            documentId: document.id,
+            title: document.title,
+            status: 'error',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+      
+      console.log(`Reprocessing summary: ${reprocessedCount} started, ${skippedCount} skipped`);
+      
+      res.json({
+        message: 'Document reprocessing initiated',
+        summary: {
+          totalDocuments: documents.length,
+          reprocessingStarted: reprocessedCount,
+          skipped: skippedCount
+        },
+        results
+      });
+    } catch (error) {
+      console.error('Reprocessing error:', error);
+      res.status(500).json({ 
+        message: 'Failed to initiate document reprocessing',
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   // Enhanced RAG chat endpoint with multi-agent processing
   app.post("/api/rag/chat", isAuthenticated, async (req, res) => {
     try {

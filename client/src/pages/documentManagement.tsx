@@ -71,6 +71,30 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
     }
   });
 
+  // Reprocess documents mutation
+  const reprocessMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/rag/reprocess-documents");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rag/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rag/jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rag/verification"] });
+      toast({
+        title: "Document Reprocessing Started",
+        description: `Started reprocessing ${data.summary?.reprocessingStarted || 0} documents. Check processing jobs for progress.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Reprocessing Failed",
+        description: "Failed to start document reprocessing. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Upload document mutation
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -187,19 +211,40 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">
-                  Initialize the vector store to enable document processing and intelligent responses.
-                </p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">
+                    Initialize the vector store to enable document processing and intelligent responses.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => initializeMutation.mutate()}
+                  disabled={initializeMutation.isPending}
+                  className="ml-4"
+                >
+                  {initializeMutation.isPending ? "Initializing..." : "Initialize Vector Store"}
+                </Button>
               </div>
-              <Button
-                onClick={() => initializeMutation.mutate()}
-                disabled={initializeMutation.isPending}
-                className="ml-4"
-              >
-                {initializeMutation.isPending ? "Initializing..." : "Initialize Vector Store"}
-              </Button>
+              
+              <div className="flex items-center justify-between border-t pt-4">
+                <div>
+                  <p className="text-sm text-gray-600">
+                    Re-process existing documents to ensure they are properly indexed into Pinecone for search.
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    This will check all uploaded documents and re-index any that are missing from the vector store.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => reprocessMutation.mutate()}
+                  disabled={reprocessMutation.isPending}
+                  variant="outline"
+                  className="ml-4"
+                >
+                  {reprocessMutation.isPending ? "Reprocessing..." : "Reprocess Documents"}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
