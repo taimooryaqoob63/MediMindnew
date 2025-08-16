@@ -92,11 +92,22 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const chatMutation = useMutation({
     mutationFn: async (data: { message: string; courseId: string; context?: string }) => {
-      console.log('Starting chat mutation with data:', { message: data.message?.substring(0, 50), courseId: data.courseId });
+      console.log('🚀 Starting chat mutation with data:', { 
+        message: data.message?.substring(0, 50), 
+        courseId: data.courseId,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Environment check with detailed logging
+      console.log('🔍 Environment check:', {
+        hasPineconeKey: !!process.env.PINECONE_API_KEY,
+        hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+        pineconeIndex: process.env.PINECONE_INDEX_NAME || 'quickstart'
+      });
       
       // Check if RAG is available
       if (!process.env.PINECONE_API_KEY) {
-        console.log('PINECONE_API_KEY not found, using basic chat');
+        console.log('⚠️ PINECONE_API_KEY not found, using basic chat');
         const response = await apiRequest("POST", "/api/chat", data);
         const result = await response.json();
         return { ...result, usedRAG: false } as ChatResponse;
@@ -104,45 +115,118 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
       // Try RAG-enhanced chat first
       try {
-        console.log('Attempting RAG chat...');
+        console.log('🤖 Attempting RAG chat with payload:', {
+          message: data.message?.substring(0, 100) + '...',
+          courseId: data.courseId,
+          payloadSize: JSON.stringify({ message: data.message, courseId: data.courseId }).length
+        });
+        
+        console.log('📡 Making RAG API request...');
         const ragResponse = await apiRequest("POST", "/api/rag/chat", {
           message: data.message,
           courseId: data.courseId
         });
         
+        console.log('📡 RAG API response status:', ragResponse.status);
+        
         if (!ragResponse.ok) {
-          throw new Error(`RAG API returned ${ragResponse.status}: ${ragResponse.statusText}`);
+          const errorText = await ragResponse.text();
+          console.error('❌ RAG API error details:', {
+            status: ragResponse.status,
+            statusText: ragResponse.statusText,
+            errorBody: errorText,
+            headers: Object.fromEntries(ragResponse.headers.entries())
+          });
+          throw new Error(`RAG API returned ${ragResponse.status}: ${ragResponse.statusText} - ${errorText}`);
         }
         
+        console.log('📊 Parsing RAG response...');
         const result = await ragResponse.json();
-        console.log('✅ RAG response successful:', { hasResponse: !!result.response || !!result.content, confidence: result.confidence });
+        console.log('✅ RAG response successful:', { 
+          hasResponse: !!result.response || !!result.content, 
+          confidence: result.confidence,
+          sourcesCount: result.sources?.length || 0,
+          agentsUsed: result.agentsUsed,
+          usedRAG: result.usedRAG,
+          responseLength: (result.response || result.content || '').length
+        });
         return { ...result, usedRAG: true } as ChatResponse;
       } catch (ragError) {
-        console.error('❌ RAG chat failed, falling back to basic chat:', ragError);
+        console.error('❌ RAG chat failed, error details:', {
+          error: ragError,
+          errorMessage: ragError instanceof Error ? ragError.message : 'Unknown error',
+          errorStack: ragError instanceof Error ? ragError.stack : null,
+          timestamp: new Date().toISOString()
+        });
+        
+        console.log('🔄 Falling back to basic chat...');
         // Fallback to basic chat
         try {
+          console.log('📡 Making basic chat API request...');
           const response = await apiRequest("POST", "/api/chat", data);
+          console.log('📡 Basic chat API response status:', response.status);
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Basic chat API error:', {
+              status: response.status,
+              statusText: response.statusText,
+              errorBody: errorText
+            });
+            throw new Error(`Basic chat API returned ${response.status}: ${response.statusText}`);
+          }
+          
           const result = await response.json();
-          console.log('✅ Basic chat fallback successful');
+          console.log('✅ Basic chat fallback successful:', {
+            hasResponse: !!result.response || !!result.content,
+            responseLength: (result.response || result.content || '').length
+          });
           return { ...result, usedRAG: false } as ChatResponse;
         } catch (basicError) {
-          console.error('❌ Basic chat also failed:', basicError);
+          console.error('❌ Basic chat also failed:', {
+            error: basicError,
+            errorMessage: basicError instanceof Error ? basicError.message : 'Unknown error',
+            errorStack: basicError instanceof Error ? basicError.stack : null
+          });
           throw basicError;
         }
       }
     },
     onSuccess: (data) => {
+      console.log('✅ Chat mutation successful:', {
+        hasData: !!data,
+        hasResponse: !!(data.response || data.content),
+        usedRAG: data.usedRAG,
+        confidence: data.confidence,
+        sourcesCount: data.sources?.length || 0,
+        timestamp: new Date().toISOString()
+      });
+      
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       setInputMessage("");
       
       // Read the AI response aloud if TTS is enabled
       const responseText = data.response || data.content;
       if (isTTSEnabled && synthesis && responseText) {
+        console.log('🔊 Starting TTS for response:', responseText.substring(0, 50) + '...');
         speakText(responseText);
       }
     },
     onError: (error) => {
-      console.error('Chat mutation error:', error);
+      console.error('❌ Chat mutation error - Full details:', {
+        error: error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        errorStack: error instanceof Error ? error.stack : null,
+        timestamp: new Date().toISOString(),
+        inputMessage: inputMessage?.substring(0, 100) + '...',
+        courseId: courseId
+      });
+      
+      // Check if it's a network error
+      if (error instanceof Error && error.message.includes('fetch')) {
+        console.error('🌐 Network error detected - checking connection');
+      }
     }
   });
 

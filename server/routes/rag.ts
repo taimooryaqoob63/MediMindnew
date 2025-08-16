@@ -604,14 +604,29 @@ export function registerRAGRoutes(app: Express) {
 
   // Enhanced RAG chat endpoint with multi-agent processing
   app.post("/api/rag/chat", isAuthenticated, async (req, res) => {
-    console.log('RAG chat request received:', { message: req.body.message?.substring(0, 100) });
+    const requestId = Date.now().toString();
+    console.log(`🚀 [${requestId}] RAG chat request received:`, { 
+      message: req.body.message?.substring(0, 100),
+      courseId: req.body.courseId,
+      hasConversationHistory: !!req.body.conversationHistory,
+      userEmail: (req.user as any)?.claims?.email,
+      timestamp: new Date().toISOString()
+    });
+    
     try {
       const { message, courseId, conversationHistory } = req.body;
       const user = req.user as any;
 
       if (!message) {
+        console.error(`❌ [${requestId}] Message is required but not provided`);
         return res.status(400).json({ message: "Message is required" });
       }
+      
+      console.log(`🔍 [${requestId}] Environment check:`, {
+        hasPineconeKey: !!process.env.PINECONE_API_KEY,
+        hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+        pineconeIndex: process.env.PINECONE_INDEX_NAME || 'quickstart'
+      });
 
       // Create user object for the enhanced orchestrator
       const userObj = {
@@ -624,21 +639,39 @@ export function registerRAGRoutes(app: Express) {
         createdAt: new Date(),
         updatedAt: new Date()
       };
+      
+      console.log(`👤 [${requestId}] User object created:`, {
+        userId: userObj.id,
+        email: userObj.email,
+        role: userObj.role
+      });
 
       // Process query with Enhanced RAG Orchestrator
+      console.log(`🤖 [${requestId}] Starting enhanced RAG processing...`);
       const response = await enhancedRagOrchestrator.processQuery(
         message, 
         userObj, 
         courseId, 
         conversationHistory
       );
+      
+      console.log(`✅ [${requestId}] Enhanced RAG processing completed:`, {
+        hasContent: !!response.content,
+        confidence: response.confidence,
+        sourcesCount: response.sources?.length || 0,
+        agentsUsed: response.agentsUsed?.length || 0,
+        usedRAG: response.usedRAG,
+        responseTime: response.responseTime
+      });
 
       // Final deduplication before sending to user (safety net)
       if (response.content) {
+        console.log(`🔄 [${requestId}] Applying final deduplication...`);
         response.content = finalDeduplication(response.content);
       }
 
       // Store the enhanced chat message
+      console.log(`💾 [${requestId}] Storing chat message in database...`);
       const chatMessage = await storage.createRagChatMessage({
         userId: user.claims.sub,
         courseId: courseId || null,
@@ -653,20 +686,46 @@ export function registerRAGRoutes(app: Express) {
           usedRAG: response.usedRAG || false
         }
       });
+      
+      console.log(`💾 [${requestId}] Chat message stored successfully:`, {
+        messageId: chatMessage.id,
+        timestamp: chatMessage.timestamp
+      });
 
-      res.json({
+      const finalResponse = {
         ...response,
         id: chatMessage.id,
         timestamp: chatMessage.timestamp
+      };
+      
+      console.log(`📤 [${requestId}] Sending final response:`, {
+        hasContent: !!finalResponse.content,
+        confidence: finalResponse.confidence,
+        sourcesCount: finalResponse.sources?.length || 0,
+        messageId: finalResponse.id,
+        contentLength: finalResponse.content?.length || 0
       });
+
+      res.json(finalResponse);
     } catch (error) {
-      console.error("Enhanced RAG chat error:", error);
+      console.error(`❌ [${requestId}] Enhanced RAG chat error - Full details:`, {
+        error: error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorName: error instanceof Error ? error.name : 'Unknown',
+        errorStack: error instanceof Error ? error.stack : null,
+        timestamp: new Date().toISOString(),
+        message: message?.substring(0, 100),
+        courseId: courseId,
+        userId: user?.claims?.sub
+      });
+      
       res.status(500).json({ 
         message: "I'm experiencing technical difficulties. Please consult your local healthcare guidelines for immediate assistance.",
         confidence: 0,
         sources: [],
         usedRAG: false,
-        agentsUsed: ['error_handler']
+        agentsUsed: ['error_handler'],
+        error: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
       });
     }
   });
