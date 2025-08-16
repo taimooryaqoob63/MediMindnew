@@ -31,15 +31,24 @@ export class VectorStore {
 
   async initialize(): Promise<void> {
     if (!this.pinecone) {
-      throw new Error('Pinecone API key not configured');
+      throw new Error('Pinecone API key not configured. Please add PINECONE_API_KEY to your environment variables.');
+    }
+    
+    if (!this.openai) {
+      throw new Error('OpenAI API key not configured. Please add OPENAI_API_KEY to your environment variables.');
     }
     
     try {
+      console.log(`🌲 Initializing Pinecone index: ${this.config.indexName}`);
+      
       // Check if index exists, create if not
       const indexList = await this.pinecone.listIndexes();
+      console.log('📝 Available indexes:', indexList.indexes?.map(i => i.name) || []);
+      
       const indexExists = indexList.indexes?.some(index => index.name === this.config.indexName);
 
       if (!indexExists) {
+        console.log(`🏗️ Creating new index: ${this.config.indexName}`);
         await this.pinecone.createIndex({
           name: this.config.indexName,
           dimension: this.config.dimension,
@@ -54,10 +63,25 @@ export class VectorStore {
         
         // Wait for index to be ready
         await this.waitForIndexReady();
+        console.log(`✅ Index ${this.config.indexName} created and ready`);
+      } else {
+        console.log(`✅ Index ${this.config.indexName} already exists`);
+        
+        // Test the existing index
+        const index = this.pinecone.index(this.config.indexName);
+        const stats = await index.describeIndexStats();
+        console.log(`📊 Index stats - Total vectors: ${stats.totalVectorCount || 0}`);
       }
     } catch (error) {
-      console.error('Error initializing vector store:', error);
-      throw error;
+      console.error('❌ Error initializing vector store:', error);
+      
+      if (error.message?.includes('401') || error.message?.includes('authentication')) {
+        throw new Error('Authentication failed. Please verify your PINECONE_API_KEY is correct.');
+      } else if (error.message?.includes('quota') || error.message?.includes('limit')) {
+        throw new Error('Pinecone quota exceeded. Please check your Pinecone dashboard.');
+      } else {
+        throw error;
+      }
     }
   }
 
