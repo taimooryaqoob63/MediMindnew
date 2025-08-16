@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Info, Pill, Zap, CheckCircle, XCircle, Heart, Brain, Activity } from 'lucide-react';
+import { AlertTriangle, Info, Pill, Zap, CheckCircle, XCircle, Heart, Brain, Activity, Clock, Star, Target, Shield, FileText } from 'lucide-react';
 
 interface MarkdownRendererProps {
   content: string;
@@ -78,6 +78,20 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         return;
       }
 
+      // Handle horizontal rules (---)
+      if (trimmedLine.match(/^-{3,}$/)) {
+        elements.push(
+          <div key={`hr-${lineIndex}`} className="my-6 flex items-center">
+            <div className="flex-grow h-px bg-gradient-to-r from-transparent via-medical-blue to-transparent"></div>
+            <div className="mx-4 text-medical-blue">
+              <div className="w-2 h-2 bg-medical-blue rounded-full"></div>
+            </div>
+            <div className="flex-grow h-px bg-gradient-to-r from-medical-blue via-medical-blue to-transparent"></div>
+          </div>
+        );
+        return;
+      }
+
       // Handle tables
       if (trimmedLine.includes('|') && !inReferenceSection) {
         const cells = trimmedLine.split('|').map(cell => cell.trim()).filter(cell => cell !== '');
@@ -105,28 +119,41 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         const HeadingTag = `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
 
         const getHeadingIcon = (title: string) => {
-          if (title.toLowerCase().includes('warning') || title.toLowerCase().includes('caution')) {
+          const lowerTitle = title.toLowerCase();
+          if (lowerTitle.includes('warning') || lowerTitle.includes('caution') || lowerTitle.includes('alert')) {
             return <AlertTriangle className="w-5 h-5 text-amber-500" />;
           }
-          if (title.toLowerCase().includes('medication') || title.toLowerCase().includes('drug')) {
-            return <Pill className="w-5 h-5 text-blue-500" />;
+          if (lowerTitle.includes('medication') || lowerTitle.includes('drug') || lowerTitle.includes('prescription') || lowerTitle.includes('dosage')) {
+            return <Pill className="w-5 h-5 text-purple-500" />;
           }
-          if (title.toLowerCase().includes('emergency') || title.toLowerCase().includes('urgent')) {
+          if (lowerTitle.includes('emergency') || lowerTitle.includes('urgent') || lowerTitle.includes('critical') || lowerTitle.includes('immediate')) {
             return <Zap className="w-5 h-5 text-red-500" />;
           }
-          if (title.toLowerCase().includes('treatment') || title.toLowerCase().includes('care')) {
+          if (lowerTitle.includes('treatment') || lowerTitle.includes('care') || lowerTitle.includes('management')) {
             return <Heart className="w-5 h-5 text-green-500" />;
+          }
+          if (lowerTitle.includes('symptoms') || lowerTitle.includes('signs') || lowerTitle.includes('diagnosis')) {
+            return <Activity className="w-5 h-5 text-orange-500" />;
+          }
+          if (lowerTitle.includes('prevention') || lowerTitle.includes('safety') || lowerTitle.includes('precaution')) {
+            return <Shield className="w-5 h-5 text-blue-600" />;
+          }
+          if (lowerTitle.includes('key') || lowerTitle.includes('important') || lowerTitle.includes('summary')) {
+            return <Star className="w-5 h-5 text-yellow-500" />;
+          }
+          if (lowerTitle.includes('steps') || lowerTitle.includes('procedure') || lowerTitle.includes('process')) {
+            return <Target className="w-5 h-5 text-indigo-500" />;
           }
           return <Info className="w-5 h-5 text-blue-500" />;
         };
 
         const headingClasses = {
-          1: 'text-2xl font-bold text-gray-900 mt-8 mb-6 pb-2 border-b-2 border-medical-blue',
-          2: 'text-xl font-semibold text-gray-800 mt-6 mb-4 flex items-center gap-2',
-          3: 'text-lg font-semibold text-gray-700 mt-5 mb-3 flex items-center gap-2',
-          4: 'text-base font-semibold text-gray-600 mt-4 mb-2',
-          5: 'text-sm font-semibold text-gray-600 mt-3 mb-2',
-          6: 'text-sm font-medium text-gray-500 mt-2 mb-1'
+          1: 'text-2xl font-bold text-gray-900 mt-8 mb-6 pb-3 border-b-2 border-gradient-to-r from-medical-blue to-medical-blue-light',
+          2: 'text-xl font-semibold text-gray-800 mt-6 mb-4 flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-medical-blue',
+          3: 'text-lg font-semibold text-gray-700 mt-5 mb-3 flex items-center gap-2 p-2 rounded-md bg-gray-50 border-l-3 border-gray-300',
+          4: 'text-base font-semibold text-gray-600 mt-4 mb-3 flex items-center gap-2',
+          5: 'text-sm font-semibold text-gray-600 mt-3 mb-2 flex items-center gap-2',
+          6: 'text-sm font-medium text-gray-500 mt-2 mb-2 flex items-center gap-1'
         };
 
         elements.push(
@@ -200,27 +227,96 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
       }
 
       // Handle alert boxes (lines starting with emoji warnings)
-      if (trimmedLine.match(/^(⚠️|🚨|ℹ️|💊|✅|❌|💡|🎯)/)) {
+      if (trimmedLine.match(/^(⚠️|🚨|ℹ️|💊|✅|❌|💡|🎯|🕐|⭐|🛡️|📋|🔬|❗)/)) {
         const alertType = trimmedLine.charAt(0);
         const content = trimmedLine.slice(1).trim();
 
         const alertStyles = {
-          '⚠️': 'bg-amber-50 border-amber-200 text-amber-800',
-          '🚨': 'bg-red-50 border-red-200 text-red-800',
-          'ℹ️': 'bg-blue-50 border-blue-200 text-blue-800',
-          '💊': 'bg-purple-50 border-purple-200 text-purple-800',
-          '✅': 'bg-green-50 border-green-200 text-green-800',
-          '❌': 'bg-red-50 border-red-200 text-red-800',
-          '💡': 'bg-yellow-50 border-yellow-200 text-yellow-800',
-          '🎯': 'bg-indigo-50 border-indigo-200 text-indigo-800'
+          '⚠️': {
+            style: 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-300 text-amber-900 shadow-amber-100',
+            icon: <AlertTriangle className="w-5 h-5 text-amber-600" />,
+            title: 'Warning'
+          },
+          '🚨': {
+            style: 'bg-gradient-to-r from-red-50 to-pink-50 border-red-300 text-red-900 shadow-red-100',
+            icon: <Zap className="w-5 h-5 text-red-600" />,
+            title: 'Emergency'
+          },
+          'ℹ️': {
+            style: 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-300 text-blue-900 shadow-blue-100',
+            icon: <Info className="w-5 h-5 text-blue-600" />,
+            title: 'Information'
+          },
+          '💊': {
+            style: 'bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-300 text-purple-900 shadow-purple-100',
+            icon: <Pill className="w-5 h-5 text-purple-600" />,
+            title: 'Medication'
+          },
+          '✅': {
+            style: 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 text-green-900 shadow-green-100',
+            icon: <CheckCircle className="w-5 h-5 text-green-600" />,
+            title: 'Success'
+          },
+          '❌': {
+            style: 'bg-gradient-to-r from-red-50 to-pink-50 border-red-300 text-red-900 shadow-red-100',
+            icon: <XCircle className="w-5 h-5 text-red-600" />,
+            title: 'Important'
+          },
+          '💡': {
+            style: 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-300 text-yellow-900 shadow-yellow-100',
+            icon: <div className="w-5 h-5 text-yellow-600">💡</div>,
+            title: 'Tip'
+          },
+          '🎯': {
+            style: 'bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-300 text-indigo-900 shadow-indigo-100',
+            icon: <Target className="w-5 h-5 text-indigo-600" />,
+            title: 'Key Point'
+          },
+          '🕐': {
+            style: 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-300 text-orange-900 shadow-orange-100',
+            icon: <Clock className="w-5 h-5 text-orange-600" />,
+            title: 'Time Sensitive'
+          },
+          '⭐': {
+            style: 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300 text-yellow-900 shadow-yellow-100',
+            icon: <Star className="w-5 h-5 text-yellow-600" />,
+            title: 'Important'
+          },
+          '🛡️': {
+            style: 'bg-gradient-to-r from-teal-50 to-green-50 border-teal-300 text-teal-900 shadow-teal-100',
+            icon: <Shield className="w-5 h-5 text-teal-600" />,
+            title: 'Safety'
+          },
+          '📋': {
+            style: 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-300 text-gray-900 shadow-gray-100',
+            icon: <FileText className="w-5 h-5 text-gray-600" />,
+            title: 'Checklist'
+          },
+          '🔬': {
+            style: 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-300 text-violet-900 shadow-violet-100',
+            icon: <Brain className="w-5 h-5 text-violet-600" />,
+            title: 'Clinical'
+          },
+          '❗': {
+            style: 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-300 text-orange-900 shadow-orange-100',
+            icon: <AlertTriangle className="w-5 h-5 text-orange-600" />,
+            title: 'Attention'
+          }
         };
 
+        const alertConfig = alertStyles[alertType as keyof typeof alertStyles] || alertStyles['ℹ️'];
+
         elements.push(
-          <div key={`alert-${lineIndex}`} className={`p-4 rounded-lg border-l-4 my-3 ${alertStyles[alertType as keyof typeof alertStyles] || alertStyles['ℹ️']}`}>
-            <div className="flex items-start space-x-2">
-              <span className="text-lg flex-shrink-0">{alertType}</span>
+          <div key={`alert-${lineIndex}`} className={`p-4 rounded-xl border-l-4 my-4 shadow-sm ${alertConfig.style}`}>
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                {alertConfig.icon}
+              </div>
               <div className="flex-1">
-                {parseInlineMarkdown(content)}
+                <div className="font-semibold text-sm mb-1 text-current opacity-80">{alertConfig.title}</div>
+                <div className="text-sm leading-relaxed">
+                  {parseInlineMarkdown(content)}
+                </div>
               </div>
             </div>
           </div>
@@ -262,24 +358,29 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         return;
       }
 
-      // Regular paragraph - handle as short paragraphs
+      // Regular paragraph - handle as short, readable paragraphs
       const sentences = trimmedLine.split(/(?<=[.!?])\s+/).filter(s => s.trim());
       if (sentences.length > 3) {
-        // Split long paragraphs
+        // Split long paragraphs into more digestible chunks
         const chunks = [];
         for (let i = 0; i < sentences.length; i += 2) {
           chunks.push(sentences.slice(i, i + 2).join(' '));
         }
         chunks.forEach((chunk, idx) => {
           elements.push(
-            <p key={`para-${lineIndex}-${idx}`} className="mb-2 leading-relaxed">
+            <p key={`para-${lineIndex}-${idx}`} className="mb-3 leading-relaxed text-gray-700 max-w-none">
               {parseInlineMarkdown(chunk)}
             </p>
           );
         });
       } else {
+        // Check if paragraph contains medical terms for special styling
+        const isMedicalContent = /\b(diabetes|glucose|insulin|blood sugar|HbA1c|medication|dosage|symptoms|treatment|diagnosis|patient|clinical|medical)\b/i.test(trimmedLine);
+        
         elements.push(
-          <p key={`para-${lineIndex}`} className="mb-2 leading-relaxed">
+          <p key={`para-${lineIndex}`} className={`mb-3 leading-relaxed max-w-none ${
+            isMedicalContent ? 'text-gray-800 bg-blue-50/30 p-3 rounded-lg border-l-2 border-blue-200' : 'text-gray-700'
+          }`}>
             {parseInlineMarkdown(trimmedLine)}
           </p>
         );
@@ -307,20 +408,23 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         regex: /\*\*([^*]+)\*\*/g,
         render: (match: RegExpExecArray, key: string) => {
           const content = match[1];
-          const isClinical = /\b(NICE|NHS|CQC|CALL 999|EMERGENCY|CRITICAL|URGENT)\b/i.test(content);
-          const isMedication = /\b(mg|ml|tablet|dose|medication|drug|prescription)\b/i.test(content);
+          const isClinical = /\b(NICE|NHS|CQC|CALL 999|EMERGENCY|CRITICAL|URGENT|IMMEDIATE|ACUTE|SEVERE)\b/i.test(content);
+          const isMedication = /\b(mg|ml|tablet|dose|medication|drug|prescription|insulin|glucose|HbA1c|mmol\/L|units)\b/i.test(content);
+          const isVitalSign = /\b(blood pressure|heart rate|temperature|respiratory rate|oxygen saturation|BP|HR|RR|SpO2)\b/i.test(content);
 
           return (
             <strong 
               key={key} 
               className={`${
-                isClinical ? 'text-red-700 bg-red-50 px-2 py-0.5 rounded font-bold' :
-                isMedication ? 'text-purple-700 bg-purple-50 px-2 py-0.5 rounded font-semibold' :
+                isClinical ? 'text-red-700 bg-red-100 px-2 py-1 rounded-md font-bold border border-red-200 shadow-sm' :
+                isMedication ? 'text-purple-700 bg-purple-100 px-2 py-1 rounded-md font-semibold border border-purple-200 shadow-sm' :
+                isVitalSign ? 'text-green-700 bg-green-100 px-2 py-1 rounded-md font-semibold border border-green-200 shadow-sm' :
                 'font-semibold text-gray-900'
               }`}
             >
               {isClinical && <AlertTriangle className="w-3 h-3 inline mr-1" />}
               {isMedication && <Pill className="w-3 h-3 inline mr-1" />}
+              {isVitalSign && <Activity className="w-3 h-3 inline mr-1" />}
               {content}
             </strong>
           );
