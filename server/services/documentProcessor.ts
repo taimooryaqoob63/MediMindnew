@@ -302,10 +302,73 @@ export class DocumentProcessor {
   }
 
   private async buildKnowledgeGraph(documentId: string): Promise<void> {
-    // Simplified knowledge graph building
-    // In production, you'd use more sophisticated relationship extraction
     console.log(`Building knowledge graph for document ${documentId}`);
-    // Implementation would go here
+    
+    // Get all entities to build relationships
+    const entities = await storage.getEntities();
+    
+    // Define medical knowledge relationships
+    const medicalRelationships = [
+      // Diabetes and related conditions
+      { from: 'diabetes', to: 'blood glucose', type: 'affects', confidence: 95 },
+      { from: 'diabetes', to: 'insulin', type: 'requires_treatment', confidence: 90 },
+      { from: 'diabetes', to: 'HbA1c', type: 'monitored_by', confidence: 95 },
+      { from: 'diabetes', to: 'hypoglycemia', type: 'can_cause', confidence: 80 },
+      { from: 'diabetes', to: 'hyperglycemia', type: 'can_cause', confidence: 85 },
+      { from: 'diabetes', to: 'neuropathy', type: 'can_cause', confidence: 75 },
+      { from: 'diabetes', to: 'retinopathy', type: 'can_cause', confidence: 75 },
+      { from: 'diabetes', to: 'nephropathy', type: 'can_cause', confidence: 75 },
+      
+      // Insulin relationships
+      { from: 'insulin', to: 'blood glucose', type: 'regulates', confidence: 95 },
+      { from: 'insulin', to: 'hypoglycemia', type: 'can_cause', confidence: 70 },
+      { from: 'glucagon', to: 'hypoglycemia', type: 'treats', confidence: 90 },
+      
+      // Medications
+      { from: 'metformin', to: 'diabetes', type: 'treats', confidence: 95 },
+      { from: 'metformin', to: 'blood glucose', type: 'lowers', confidence: 90 },
+      
+      // Monitoring
+      { from: 'HbA1c', to: 'blood glucose', type: 'measures_average', confidence: 95 },
+      { from: 'ketones', to: 'diabetes', type: 'indicates_control', confidence: 80 },
+      
+      // Risk factors
+      { from: 'blood pressure', to: 'diabetes', type: 'related_condition', confidence: 70 },
+      { from: 'cholesterol', to: 'diabetes', type: 'related_condition', confidence: 70 },
+      
+      // Complications relationships
+      { from: 'neuropathy', to: 'blood glucose', type: 'caused_by_high', confidence: 80 },
+      { from: 'retinopathy', to: 'blood glucose', type: 'caused_by_high', confidence: 80 },
+      { from: 'nephropathy', to: 'blood glucose', type: 'caused_by_high', confidence: 80 }
+    ];
+    
+    // Create entity lookup map
+    const entityMap = new Map<string, any>();
+    entities.forEach(entity => {
+      entityMap.set(entity.name.toLowerCase(), entity);
+    });
+    
+    // Create relationships
+    for (const rel of medicalRelationships) {
+      const fromEntity = entityMap.get(rel.from.toLowerCase());
+      const toEntity = entityMap.get(rel.to.toLowerCase());
+      
+      if (fromEntity && toEntity) {
+        try {
+          await storage.createEntityRelationship({
+            fromEntityId: fromEntity.id,
+            toEntityId: toEntity.id,
+            relationshipType: rel.type,
+            confidence: rel.confidence,
+            source: 'medical_knowledge'
+          });
+          console.log(`Created relationship: ${rel.from} ${rel.type} ${rel.to}`);
+        } catch (error) {
+          // Relationship might already exist
+          console.log(`Relationship already exists: ${rel.from} ${rel.type} ${rel.to}`);
+        }
+      }
+    }
   }
 
   private async updateJobProgress(

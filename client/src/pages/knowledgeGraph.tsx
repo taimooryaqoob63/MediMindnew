@@ -1,9 +1,13 @@
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import KnowledgeGraphVisualization from '@/components/KnowledgeGraphVisualization';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Network, RefreshCw, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Entity {
   id: string;
@@ -23,6 +27,10 @@ interface Relationship {
 }
 
 export default function KnowledgeGraphPage() {
+  const [buildType, setBuildType] = useState<'build' | 'rebuild'>('build');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
   const { data: entities, isLoading: entitiesLoading } = useQuery<Entity[]>({
     queryKey: ['entities'],
     queryFn: async () => {
@@ -39,6 +47,36 @@ export default function KnowledgeGraphPage() {
       if (!response.ok) throw new Error('Failed to fetch relationships');
       return response.json();
     },
+  });
+
+  const buildKnowledgeGraphMutation = useMutation({
+    mutationFn: async (rebuild: boolean = false) => {
+      const response = await fetch('/api/rag/build-knowledge-graph', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rebuild })
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to build knowledge graph');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Knowledge Graph Built Successfully",
+        description: `Created ${data.stats.relationshipsCreated} new relationships between ${data.stats.entitiesProcessed} entities.`,
+      });
+      // Invalidate and refetch the relationships data
+      queryClient.invalidateQueries({ queryKey: ['relationships'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Failed to Build Knowledge Graph",
+        description: error.message,
+      });
+    }
   });
 
   if (entitiesLoading || relationshipsLoading) {
@@ -73,6 +111,42 @@ export default function KnowledgeGraphPage() {
           <p className="text-muted-foreground">
             Explore relationships between medical entities, procedures, and guidelines
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {relationships && relationships.length === 0 && entities && entities.length > 0 && (
+            <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-sm font-medium">No connections found</span>
+            </div>
+          )}
+          <Button 
+            onClick={() => buildKnowledgeGraphMutation.mutate(false)}
+            disabled={buildKnowledgeGraphMutation.isPending || !entities || entities.length === 0}
+            variant="default"
+            size="sm"
+          >
+            {buildKnowledgeGraphMutation.isPending ? (
+              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Network className="w-4 h-4 mr-2" />
+            )}
+            {relationships && relationships.length > 0 ? 'Add More Connections' : 'Build Connections'}
+          </Button>
+          {relationships && relationships.length > 0 && (
+            <Button 
+              onClick={() => buildKnowledgeGraphMutation.mutate(true)}
+              disabled={buildKnowledgeGraphMutation.isPending}
+              variant="outline"
+              size="sm"
+            >
+              {buildKnowledgeGraphMutation.isPending ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              Rebuild All
+            </Button>
+          )}
         </div>
       </div>
 

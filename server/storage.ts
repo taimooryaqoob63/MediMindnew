@@ -351,6 +351,11 @@ export class DatabaseStorage implements IStorage {
     return relationship;
   }
 
+  async clearEntityRelationships(): Promise<number> {
+    const result = await db.delete(entityRelationships);
+    return result.rowCount ?? 0;
+  }
+
   // RAG Chat Messages
   async getRagChatMessages(userId: string, courseId?: string): Promise<RagChatMessage[]> {
     if (courseId) {

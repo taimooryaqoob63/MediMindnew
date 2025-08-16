@@ -877,6 +877,127 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
+  // Build/rebuild knowledge graph relationships
+  app.post("/api/rag/build-knowledge-graph", isAuthenticated, async (req, res) => {
+    try {
+      console.log("Starting knowledge graph building process...");
+      
+      // Clear existing relationships if rebuild is requested
+      const { rebuild = false } = req.body;
+      if (rebuild) {
+        await storage.clearEntityRelationships();
+        console.log("Cleared existing relationships for rebuild");
+      }
+      
+      // Get all entities to build relationships
+      const entities = await storage.getEntities();
+      console.log(`Found ${entities.length} entities to process`);
+      
+      if (entities.length === 0) {
+        return res.status(400).json({ 
+          message: "No entities found. Process documents first to extract entities." 
+        });
+      }
+      
+      // Define comprehensive medical knowledge relationships
+      const medicalRelationships = [
+        // Diabetes and related conditions
+        { from: 'diabetes', to: 'blood glucose', type: 'affects', confidence: 95 },
+        { from: 'diabetes', to: 'insulin', type: 'requires_treatment', confidence: 90 },
+        { from: 'diabetes', to: 'HbA1c', type: 'monitored_by', confidence: 95 },
+        { from: 'diabetes', to: 'hypoglycemia', type: 'can_cause', confidence: 80 },
+        { from: 'diabetes', to: 'hyperglycemia', type: 'can_cause', confidence: 85 },
+        { from: 'diabetes', to: 'neuropathy', type: 'can_cause', confidence: 75 },
+        { from: 'diabetes', to: 'retinopathy', type: 'can_cause', confidence: 75 },
+        { from: 'diabetes', to: 'nephropathy', type: 'can_cause', confidence: 75 },
+        
+        // Insulin relationships
+        { from: 'insulin', to: 'blood glucose', type: 'regulates', confidence: 95 },
+        { from: 'insulin', to: 'hypoglycemia', type: 'can_cause', confidence: 70 },
+        { from: 'glucagon', to: 'hypoglycemia', type: 'treats', confidence: 90 },
+        { from: 'glucagon', to: 'blood glucose', type: 'raises', confidence: 85 },
+        
+        // Medications
+        { from: 'metformin', to: 'diabetes', type: 'treats', confidence: 95 },
+        { from: 'metformin', to: 'blood glucose', type: 'lowers', confidence: 90 },
+        { from: 'metformin', to: 'insulin', type: 'improves_sensitivity', confidence: 80 },
+        
+        // Monitoring and diagnostics
+        { from: 'HbA1c', to: 'blood glucose', type: 'measures_average', confidence: 95 },
+        { from: 'ketones', to: 'diabetes', type: 'indicates_control', confidence: 80 },
+        { from: 'ketones', to: 'blood glucose', type: 'indicates_high', confidence: 85 },
+        
+        // Risk factors and comorbidities
+        { from: 'blood pressure', to: 'diabetes', type: 'related_condition', confidence: 70 },
+        { from: 'cholesterol', to: 'diabetes', type: 'related_condition', confidence: 70 },
+        { from: 'blood pressure', to: 'retinopathy', type: 'worsens', confidence: 65 },
+        { from: 'blood pressure', to: 'nephropathy', type: 'worsens', confidence: 70 },
+        
+        // Complications relationships
+        { from: 'neuropathy', to: 'blood glucose', type: 'caused_by_high', confidence: 80 },
+        { from: 'retinopathy', to: 'blood glucose', type: 'caused_by_high', confidence: 80 },
+        { from: 'nephropathy', to: 'blood glucose', type: 'caused_by_high', confidence: 80 },
+        { from: 'neuropathy', to: 'diabetes', type: 'complication_of', confidence: 90 },
+        { from: 'retinopathy', to: 'diabetes', type: 'complication_of', confidence: 90 },
+        { from: 'nephropathy', to: 'diabetes', type: 'complication_of', confidence: 90 },
+        
+        // Bidirectional relationships for better connectivity
+        { from: 'hypoglycemia', to: 'glucagon', type: 'treated_by', confidence: 90 },
+        { from: 'hyperglycemia', to: 'insulin', type: 'treated_by', confidence: 85 },
+        { from: 'blood glucose', to: 'insulin', type: 'regulated_by', confidence: 95 },
+        { from: 'blood glucose', to: 'HbA1c', type: 'reflected_in', confidence: 95 }
+      ];
+      
+      // Create entity lookup map
+      const entityMap = new Map<string, any>();
+      entities.forEach(entity => {
+        entityMap.set(entity.name.toLowerCase(), entity);
+      });
+      
+      let createdCount = 0;
+      let skippedCount = 0;
+      
+      // Create relationships
+      for (const rel of medicalRelationships) {
+        const fromEntity = entityMap.get(rel.from.toLowerCase());
+        const toEntity = entityMap.get(rel.to.toLowerCase());
+        
+        if (fromEntity && toEntity && fromEntity.id !== toEntity.id) {
+          try {
+            await storage.createEntityRelationship({
+              fromEntityId: fromEntity.id,
+              toEntityId: toEntity.id,
+              relationshipType: rel.type,
+              confidence: rel.confidence,
+              source: 'medical_knowledge'
+            });
+            createdCount++;
+            console.log(`Created relationship: ${rel.from} ${rel.type} ${rel.to}`);
+          } catch (error) {
+            // Relationship might already exist
+            skippedCount++;
+            console.log(`Relationship already exists: ${rel.from} ${rel.type} ${rel.to}`);
+          }
+        }
+      }
+      
+      console.log(`Knowledge graph building completed. Created: ${createdCount}, Skipped: ${skippedCount}`);
+      
+      res.json({ 
+        message: "Knowledge graph built successfully",
+        stats: {
+          entitiesProcessed: entities.length,
+          relationshipsCreated: createdCount,
+          relationshipsSkipped: skippedCount,
+          totalRelationships: createdCount + skippedCount
+        }
+      });
+    } catch (error) {
+      console.error("Error building knowledge graph:", error);
+      res.status(500).json({ message: "Failed to build knowledge graph" });
+    }
+  });
+
   // Feedback collection endpoint
   app.post("/api/rag/feedback", isAuthenticated, async (req, res) => {
     try {
