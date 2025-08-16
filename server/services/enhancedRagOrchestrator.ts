@@ -848,9 +848,11 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
   private async semanticDeduplicateAgentResponses(
     agentResponses: EnhancedAgentResponse[]
   ): Promise<EnhancedAgentResponse[]> {
-    if (!this.openai || agentResponses.length <= 1) {
+    if (!this.openai || agentResponses.length === 0) {
       return agentResponses;
     }
+
+    console.log(`Starting semantic deduplication for ${agentResponses.length} agent response(s)...`);
 
     try {
       // Extract all sentences from all agent responses
@@ -878,7 +880,14 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
       console.log(`Processing ${allSentences.length} sentences for semantic deduplication`);
 
       if (allSentences.length === 0) {
+        console.log('No sentences to process, returning original responses');
         return agentResponses;
+      }
+
+      // If we only have a few sentences, apply basic deduplication
+      if (allSentences.length < 3) {
+        console.log('Too few sentences for embedding-based deduplication, using basic approach');
+        return this.basicSemanticDeduplication(agentResponses);
       }
 
       // Create embeddings for all sentences
@@ -926,12 +935,56 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
       });
 
       console.log(`Semantic deduplication complete. Removed ${duplicateIndices.size} duplicate sentences.`);
-      return processedResponses;
+      return processedResponses.filter(response => response.content.trim().length > 0);
 
     } catch (error) {
       console.error('Semantic deduplication error:', error);
-      return agentResponses; // Return original responses if deduplication fails
+      // Fallback to basic deduplication if embeddings fail
+      console.log('Falling back to basic semantic deduplication...');
+      return this.basicSemanticDeduplication(agentResponses);
     }
+  }
+
+  private basicSemanticDeduplication(
+    agentResponses: EnhancedAgentResponse[]
+  ): EnhancedAgentResponse[] {
+    console.log('Applying basic semantic deduplication...');
+    
+    return agentResponses.map(response => {
+      const sentences = this.extractSentences(response.content);
+      const uniqueSentences = [];
+      const seenNormalized = new Set<string>();
+      
+      for (const sentence of sentences) {
+        if (sentence.trim().length < 20) {
+          uniqueSentences.push(sentence);
+          continue;
+        }
+        
+        // More aggressive normalization for basic deduplication
+        const normalized = sentence.toLowerCase()
+          .replace(/[^\w\s]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this|these|those|have|has|had|will|would|could|should|may|might|must|can|do|does|did|get|got|make|made|take|took|give|gave|come|came|go|went|see|saw|know|knew|think|thought|say|said|tell|told|ask|asked|work|worked|feel|felt|become|became|leave|left|put|putting)\b/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        if (normalized.length > 10 && !seenNormalized.has(normalized)) {
+          seenNormalized.add(normalized);
+          uniqueSentences.push(sentence);
+        } else if (normalized.length > 10) {
+          console.log(`Basic dedup removed: "${sentence.substring(0, 80)}..."`);
+        }
+      }
+      
+      const newContent = uniqueSentences.join(' ').trim();
+      console.log(`Basic deduplication: ${sentences.length} -> ${uniqueSentences.length} sentences`);
+      
+      return {
+        ...response,
+        content: newContent || response.content
+      };
+    });
   }
 
   private extractSentences(text: string): string[] {
