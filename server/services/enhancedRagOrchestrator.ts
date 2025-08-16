@@ -1317,9 +1317,39 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
   private formatCitationSection(sources: any[]): string {
     if (sources.length === 0) return '';
     
-    const citations = sources.map((source, index) => {
+    // Filter and clean sources to only show meaningful titles
+    const cleanedSources = sources
+      .filter(source => {
+        const title = source.title || '';
+        // Filter out sources with document ID patterns as titles
+        return !title.match(/^document-[0-9]+-[0-9]+/) && 
+               !title.includes('.json') && 
+               title.length > 5;
+      })
+      .slice(0, 5); // Limit to top 5 most relevant sources
+    
+    if (cleanedSources.length === 0) {
+      return `
+
+**Note**: All medical guidance should be verified with current NICE guidelines, NHS protocols, and your local care home policies. In emergencies, always call 999 and follow your facility's emergency procedures.`;
+    }
+    
+    const citations = cleanedSources.map((source, index) => {
       const sourceNumber = index + 1;
-      const title = source.title || 'Untitled Document';
+      let title = source.title || 'Medical Guideline';
+      
+      // Clean up the title further
+      title = title.replace(/document-[0-9]+-[0-9]+/g, '').trim();
+      title = title.replace(/\.json$/g, '').trim();
+      
+      // Provide meaningful fallback titles based on type
+      if (!title || title.length < 3) {
+        if (source.type === 'NICE') title = 'NICE Clinical Guideline';
+        else if (source.type === 'NHS') title = 'NHS Clinical Guidance';
+        else if (source.type === 'CQC') title = 'CQC Quality Standards';
+        else title = 'Clinical Reference Document';
+      }
+      
       const type = source.type || 'Document';
       const url = source.url ? ` Available at: ${source.url}` : '';
       
