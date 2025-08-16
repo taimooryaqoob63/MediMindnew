@@ -1,6 +1,7 @@
 import { PlayCircle, Check, FileText, BarChart3, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useLocation } from "wouter";
 import type { Course, Module, UserProgress } from "@shared/schema";
 
 interface SidebarProps {
@@ -22,6 +23,8 @@ export default function Sidebar({
   onModuleSelect,
   isMobile
 }: SidebarProps) {
+  const [, setLocation] = useLocation();
+  
   const isModuleCompleted = (moduleId: string) => {
     return progress.some(p => p.moduleId === moduleId && p.completed);
   };
@@ -122,11 +125,10 @@ export default function Sidebar({
               Tools
             </h3>
             <div className="space-y-1">
-              {/* Placeholder for SidebarItem component, assuming it exists */}
               <Button
                 variant="ghost"
                 className="w-full justify-start px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                onClick={() => { /* navigate to analytics */ }}
+                onClick={() => setLocation("/analytics")}
               >
                 <BarChart3 className="mr-3 h-4 w-4 text-gray-500" />
                 <span className="text-left">Analytics</span>
@@ -134,7 +136,7 @@ export default function Sidebar({
               <Button
                 variant="ghost"
                 className="w-full justify-start px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                onClick={() => { /* navigate to knowledge-graph */ }}
+                onClick={() => setLocation("/knowledge-graph")}
               >
                 <Network className="mr-3 h-4 w-4 text-gray-500" />
                 <span className="text-left">Knowledge Graph</span>
