@@ -37,6 +37,17 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   const [inputMessage, setInputMessage] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
+  // Debug logging for props
+  useEffect(() => {
+    console.log('🔍 AITutorChat props:', {
+      courseId,
+      hasCurrentModule: !!currentModule,
+      currentModuleId: currentModule?.id,
+      isMobile,
+      isOpen
+    });
+  }, [courseId, currentModule, isMobile, isOpen]);
+  
   // TTS and STT state
   const [isListening, setIsListening] = useState(false);
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
@@ -294,9 +305,27 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   };
 
   const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
+    console.log('🚀 handleSendMessage called with:', {
+      inputMessage: inputMessage,
+      trimmedMessage: inputMessage.trim(),
+      courseId: courseId,
+      hasCurrentModule: !!currentModule,
+      isPending: chatMutation.isPending
+    });
+    
+    if (!inputMessage.trim()) {
+      console.log('❌ Empty message, returning early');
+      return;
+    }
+    
+    if (!courseId) {
+      console.log('❌ No courseId, returning early');
+      return;
+    }
     
     const context = currentModule ? `Current module: ${currentModule.title} - ${currentModule.description}` : undefined;
+    
+    console.log('✅ Sending message with context:', context);
     
     chatMutation.mutate({
       message: inputMessage.trim(),
@@ -519,8 +548,13 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <textarea
                   ref={inputRef}
                   value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
+                  onChange={(e) => {
+                    console.log('📝 Input changed:', e.target.value);
+                    setInputMessage(e.target.value);
+                  }}
                   onKeyDown={handleKeyPress}
+                  onFocus={() => console.log('🎯 Input focused')}
+                  onBlur={() => console.log('😴 Input blurred')}
                   placeholder="Ask me anything about diabetes care..."
                   className="chat-input placeholder-gray-400"
                   disabled={chatMutation.isPending}
@@ -558,7 +592,10 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               </Button>
               
               <Button
-                onClick={handleSendMessage}
+                onClick={() => {
+                  console.log('🖱️ Send button clicked');
+                  handleSendMessage();
+                }}
                 disabled={!inputMessage.trim() || chatMutation.isPending}
                 className="chat-button chat-button-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 size="sm"
