@@ -747,7 +747,11 @@ CRITICAL REQUIREMENTS:
       return agentResponses[0];
     }
 
-    const agentOutputs = agentResponses.map(response => 
+    // Step 1: Apply semantic deduplication to agent responses before synthesis
+    console.log('Applying semantic deduplication to agent responses...');
+    const dedupedResponses = await this.semanticDeduplicateAgentResponses(agentResponses);
+    
+    const agentOutputs = dedupedResponses.map(response => 
       `${response.agentName}: ${response.content}`
     ).join('\n\n---\n\n');
 
@@ -824,13 +828,13 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
 
       return {
         content: synthesizedContent,
-        confidence: Math.round(agentResponses.reduce((sum, r) => sum + r.confidence, 0) / agentResponses.length),
+        confidence: Math.round(dedupedResponses.reduce((sum, r) => sum + r.confidence, 0) / dedupedResponses.length),
         sources: uniqueSources,
         followUpQuestions: uniqueQuestions,
         suggestedActions: uniqueActions,
         agentName: 'synthesized',
-        responseTime: Math.max(...agentResponses.map(r => r.responseTime)),
-        tokenUsage: agentResponses.reduce((sum, r) => ({
+        responseTime: Math.max(...dedupedResponses.map(r => r.responseTime)),
+        tokenUsage: dedupedResponses.reduce((sum, r) => ({
           prompt: sum.prompt + r.tokenUsage.prompt,
           completion: sum.completion + r.tokenUsage.completion,
         }), { prompt: 0, completion: 0 }),
@@ -839,6 +843,149 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
       console.error('Synthesis error:', error);
       return agentResponses[0];
     }
+  }
+
+  private async semanticDeduplicateAgentResponses(
+    agentResponses: EnhancedAgentResponse[]
+  ): Promise<EnhancedAgentResponse[]> {
+    if (!this.openai || agentResponses.length <= 1) {
+      return agentResponses;
+    }
+
+    try {
+      // Extract all sentences from all agent responses
+      const allSentences: Array<{
+        text: string;
+        agentIndex: number;
+        originalIndex: number;
+        agentName: string;
+      }> = [];
+
+      agentResponses.forEach((response, agentIndex) => {
+        const sentences = this.extractSentences(response.content);
+        sentences.forEach((sentence, sentenceIndex) => {
+          if (sentence.trim().length > 20) { // Only process meaningful sentences
+            allSentences.push({
+              text: sentence.trim(),
+              agentIndex,
+              originalIndex: sentenceIndex,
+              agentName: response.agentName
+            });
+          }
+        });
+      });
+
+      console.log(`Processing ${allSentences.length} sentences for semantic deduplication`);
+
+      if (allSentences.length === 0) {
+        return agentResponses;
+      }
+
+      // Create embeddings for all sentences
+      const sentenceTexts = allSentences.map(s => s.text);
+      const embeddings = await this.createEmbeddings(sentenceTexts);
+
+      // Find semantically similar sentences using cosine similarity
+      const similarityThreshold = 0.95;
+      const duplicateIndices = new Set<number>();
+
+      for (let i = 0; i < embeddings.length; i++) {
+        if (duplicateIndices.has(i)) continue;
+
+        for (let j = i + 1; j < embeddings.length; j++) {
+          if (duplicateIndices.has(j)) continue;
+
+          const similarity = this.cosineSimilarity(embeddings[i], embeddings[j]);
+          
+          if (similarity > similarityThreshold) {
+            // Keep the first occurrence, mark the second as duplicate
+            duplicateIndices.add(j);
+            console.log(`Semantic duplicate found (similarity: ${similarity.toFixed(3)}):`);
+            console.log(`  Original: "${allSentences[i].text.substring(0, 100)}..."`);
+            console.log(`  Duplicate: "${allSentences[j].text.substring(0, 100)}..."`);
+          }
+        }
+      }
+
+      // Rebuild agent responses without duplicates
+      const processedResponses = agentResponses.map((response, agentIndex) => {
+        const originalSentences = this.extractSentences(response.content);
+        const filteredSentences = originalSentences.filter((sentence, sentenceIndex) => {
+          const globalIndex = allSentences.findIndex(
+            s => s.agentIndex === agentIndex && s.originalIndex === sentenceIndex
+          );
+          return globalIndex === -1 || !duplicateIndices.has(globalIndex);
+        });
+
+        const newContent = filteredSentences.join(' ').trim();
+        
+        return {
+          ...response,
+          content: newContent || response.content // Fallback to original if all filtered out
+        };
+      });
+
+      console.log(`Semantic deduplication complete. Removed ${duplicateIndices.size} duplicate sentences.`);
+      return processedResponses;
+
+    } catch (error) {
+      console.error('Semantic deduplication error:', error);
+      return agentResponses; // Return original responses if deduplication fails
+    }
+  }
+
+  private extractSentences(text: string): string[] {
+    // Split by sentence-ending punctuation, keeping the punctuation
+    return text.split(/(?<=[.!?])\s+/).filter(sentence => sentence.trim().length > 0);
+  }
+
+  private async createEmbeddings(texts: string[]): Promise<number[][]> {
+    if (!this.openai) {
+      throw new Error('OpenAI not configured');
+    }
+
+    // Process in batches to avoid rate limits
+    const batchSize = 50;
+    const allEmbeddings: number[][] = [];
+
+    for (let i = 0; i < texts.length; i += batchSize) {
+      const batch = texts.slice(i, i + batchSize);
+      
+      const response = await this.openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: batch,
+      });
+
+      const batchEmbeddings = response.data.map(item => item.embedding);
+      allEmbeddings.push(...batchEmbeddings);
+    }
+
+    return allEmbeddings;
+  }
+
+  private cosineSimilarity(a: number[], b: number[]): number {
+    if (a.length !== b.length) {
+      throw new Error('Vectors must have the same length');
+    }
+
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+
+    for (let i = 0; i < a.length; i++) {
+      dotProduct += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
+    }
+
+    normA = Math.sqrt(normA);
+    normB = Math.sqrt(normB);
+
+    if (normA === 0 || normB === 0) {
+      return 0;
+    }
+
+    return dotProduct / (normA * normB);
   }
 
   private async cacheResponse(query: string, response: EnhancedAgentResponse): Promise<void> {
