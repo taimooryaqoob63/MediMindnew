@@ -9,6 +9,7 @@ import TrainingPage from "@/pages/training";
 import LandingPage from "@/pages/landing";
 import CourseManagement from "@/pages/courseManagement";
 import DocumentManagement from "@/pages/documentManagement";
+import RAGAnalytics from "@/pages/RAGAnalytics";
 
 
 function CourseManagementWrapper() {
@@ -44,6 +45,7 @@ function Router() {
           <Route path="/training" component={TrainingPage} />
           <Route path="/manage" component={CourseManagementWrapper} />
           <Route path="/documents" component={DocumentManagementWrapper} />
+          <Route path="/analytics" component={() => <RAGAnalytics />} />
         </>
       )}
       <Route component={NotFound} />
