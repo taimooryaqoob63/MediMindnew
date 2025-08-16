@@ -616,7 +616,7 @@ FORMAT: Essential answer in 1-2 sentences. Citation if available. DONE.`;
         max_tokens: 150, // Very short to force extreme conciseness
         presence_penalty: 2.0, // Maximum penalty for using same topics
         frequency_penalty: 2.0, // Maximum penalty for repeating tokens
-        stop: ["\n\nFor more", "Additionally", "Furthermore", "Moreover", "In addition", "Also", "As mentioned", "As stated above"], // Stop common repetition triggers
+        stop: ["\n\nFor more", "Additionally", "Furthermore", "Moreover"], // Stop common repetition triggers (max 4 allowed)
       });
 
       let content = response.choices[0]?.message?.content || '';
