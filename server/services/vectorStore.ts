@@ -187,8 +187,35 @@ export class VectorStore {
         includeMetadata: true,
       };
       
-      if (filter) {
-        queryRequest.filter = filter;
+      // Only add filter if it's valid and not empty
+      if (filter && typeof filter === 'object' && Object.keys(filter).length > 0) {
+        // Sanitize filter to ensure it matches Pinecone's expected format
+        const sanitizedFilter: Record<string, any> = {};
+        
+        Object.entries(filter).forEach(([key, value]) => {
+          // Only include non-null, defined values
+          if (value !== null && value !== undefined && value !== '') {
+            // Handle special filter cases
+            if (key === 'recency_weight' || key === 'compliance_focused') {
+              // These are processing hints, not Pinecone filters
+              return;
+            }
+            
+            // Ensure proper filter format for Pinecone
+            if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+              sanitizedFilter[key] = { '$eq': value };
+            } else if (Array.isArray(value)) {
+              sanitizedFilter[key] = { '$in': value };
+            } else {
+              sanitizedFilter[key] = value;
+            }
+          }
+        });
+        
+        // Only add filter if we have valid entries
+        if (Object.keys(sanitizedFilter).length > 0) {
+          queryRequest.filter = sanitizedFilter;
+        }
       }
       
       const response = await index.query(queryRequest);
@@ -200,6 +227,11 @@ export class VectorStore {
       })) || [];
     } catch (error) {
       console.error('Error querying vectors:', error);
+      // If filter caused the error, retry without filter
+      if (error.message?.includes('filter') && filter) {
+        console.warn('Retrying query without filter due to filter error');
+        return this.queryVectors(queryEmbedding, topK);
+      }
       throw error;
     }
   }

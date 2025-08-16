@@ -15,7 +15,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
     let inTable = false;
     let tableHeaders: string[] = [];
     let tableRows: string[][] = [];
-    
+
     const processTable = () => {
       if (tableHeaders.length > 0 && tableRows.length > 0) {
         elements.push(
@@ -49,10 +49,10 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
       tableHeaders = [];
       tableRows = [];
     };
-    
+
     lines.forEach((line, lineIndex) => {
       const trimmedLine = line.trim();
-      
+
       // Handle empty lines
       if (trimmedLine === '') {
         if (inTable) {
@@ -61,7 +61,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         elements.push(<div key={`spacer-${lineIndex}`} className="h-2" />);
         return;
       }
-      
+
       // Handle tables
       if (trimmedLine.includes('|') && !inReferenceSection) {
         const cells = trimmedLine.split('|').map(cell => cell.trim()).filter(cell => cell !== '');
@@ -80,14 +80,14 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
       } else if (inTable) {
         processTable();
       }
-      
+
       // Handle headings
       const headingMatch = trimmedLine.match(/^(#{1,6})\s+(.+)$/);
       if (headingMatch) {
         const [, hashes, title] = headingMatch;
         const level = hashes.length;
         const HeadingTag = `h${Math.min(level, 6)}` as keyof JSX.IntrinsicElements;
-        
+
         const getHeadingIcon = (title: string) => {
           if (title.toLowerCase().includes('warning') || title.toLowerCase().includes('caution')) {
             return <AlertTriangle className="w-5 h-5 text-amber-500" />;
@@ -103,7 +103,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
           }
           return <Info className="w-5 h-5 text-blue-500" />;
         };
-        
+
         const headingClasses = {
           1: 'text-2xl font-bold text-gray-900 mt-6 mb-4 pb-2 border-b-2 border-medical-blue',
           2: 'text-xl font-semibold text-gray-800 mt-5 mb-3 flex items-center gap-2',
@@ -112,7 +112,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
           5: 'text-sm font-semibold text-gray-600 mt-2 mb-1',
           6: 'text-sm font-medium text-gray-500 mt-2 mb-1'
         };
-        
+
         elements.push(
           <HeadingTag key={`heading-${lineIndex}`} className={headingClasses[level as keyof typeof headingClasses] || headingClasses[6]}>
             {level <= 3 && getHeadingIcon(title)}
@@ -121,7 +121,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         );
         return;
       }
-      
+
       // Handle References/Sources section header
       if (trimmedLine.match(/^##?\s*(References|Sources|Citations)\s*$/i)) {
         inReferenceSection = true;
@@ -137,13 +137,13 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         );
         return;
       }
-      
+
       // Handle citation entries (numbered format [1], [2], etc.)
       const citationMatch = trimmedLine.match(/^\[(\d+)\]\s*(.+)$/);
       if (citationMatch && inReferenceSection) {
         const [, number, citationText] = citationMatch;
         const urlMatch = citationText.match(/^(.+?)\s*Available at:\s*(.+)$/);
-        
+
         if (urlMatch) {
           const [, title, url] = urlMatch;
           elements.push(
@@ -180,12 +180,12 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         }
         return;
       }
-      
+
       // Handle alert boxes (lines starting with emoji warnings)
       if (trimmedLine.match(/^(⚠️|🚨|ℹ️|💊|✅|❌|💡|🎯)/)) {
         const alertType = trimmedLine.charAt(0);
         const content = trimmedLine.slice(1).trim();
-        
+
         const alertStyles = {
           '⚠️': 'bg-amber-50 border-amber-200 text-amber-800',
           '🚨': 'bg-red-50 border-red-200 text-red-800',
@@ -196,7 +196,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
           '💡': 'bg-yellow-50 border-yellow-200 text-yellow-800',
           '🎯': 'bg-indigo-50 border-indigo-200 text-indigo-800'
         };
-        
+
         elements.push(
           <div key={`alert-${lineIndex}`} className={`p-4 rounded-lg border-l-4 my-3 ${alertStyles[alertType as keyof typeof alertStyles] || alertStyles['ℹ️']}`}>
             <div className="flex items-start space-x-2">
@@ -209,7 +209,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         );
         return;
       }
-      
+
       // Handle numbered lists (1. 2. etc.)
       const numberedListMatch = trimmedLine.match(/^(\s*)(\d+)\.\s+(.+)$/);
       if (numberedListMatch) {
@@ -227,7 +227,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         );
         return;
       }
-      
+
       // Handle bullet points (- or *)
       const bulletMatch = trimmedLine.match(/^(\s*)[-*]\s+(.+)$/);
       if (bulletMatch) {
@@ -243,7 +243,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         );
         return;
       }
-      
+
       // Regular paragraph - handle as short paragraphs
       const sentences = trimmedLine.split(/(?<=[.!?])\s+/).filter(s => s.trim());
       if (sentences.length > 3) {
@@ -267,21 +267,21 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         );
       }
     });
-    
+
     // Process any remaining table
     if (inTable) {
       processTable();
     }
-    
+
     return elements;
   };
-  
+
   const parseInlineMarkdown = (text: string): React.ReactNode[] => {
     if (typeof text !== 'string') return [text];
-    
+
     const parts: React.ReactNode[] = [];
     let processedText = text;
-    
+
     // Process all markdown patterns in sequence
     const patterns = [
       // Bold with icons for medical terms
@@ -291,7 +291,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
           const content = match[1];
           const isClinical = /\b(NICE|NHS|CQC|CALL 999|EMERGENCY|CRITICAL|URGENT)\b/i.test(content);
           const isMedication = /\b(mg|ml|tablet|dose|medication|drug|prescription)\b/i.test(content);
-          
+
           return (
             <strong 
               key={key} 
@@ -347,11 +347,11 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         )
       }
     ];
-    
+
     // Apply all patterns
     let result = text;
     let allMatches: Array<{match: RegExpExecArray, pattern: any, index: number}> = [];
-    
+
     patterns.forEach(pattern => {
       const matches = Array.from(result.matchAll(pattern.regex));
       matches.forEach(match => {
@@ -360,10 +360,10 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         }
       });
     });
-    
+
     // Sort matches by position
     allMatches.sort((a, b) => a.index - b.index);
-    
+
     let lastIndex = 0;
     allMatches.forEach((item, idx) => {
       const { match, pattern } = item;
@@ -375,13 +375,13 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
             parts.push(textBefore);
           }
         }
-        
+
         // Add the formatted element
         parts.push(pattern.render(match, `pattern-${idx}`));
         lastIndex = match.index + match[0].length;
       }
     });
-    
+
     // Add remaining text
     if (lastIndex < result.length) {
       const remaining = result.slice(lastIndex);
@@ -389,10 +389,10 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         parts.push(remaining);
       }
     }
-    
+
     return parts.length > 0 ? parts : [text];
   };
-  
+
   return (
     <div className={`whitespace-pre-wrap ${className}`}>
       {parseMarkdown(content)}
