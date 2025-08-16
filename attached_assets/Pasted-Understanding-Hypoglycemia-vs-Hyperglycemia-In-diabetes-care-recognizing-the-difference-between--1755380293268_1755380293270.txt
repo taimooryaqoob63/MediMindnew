@@ -1,0 +1,25 @@
+Understanding Hypoglycemia vs. Hyperglycemia In diabetes care, recognizing the difference between **hypoglycemia** and **hyperglycemia** is crucial for effective management and patient safety. ### Hypoglycemia (Low Blood Sugar) **Definition**: Hypoglycemia occurs when blood sugar levels drop below normal, typically below 4 mmol/L. ### Symptoms:
+MildMild*: Sweating, trembling, hunger, anxiety
+SevereSevere*: Confusion, drowsiness, unconsciousness ### Causes:
+Excessive insulin or medication
+Skipping meals
+Increased physical activity without adjusting food intake ### Immediate Action:
+Information
+� If severe symptoms occurIf severe symptoms occur*:
+1
+Administer fast-acting glucoseAdminister fast-acting glucose immediately. 2. If trainedIf trained, administer glucagon. 3. Call 999Call 999 if the person becomes unconscious or if glucagon is unavailable. ⚠️ According to NICE guidelinesAccording to NICE guidelines, a severe hypoglycemic episode should trigger a comprehensive diabetes review, including medication and dietary assessments (source: document-1755207583734-889355072.json). ### Hyperglycemia (High Blood Sugar) DefinitionDefinition*: Hyperglycemia is when blood sugar levels are higher than normal, typically above 7 mmol/L before meals or 11 mmol/L two hours after meals. ### Symptoms:
+Increased thirst
+Frequent urination
+Fatigue
+Blurred vision ### Causes:
+Insufficient insulin or medication
+Overeating, particularly carbohydrates
+Stress or illness ### Management:
+Success
+Monitor blood sugar levelsMonitor blood sugar levels regularly. ✅ Adjust medicationAdjust medication as per healthcare provider's advice. ✅ Stay hydratedStay hydrated* and maintain a balanced diet. ### When to Seek Help:
+Information
+� Contact a healthcare providerContact a healthcare provider* if:
+1
+Blood sugar remains high despite treatment. 2. Symptoms of diabetic ketoacidosis (DKA) appear, such as fruity-smelling breath, nausea, or vomiting. ### Key Takeaways:
+Information
+� HypoglycemiaHypoglycemia requires immediate action to raise blood sugar levels. 🎯 HyperglycemiaHyperglycemia* involves managing diet, medication, and lifestyle to lower blood sugar levels. For more detailed guidance, always refer to the specific protocols outlined in the NICE guidelines and consult with healthcare professionals.

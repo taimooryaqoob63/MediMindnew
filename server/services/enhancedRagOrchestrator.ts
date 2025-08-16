@@ -1413,44 +1413,85 @@ ${citations}
   private cleanupFinalResponse(content: string): string {
     if (!content) return content;
     
-    console.log('Applying final response cleanup...');
+    console.log('Applying comprehensive final response cleanup...');
     
-    // Simple approach using string methods only
-    let cleaned = content
-      // Remove placeholder text first
-      .replace(/\\[BAD\\]/gi, '')
-      .replace(/\\[PLACEHOLDER\\]/gi, '')
-      .replace(/\\[TODO\\]/gi, '')
-      .replace(/\\[MISSING\\]/gi, '')
-      .replace(/\\[citation needed\\]/gi, '')
-      .replace(/\\[source required\\]/gi, '')
-      // Fix malformed markdown headers (convert ### to ##)
-      .replace(/^### /gm, '## ')
-      // Clean up multiple spaces
-      .replace(/  +/g, ' ')
-      // Clean up punctuation spacing
-      .replace(/ +([.!?])/g, '$1')
-      // Clean up excessive line breaks
-      .replace(/\\n{3,}/g, '\\n\\n')
-      .trim();
+    let cleaned = content;
     
-    // Fix asterisk repetition patterns using simple string replacements
-    const commonWords = ['Infections', 'Retinopathy', 'Medication', 'Diabetes', 'Treatment', 'Management', 'Care', 'Patient', 'Blood', 'Sugar', 'Insulin', 'Glucose'];
-    for (const word of commonWords) {
-      // Simple string replacements to avoid regex issues
-      cleaned = cleaned.split(`${word}*${word}*`).join(`**${word}**`);
-      cleaned = cleaned.split(`${word}*${word}*:`).join(`**${word}**:`);
-      cleaned = cleaned.split(`${word}***${word}***`).join(`**${word}**`);
-      cleaned = cleaned.split(`${word}***${word}***:`).join(`**${word}**:`);
+    // Step 1: Remove document reference patterns
+    cleaned = cleaned.replace(/\(document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g, '');
+    cleaned = cleaned.replace(/\(source: document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g, '');
+    cleaned = cleaned.replace(/\[document-[0-9]+-[0-9]+(\.[a-z]+)?\]/g, '');
+    
+    // Step 2: Remove placeholder text
+    cleaned = cleaned.replace(/\[BAD\]/gi, '');
+    cleaned = cleaned.replace(/\[PLACEHOLDER\]/gi, '');
+    cleaned = cleaned.replace(/\[TODO\]/gi, '');
+    cleaned = cleaned.replace(/\[MISSING\]/gi, '');
+    cleaned = cleaned.replace(/\[citation needed\]/gi, '');
+    cleaned = cleaned.replace(/\[source required\]/gi, '');
+    
+    // Step 3: Fix markdown headers
+    cleaned = cleaned.replace(/^### /gm, '## ');
+    
+    // Step 4: Comprehensive word duplication cleanup
+    const medicalTerms = [
+      'Infections', 'Retinopathy', 'Medication', 'Diabetes', 'Treatment', 'Management', 
+      'Care', 'Patient', 'Blood', 'Sugar', 'Insulin', 'Glucose', 'Symptoms', 
+      'Complications', 'Diagnosis', 'Therapy', 'Prevention', 'Monitoring',
+      'Hypoglycemia', 'Hyperglycemia', 'Neuropathy', 'Nephropathy',
+      'Mild', 'Moderate', 'Severe', 'Acute', 'Chronic', 'Emergency',
+      'Critical', 'Important', 'Guidelines', 'Protocol', 'Assessment'
+    ];
+    
+    for (const term of medicalTerms) {
+      // Fix various duplication patterns
+      const patterns = [
+        `${term}*${term}*`,
+        `${term}***${term}***`,
+        `${term}*${term}*:`,
+        `${term}***${term}***:`,
+        `${term}${term}*`,
+        `${term}${term}*:`,
+        `${term}*${term}`,
+        `*${term}*${term}*`,
+        `**${term}*${term}**`,
+        `**${term}**${term}**`
+      ];
+      
+      for (const pattern of patterns) {
+        cleaned = cleaned.split(pattern).join(`**${term}**`);
+      }
+      
+      // Handle cases where colon follows
+      cleaned = cleaned.split(`**${term}**:**`).join(`**${term}**:`);
     }
     
-    // Remove standalone asterisks (safer pattern)
-    cleaned = cleaned.replace(/\\b\\*\\b/g, '');
+    // Step 5: Fix general asterisk and bold formatting issues
+    cleaned = cleaned.replace(/\*{3,}/g, '**'); // Multiple asterisks to double
+    cleaned = cleaned.replace(/\*\*\*([^*]+)\*\*\*/g, '**$1**'); // Triple to double
+    cleaned = cleaned.replace(/\*([^*]+)\*\*/g, '**$1**'); // Mixed asterisks
+    cleaned = cleaned.replace(/\*\*([^*]+)\*/g, '**$1**'); // Mixed asterisks reverse
     
-    // Remove empty bold markers
-    cleaned = cleaned.replace(/\\*\\*\\s*\\*\\*/g, '');
+    // Step 6: Remove standalone asterisks and empty bold markers
+    cleaned = cleaned.replace(/\b\*\b/g, '');
+    cleaned = cleaned.replace(/\*\*\s*\*\*/g, '');
+    cleaned = cleaned.replace(/\*\*\*\*/g, '');
     
-    console.log('Final cleanup complete');
+    // Step 7: Clean up spacing and formatting
+    cleaned = cleaned.replace(/\s{2,}/g, ' '); // Multiple spaces to single
+    cleaned = cleaned.replace(/\s+([.!?])/g, '$1'); // Space before punctuation
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n'); // Multiple line breaks
+    cleaned = cleaned.replace(/\s+$/gm, ''); // Trailing spaces on lines
+    
+    // Step 8: Fix hanging punctuation after removed references
+    cleaned = cleaned.replace(/\s+([.!?])/g, '$1');
+    cleaned = cleaned.replace(/\.{2,}/g, '.'); // Multiple periods
+    
+    // Step 9: Clean up any remaining formatting artifacts
+    cleaned = cleaned.replace(/:\s*:/g, ':'); // Double colons
+    cleaned = cleaned.replace(/\*\s*\*/g, ''); // Spaced asterisks
+    
+    console.log('Comprehensive cleanup complete - removed duplications, document references, and formatting artifacts');
     return cleaned.trim();
   }
 

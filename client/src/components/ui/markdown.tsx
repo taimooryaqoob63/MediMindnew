@@ -11,14 +11,22 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
   const cleanContent = (text: string): string => {
     if (!text) return text;
     
-    // Remove document reference patterns like (document-1755207658373-265114598)
-    let cleaned = text.replace(/\(document-[0-9]+-[0-9]+\)/g, '');
+    let cleaned = text;
     
-    // Remove any leftover whitespace from removed references
-    cleaned = cleaned.replace(/\s{2,}/g, ' ');
+    // Remove comprehensive document reference patterns
+    cleaned = cleaned.replace(/\(document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g, '');
+    cleaned = cleaned.replace(/\(source: document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g, '');
+    cleaned = cleaned.replace(/\[document-[0-9]+-[0-9]+(\.[a-z]+)?\]/g, '');
     
-    // Clean up any hanging punctuation after removed references
-    cleaned = cleaned.replace(/\s+([.!?])/g, '$1');
+    // Remove any remaining placeholder text that might have slipped through
+    cleaned = cleaned.replace(/\[BAD\]/gi, '');
+    cleaned = cleaned.replace(/\[PLACEHOLDER\]/gi, '');
+    
+    // Clean up spacing and punctuation after removals
+    cleaned = cleaned.replace(/\s{2,}/g, ' '); // Multiple spaces to single
+    cleaned = cleaned.replace(/\s+([.!?])/g, '$1'); // Space before punctuation
+    cleaned = cleaned.replace(/\.{2,}/g, '.'); // Multiple periods
+    cleaned = cleaned.replace(/:\s*:/g, ':'); // Double colons
     
     return cleaned.trim();
   };
