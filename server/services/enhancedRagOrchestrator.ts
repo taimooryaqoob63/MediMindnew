@@ -503,8 +503,8 @@ Provide JSON response with:
     } catch (error) {
       console.error('❌ [dynamicRetrieval] Dynamic retrieval error:', error);
       console.error('❌ [dynamicRetrieval] Error details:', {
-        message: error.message,
-        stack: error.stack,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
         query: query.substring(0, 100)
       });
       return {
@@ -606,13 +606,85 @@ Provide JSON response with:
     const systemPrompt = agentPrompts[agentType] || agentPrompts.learning_facilitator;
     const contextWindow = this.buildContextWindow(retrieval.sources, analysis);
     
-    // Enhance system prompt to emphasize citation requirements and prevent repetition
+    // Enhance system prompt to emphasize Markdown formatting, citation requirements and prevent repetition
     const enhancedSystemPrompt = `${systemPrompt}
 
-CRITICAL REQUIREMENTS:
+CRITICAL FORMATTING REQUIREMENTS:
+
+## MARKDOWN FORMATTING RULES:
+You MUST format ALL responses using proper Markdown syntax for maximum readability:
+
+### 1. Structure Your Content:
+- **Headings**: Use ## for main sections, ### for subsections
+- **Short Paragraphs**: Keep each paragraph to 2-3 sentences maximum
+- **Lists**: Use bullet points (-) or numbered lists (1. 2. 3.) for easy scanning
+- **Bold Text**: Use **bold** for critical information, warnings, dosages, or key terms
+- **Italic Text**: Use *italics* for emphasis or technical terms
+
+### 2. Visual Elements - Use These Icons:
+- ⚠️ for warnings or important safety information
+- 💊 for medication information or dosages
+- ℹ️ for general information or helpful tips
+- 🚨 for emergency procedures or critical alerts
+- ✅ for correct procedures or positive actions
+- ❌ for things to avoid or incorrect procedures
+- 🎯 for key takeaways or main points
+- 💡 for helpful tips or insights
+
+### 3. Tables for Structured Data:
+Use tables when presenting medication schedules, blood glucose ranges, or comparing guidelines:
+
+Example table format:
+| Parameter | Normal Range | Action Required |
+|-----------|-------------|----------------|
+| Blood glucose | 4-7 mmol/L | Monitor regularly |
+
+### 4. Emergency Information Format:
+For any emergency-related content, use this structure:
+
+🚨 **EMERGENCY ACTION REQUIRED**
+
+## Immediate Steps:
+1. **First action** - with specific details
+2. **Second action** - with timing
+3. **Third action** - with follow-up
+
+⚠️ **Remember**: Always follow your facility's protocols
+
+### 5. Simple Language Requirements:
+- Use everyday English that anyone can understand
+- Avoid heavy medical jargon unless necessary
+- When you must use medical terms, explain them simply
+- Write as if explaining to a caring family member
+
+CONTENT REQUIREMENTS:
 1. You must reference and cite the source materials provided in your response. When mentioning information from the context, explicitly reference it (e.g., "According to the NICE guidelines provided..." or "As stated in the NHS documentation..."). This is essential for medical accuracy and compliance.
 2. NEVER repeat the same sentence, phrase, or information twice in your response. Each sentence must be unique and add new value.
-3. Keep responses concise and eliminate redundancy.`;
+3. Keep responses concise and eliminate redundancy.
+4. Always use the Markdown formatting specified above - this is not optional.
+
+EXAMPLE RESPONSE FORMAT:
+## Understanding Blood Sugar Levels
+
+Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be between 4-7 mmol/L before meals.
+
+### Key Signs to Watch For:
+- **High blood sugar**: Increased thirst, frequent urination, fatigue
+- **Low blood sugar**: Sweating, shaking, confusion, irritability
+
+💊 **Medication Timing**:
+- Give insulin 15-30 minutes before meals
+- Monitor for 2 hours after administration
+
+⚠️ **Important**: If blood sugar drops below 4 mmol/L, give fast-acting glucose immediately.
+
+### When to Seek Help:
+🚨 **Call 999 immediately** if the person:
+1. Becomes unconscious
+2. Has severe breathing difficulties
+3. Shows signs of diabetic ketoacidosis
+
+✅ **Remember**: Document all readings in the care plan as required by CQC standards.`;
 
     try {
       // Get appropriate generation settings based on query analysis
