@@ -86,6 +86,11 @@ export class VectorStore {
         const index = this.pinecone.index(this.config.indexName);
         const stats = await index.describeIndexStats();
         console.log(`📊 Index stats - Total vectors: ${stats.totalVectorCount || 0}, Dimension: ${stats.dimension}`);
+        
+        if (stats.totalVectorCount === 0) {
+          console.warn('⚠️  WARNING: Index exists but contains 0 vectors! This means the knowledge base is empty.');
+          console.warn('⚠️  RAG will not work without documents in the vector index.');
+        }
       }
       
       console.log('✅ VectorStore initialization completed successfully');
@@ -292,14 +297,31 @@ export class VectorStore {
     clickable?: boolean;
   }>> {
     try {
+      console.log(`🔍 VectorStore.searchSimilar() called with query: "${query.substring(0, 50)}...", topK: ${topK}`);
+      console.log(`🔧 Using index: ${this.config.indexName}, filter:`, filter);
+      
+      // Check if Pinecone is initialized
+      if (!this.pinecone) {
+        throw new Error('Pinecone not initialized - check PINECONE_API_KEY');
+      }
+      
       // Create embedding for the query
+      console.log('📝 Creating embedding for query...');
       const embedding = await this.createEmbedding(query);
+      console.log(`✅ Embedding created with dimension: ${embedding.length}`);
       
       // Query vectors
+      console.log('🔎 Querying vectors...');
       const vectors = await this.queryVectors(embedding, topK, filter);
+      console.log(`📊 Found ${vectors.length} vectors from Pinecone`);
+      
+      // Log vector scores for debugging
+      vectors.forEach((vector, index) => {
+        console.log(`  Vector ${index + 1}: score=${vector.score.toFixed(3)}, id=${vector.id}`);
+      });
       
       // Transform results to expected format
-      return vectors.map(vector => ({
+      const results = vectors.map(vector => ({
         id: vector.id,
         title: vector.metadata?.title || 'Unknown Document',
         excerpt: vector.metadata?.content || 'No content available',
@@ -309,8 +331,21 @@ export class VectorStore {
         section: vector.metadata?.section,
         clickable: true,
       }));
+      
+      console.log(`✅ Returning ${results.length} transformed results`);
+      return results;
     } catch (error) {
-      console.error('Error in searchSimilar:', error);
+      console.error('❌ Error in searchSimilar:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        query: query.substring(0, 100),
+        topK,
+        filter,
+        indexName: this.config.indexName,
+        hasPinecone: !!this.pinecone,
+        hasOpenAI: !!this.openai
+      });
       // Return empty array on error to prevent app crash
       return [];
     }
