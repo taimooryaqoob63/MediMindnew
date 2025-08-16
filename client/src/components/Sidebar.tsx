@@ -1,4 +1,4 @@
-import { PlayCircle, Check, FileText } from "lucide-react";
+import { PlayCircle, Check, FileText, BarChart3, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type { Course, Module, UserProgress } from "@shared/schema";
@@ -13,14 +13,14 @@ interface SidebarProps {
   isMobile?: boolean;
 }
 
-export default function Sidebar({ 
-  course, 
-  modules, 
-  progress, 
-  overallProgress, 
-  selectedModuleId, 
+export default function Sidebar({
+  course,
+  modules,
+  progress,
+  overallProgress,
+  selectedModuleId,
   onModuleSelect,
-  isMobile 
+  isMobile
 }: SidebarProps) {
   const isModuleCompleted = (moduleId: string) => {
     return progress.some(p => p.moduleId === moduleId && p.completed);
@@ -38,7 +38,7 @@ export default function Sidebar({
 
   return (
     <aside className={`
-      ${isMobile ? 'w-80' : 'w-80'} 
+      ${isMobile ? 'w-80' : 'w-80'}
       bg-white shadow-lg border-r border-gray-200 overflow-y-auto
       ${isMobile ? 'h-full' : ''}
       slide-in-left
@@ -62,20 +62,20 @@ export default function Sidebar({
             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">
               Course Modules
             </h3>
-            
+
             <div className="space-y-1">
               {modules.map((module, index) => {
                 const isSelected = module.id === selectedModuleId;
                 const isCompleted = isModuleCompleted(module.id);
                 const isInProgress = isModuleInProgress(module.id);
-                
+
                 return (
                   <Button
                     key={module.id}
                     variant={isSelected ? "default" : "ghost"}
                     className={`w-full justify-start px-3 py-2 text-sm h-auto transition-all duration-200 ${
-                      isSelected 
-                        ? 'bg-medical-blue text-white hover:bg-medical-blue/90 shadow-md' 
+                      isSelected
+                        ? 'bg-medical-blue text-white hover:bg-medical-blue/90 shadow-md'
                         : 'text-gray-700 hover:bg-gray-50 hover:shadow-sm'
                     } button-interactive`}
                     onClick={() => onModuleSelect(module.id)}
@@ -113,6 +113,32 @@ export default function Sidebar({
                   <span>{resource.title}</span>
                 </Button>
               ))}
+            </div>
+          </div>
+
+          {/* Navigation for Analytics and Knowledge Graph */}
+          <div className="border-t border-gray-200 pt-4">
+            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">
+              Tools
+            </h3>
+            <div className="space-y-1">
+              {/* Placeholder for SidebarItem component, assuming it exists */}
+              <Button
+                variant="ghost"
+                className="w-full justify-start px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                onClick={() => { /* navigate to analytics */ }}
+              >
+                <BarChart3 className="mr-3 h-4 w-4 text-gray-500" />
+                <span className="text-left">Analytics</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                onClick={() => { /* navigate to knowledge-graph */ }}
+              >
+                <Network className="mr-3 h-4 w-4 text-gray-500" />
+                <span className="text-left">Knowledge Graph</span>
+              </Button>
             </div>
           </div>
         </nav>
