@@ -98,7 +98,22 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         timestamp: new Date().toISOString()
       });
       
-      // Always use RAG chat endpoint - server will handle fallbacks
+      // Environment check with detailed logging
+      console.log('🔍 Environment check:', {
+        hasPineconeKey: !!process.env.PINECONE_API_KEY,
+        hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+        pineconeIndex: process.env.PINECONE_INDEX_NAME || 'quickstart'
+      });
+      
+      // Check if RAG is available
+      if (!process.env.PINECONE_API_KEY) {
+        console.log('⚠️ PINECONE_API_KEY not found, using basic chat');
+        const response = await apiRequest("POST", "/api/chat", data);
+        const result = await response.json();
+        return { ...result, usedRAG: false } as ChatResponse;
+      }
+
+      // Try RAG-enhanced chat first
       try {
         console.log('🤖 Attempting RAG chat with payload:', {
           message: data.message?.substring(0, 100) + '...',
