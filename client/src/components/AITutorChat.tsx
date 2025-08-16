@@ -37,17 +37,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   const [inputMessage, setInputMessage] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
-  // Debug logging for props
-  useEffect(() => {
-    console.log('🔍 AITutorChat props:', {
-      courseId,
-      hasCurrentModule: !!currentModule,
-      currentModuleId: currentModule?.id,
-      isMobile,
-      isOpen
-    });
-  }, [courseId, currentModule, isMobile, isOpen]);
-  
   // TTS and STT state
   const [isListening, setIsListening] = useState(false);
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
@@ -109,22 +98,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         timestamp: new Date().toISOString()
       });
       
-      // Environment check with detailed logging
-      console.log('🔍 Environment check:', {
-        hasPineconeKey: !!process.env.PINECONE_API_KEY,
-        hasOpenAIKey: !!process.env.OPENAI_API_KEY,
-        pineconeIndex: process.env.PINECONE_INDEX_NAME || 'quickstart'
-      });
-      
-      // Check if RAG is available
-      if (!process.env.PINECONE_API_KEY) {
-        console.log('⚠️ PINECONE_API_KEY not found, using basic chat');
-        const response = await apiRequest("POST", "/api/chat", data);
-        const result = await response.json();
-        return { ...result, usedRAG: false } as ChatResponse;
-      }
-
-      // Try RAG-enhanced chat first
+      // Always use RAG chat endpoint - server will handle fallbacks
       try {
         console.log('🤖 Attempting RAG chat with payload:', {
           message: data.message?.substring(0, 100) + '...',
@@ -305,27 +279,9 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   };
 
   const handleSendMessage = () => {
-    console.log('🚀 handleSendMessage called with:', {
-      inputMessage: inputMessage,
-      trimmedMessage: inputMessage.trim(),
-      courseId: courseId,
-      hasCurrentModule: !!currentModule,
-      isPending: chatMutation.isPending
-    });
-    
-    if (!inputMessage.trim()) {
-      console.log('❌ Empty message, returning early');
-      return;
-    }
-    
-    if (!courseId) {
-      console.log('❌ No courseId, returning early');
-      return;
-    }
+    if (!inputMessage.trim()) return;
     
     const context = currentModule ? `Current module: ${currentModule.title} - ${currentModule.description}` : undefined;
-    
-    console.log('✅ Sending message with context:', context);
     
     chatMutation.mutate({
       message: inputMessage.trim(),
@@ -548,13 +504,8 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <textarea
                   ref={inputRef}
                   value={inputMessage}
-                  onChange={(e) => {
-                    console.log('📝 Input changed:', e.target.value);
-                    setInputMessage(e.target.value);
-                  }}
+                  onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  onFocus={() => console.log('🎯 Input focused')}
-                  onBlur={() => console.log('😴 Input blurred')}
                   placeholder="Ask me anything about diabetes care..."
                   className="chat-input placeholder-gray-400"
                   disabled={chatMutation.isPending}
@@ -592,18 +543,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               </Button>
               
               <Button
-                onClick={() => {
-                  console.log('🖱️ Send button clicked');
-                  console.log('🔍 Send button state:', {
-                    inputMessage: inputMessage,
-                    trimmed: inputMessage.trim(),
-                    hasMessage: !!inputMessage.trim(),
-                    isPending: chatMutation.isPending,
-                    courseId: courseId,
-                    disabled: !inputMessage.trim() || chatMutation.isPending
-                  });
-                  handleSendMessage();
-                }}
+                onClick={handleSendMessage}
                 disabled={!inputMessage.trim() || chatMutation.isPending}
                 className="chat-button chat-button-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 size="sm"
