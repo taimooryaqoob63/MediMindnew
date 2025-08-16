@@ -9,7 +9,7 @@ import TrainingPage from "@/pages/training";
 import LandingPage from "@/pages/landing";
 import CourseManagement from "@/pages/courseManagement";
 import DocumentManagement from "@/pages/documentManagement";
-import RAGAnalytics from "@/pages/RAGAnalytics";
+import RAGAnalytics from "@/pages/ragAnalytics";
 
 
 function CourseManagementWrapper() {
