@@ -203,7 +203,7 @@ export class EnhancedRagOrchestrator {
       });
 
       return {
-        content: responseWithDisclaimer.content,
+        content: this.cleanupFinalResponse(responseWithDisclaimer.content),
         sources: responseWithDisclaimer.sources || finalResponse.sources,
         confidence: responseWithDisclaimer.confidence || finalResponse.confidence,
         followUpQuestions: finalResponse.followUpQuestions,
@@ -657,11 +657,19 @@ For any emergency-related content, use this structure:
 - When you must use medical terms, explain them simply
 - Write as if explaining to a caring family member
 
+## CRITICAL TEXT FORMATTING RULES:
+- NEVER repeat the same word with asterisks (e.g., "Word*Word*")
+- Use proper markdown: **bold text** not *text*text*
+- All headings must use proper markdown (## or ###)
+- NEVER include placeholder text like "[BAD]", "[citation needed]", or "[source required]"
+- Each sentence must be unique and add new information
+
 CONTENT REQUIREMENTS:
 1. You must reference and cite the source materials provided in your response. When mentioning information from the context, explicitly reference it (e.g., "According to the NICE guidelines provided..." or "As stated in the NHS documentation..."). This is essential for medical accuracy and compliance.
 2. NEVER repeat the same sentence, phrase, or information twice in your response. Each sentence must be unique and add new value.
 3. Keep responses concise and eliminate redundancy.
 4. Always use the Markdown formatting specified above - this is not optional.
+5. NEVER include malformed formatting or placeholder text.
 
 EXAMPLE RESPONSE FORMAT:
 ## Understanding Blood Sugar Levels
@@ -874,23 +882,26 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
             role: "system", 
             content: `You are an expert healthcare information synthesizer. Your critical task:
 
-CRITICAL ANTI-REPETITION RULES:
-1. NEVER, under any circumstances, repeat the same sentence twice
+CRITICAL ANTI-REPETITION AND FORMATTING RULES:
+1. NEVER repeat the same sentence twice
 2. NEVER duplicate any paragraph or section of text
-3. Each piece of information must appear exactly ONCE in your response
-4. If multiple sources say the same thing, combine into ONE unique sentence
-5. Vary sentence structure completely - avoid any repetitive patterns
-6. Do not restate information using different words
-7. STOP writing immediately if you find yourself about to repeat something
+3. NEVER use malformed formatting like "Word*Word*" - use proper markdown **Word**
+4. NEVER include placeholder text like "[BAD]", "[citation needed]", or incomplete information
+5. Each piece of information must appear exactly ONCE in your response
+6. If multiple sources say the same thing, combine into ONE unique sentence
+7. Use proper markdown headings (## or ###) not raw text with ###
+8. Vary sentence structure completely - avoid any repetitive patterns
+9. STOP writing immediately if you find yourself about to repeat something
 
-RESPONSE STRUCTURE (NO REPETITION):
+RESPONSE STRUCTURE (NO REPETITION, PROPER FORMATTING):
 - Maximum ${genSettings.maxTokens} tokens
 - Single cohesive response with unique sentences only
+- Proper markdown formatting throughout
 - Brief explanation → Practical example → Key steps → Next action
 - Each sentence must add NEW information
 - No redundant explanations or restatements
 
-FINAL CHECK: Review your complete response. If ANY sentence appears twice or conveys the same information as another sentence, you have FAILED the task.`
+FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses malformed formatting, or contains placeholder text, you have FAILED the task.`
           },
           {
             role: "user",
@@ -902,7 +913,7 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
         presence_penalty: 2.0, // Maximum possible penalty
         frequency_penalty: 2.0, // Maximum possible penalty  
         top_p: 0.5, // Very focused token selection
-        stop: ["As there is no specific", "Carbon dioxide (CO2) is a", "As a care worker"], // Stop tokens to prevent repetition
+        stop: ["As there is no specific", "Carbon dioxide (CO2) is a", "As a care worker", "*Infections*", "*Retinopathy*", "[BAD]"], // Stop tokens to prevent repetition and malformed formatting
       });
 
       let synthesizedContent = response.choices[0]?.message?.content || agentResponses[0].content;
@@ -911,6 +922,9 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
       
       // Additional deduplication check for sentences
       synthesizedContent = this.deduplicateContent(synthesizedContent);
+      
+      // Final response cleanup
+      synthesizedContent = this.cleanupFinalResponse(synthesizedContent);
       
       console.log('Post-deduplication synthesized content length:', synthesizedContent.length);
       
@@ -1058,7 +1072,20 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
     console.log('Applying basic semantic deduplication...');
     
     return agentResponses.map(response => {
-      const sentences = this.extractSentences(response.content);
+      // First, fix asterisk repetition issues in the content
+      let content = response.content
+        // Remove patterns like "Word*Word*" or "Word***Word***"
+        .replace(/(\w+)\*+\1\**/gi, '**$1**')
+        // Remove patterns like "Word*Word*:"
+        .replace(/(\w+)\*+\1\*+:/gi, '**$1**:')
+        // Clean up multiple asterisks
+        .replace(/\*{3,}/g, '**')
+        // Remove standalone asterisks
+        .replace(/(?<!\*)\*(?!\*)/g, '')
+        // Remove placeholder text
+        .replace(/\[BAD\]|\[PLACEHOLDER\]|\[TODO\]|\[MISSING\]/gi, '');
+      
+      const sentences = this.extractSentences(content);
       const uniqueSentences = [];
       const seenNormalized = new Set<string>();
       
@@ -1086,6 +1113,7 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
       
       const newContent = uniqueSentences.join(' ').trim();
       console.log(`Basic deduplication: ${sentences.length} -> ${uniqueSentences.length} sentences`);
+      
       
       return {
         ...response,
@@ -1233,13 +1261,30 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
     console.log('Deduplication input length:', content.length);
     console.log('Content preview:', content.substring(0, 200) + '...');
     
-    // AGGRESSIVE STEP 1: Check for exact complete duplication with multiple split points
+    // Step 1: Fix asterisk repetition patterns like "Infections*Infections*" 
+    let cleaned = content
+      // Remove patterns like "Word*Word*" or "Word***Word***"
+      .replace(/(\w+)\*+\1\**/gi, '**$1**')
+      // Remove patterns like "Word*Word*:"
+      .replace(/(\w+)\*+\1\*+:/gi, '**$1**:')
+      // Clean up multiple asterisks
+      .replace(/\*{3,}/g, '**')
+      // Remove standalone asterisks
+      .replace(/(?<!\*)\*(?!\*)/g, '')
+      // Clean up spacing around asterisks
+      .replace(/\s+\*\*/g, ' **')
+      .replace(/\*\*\s+/g, '** ');
+    
+    // Step 2: Remove placeholder text like "[BAD]"
+    cleaned = cleaned.replace(/\[BAD\]|\[PLACEHOLDER\]|\[TODO\]|\[MISSING\]/gi, '');
+    
+    // Step 3: Check for exact complete duplication with multiple split points
     for (let offset = -20; offset <= 20; offset++) {
-      const splitPoint = Math.floor(content.length / 2) + offset;
-      if (splitPoint < 100 || splitPoint > content.length - 100) continue;
+      const splitPoint = Math.floor(cleaned.length / 2) + offset;
+      if (splitPoint < 100 || splitPoint > cleaned.length - 100) continue;
       
-      const firstPart = content.substring(0, splitPoint).trim();
-      const secondPart = content.substring(splitPoint).trim();
+      const firstPart = cleaned.substring(0, splitPoint).trim();
+      const secondPart = cleaned.substring(splitPoint).trim();
       
       // Normalize both parts for comparison
       const normalizedFirst = firstPart.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
@@ -1249,39 +1294,28 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
       if (normalizedFirst.length > 50 && normalizedSecond.length > 50) {
         if (normalizedFirst === normalizedSecond) {
           console.log('EXACT COMPLETE DUPLICATION DETECTED at offset', offset, '- Using first part only');
-          content = firstPart;
+          cleaned = firstPart;
           break;
         }
         
         // Check if second part starts with first part  
         if (normalizedSecond.startsWith(normalizedFirst.substring(0, Math.min(normalizedFirst.length, 300)))) {
           console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part only');
-          content = firstPart;
-          break;
-        }
-        
-        // Check for high overlap in the first part of text
-        const checkLength = Math.min(normalizedFirst.length, normalizedSecond.length, 200);
-        const firstPortion = normalizedFirst.substring(0, checkLength);
-        const secondPortion = normalizedSecond.substring(0, checkLength);
-        
-        if (firstPortion === secondPortion && firstPortion.length > 100) {
-          console.log('HIGH OVERLAP DUPLICATION DETECTED at offset', offset, '- Using first part only');
-          content = firstPart;
+          cleaned = firstPart;
           break;
         }
       }
     }
     
-    // Step 2: Remove exact consecutive duplicates with aggressive regex
-    const originalLength = content.length;
-    content = content.replace(/(.{30,}?[.!?])\s*\1+/gi, '$1');
-    if (content.length !== originalLength) {
+    // Step 4: Remove exact consecutive duplicates with aggressive regex
+    const originalLength = cleaned.length;
+    cleaned = cleaned.replace(/(.{30,}?[.!?])\s*\1+/gi, '$1');
+    if (cleaned.length !== originalLength) {
       console.log('REGEX DUPLICATES REMOVED');
     }
     
-    // Step 3: Sentence-level deduplication
-    const sentenceParts = content.split(/([.!?]+)/);
+    // Step 5: Sentence-level deduplication
+    const sentenceParts = cleaned.split(/([.!?]+)/);
     const rebuiltContent: string[] = [];
     const seenNormalized = new Set<string>();
     
@@ -1309,9 +1343,22 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
       }
     }
     
-    const result = rebuiltContent.join('');
-    console.log('Deduplication output length:', result.length, 'reduction:', Math.round((1 - result.length / content.length) * 100) + '%');
-    return result;
+    const result = rebuiltContent.join('').trim();
+    
+    // Step 6: Final cleanup
+    const finalResult = result
+      // Remove any remaining formatting artifacts
+      .replace(/\s{2,}/g, ' ')
+      // Clean up punctuation spacing
+      .replace(/\s+([.!?])/g, '$1')
+      // Remove any remaining standalone asterisks
+      .replace(/(?<!\*)\*(?!\*)/g, '')
+      // Clean up empty bold markers
+      .replace(/\*\*\s*\*\*/g, '')
+      .trim();
+    
+    console.log('Deduplication output length:', finalResult.length, 'reduction:', Math.round((1 - finalResult.length / content.length) * 100) + '%');
+    return finalResult;
   }
 
   private formatCitationSection(sources: any[]): string {
@@ -1361,6 +1408,36 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice or con
 ${citations}
 
 **Note**: All medical guidance should be verified with current NICE guidelines, NHS protocols, and your local care home policies. In emergencies, always call 999 and follow your facility's emergency procedures.`;
+  }
+
+  private cleanupFinalResponse(content: string): string {
+    if (!content) return content;
+    
+    console.log('Applying final response cleanup...');
+    
+    let cleaned = content
+      // Fix asterisk repetition patterns like "Infections*Infections*"
+      .replace(/(\\w+)\\*+\\1\\**/gi, '**$1**')
+      // Fix colon patterns like "Infections*Infections*:"
+      .replace(/(\\w+)\\*+\\1\\*+:/gi, '**$1**:')
+      // Remove standalone asterisks
+      .replace(/(?<!\\*)\\*(?!\\*)/g, '')
+      // Remove placeholder text
+      .replace(/\\[BAD\\]|\\[PLACEHOLDER\\]|\\[TODO\\]|\\[MISSING\\]|\\[citation needed\\]|\\[source required\\]/gi, '')
+      // Fix malformed markdown headers
+      .replace(/^### /gm, '## ')
+      // Clean up multiple spaces
+      .replace(/\\s{2,}/g, ' ')
+      // Clean up punctuation spacing
+      .replace(/\\s+([.!?])/g, '$1')
+      // Remove empty bold markers
+      .replace(/\\*\\*\\s*\\*\\*/g, '')
+      // Clean up line breaks
+      .replace(/\\n{3,}/g, '\\n\\n')
+      .trim();
+    
+    console.log('Final cleanup complete');
+    return cleaned;
   }
 
   async collectFeedback(
