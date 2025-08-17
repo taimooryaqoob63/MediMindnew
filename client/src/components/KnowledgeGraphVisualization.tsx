@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Network } from 'lucide-react';
+import { Network, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 // Define interfaces for nodes and edges
 interface Node {
@@ -30,6 +31,9 @@ interface PositionedNode extends Node {
   connections: number;
 }
 
+// Performance optimization: Limit rendering
+const MAX_NODES = 50;
+const MAX_EDGES = 100;
 
 export default function KnowledgeGraphVisualization({
   nodes: initialNodes,
@@ -39,6 +43,8 @@ export default function KnowledgeGraphVisualization({
 }: KnowledgeGraphProps) {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Color mapping for node types
   const getNodeColor = useCallback((type: string) => {
@@ -52,20 +58,63 @@ export default function KnowledgeGraphVisualization({
     }
   }, []);
 
+  // Filter nodes based on search term and limit for performance
+  const filteredNodes = useMemo(() => {
+    let filtered = initialNodes;
+    
+    if (searchTerm.trim()) {
+      filtered = initialNodes.filter(node => 
+        node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        node.type.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Limit nodes for performance - prioritize most connected nodes
+    if (filtered.length > MAX_NODES) {
+      // Count connections for sorting
+      const connectionCounts: { [key: string]: number } = {};
+      initialEdges.forEach(edge => {
+        connectionCounts[edge.source] = (connectionCounts[edge.source] || 0) + 1;
+        connectionCounts[edge.target] = (connectionCounts[edge.target] || 0) + 1;
+      });
+      
+      filtered = filtered
+        .sort((a, b) => (connectionCounts[b.id] || 0) - (connectionCounts[a.id] || 0))
+        .slice(0, MAX_NODES);
+    }
+    
+    return filtered;
+  }, [initialNodes, initialEdges, searchTerm]);
+
+  // Filter edges to only include those connected to visible nodes
+  const filteredEdges = useMemo(() => {
+    const visibleNodeIds = new Set(filteredNodes.map(n => n.id));
+    let filtered = initialEdges.filter(edge => 
+      visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
+    );
+    
+    // Limit edges for performance
+    if (filtered.length > MAX_EDGES) {
+      filtered = filtered.slice(0, MAX_EDGES);
+    }
+    
+    return filtered;
+  }, [filteredNodes, initialEdges]);
+
   // Process data for visualization with circular layout
   const positionedNodes = useMemo<PositionedNode[]>(() => {
-    if (initialNodes.length === 0) return [];
+    if (filteredNodes.length === 0) return [];
 
-    // Count connections for each node
+    // Count connections for each node from filtered edges
     const connectionCounts: { [key: string]: number } = {};
-    initialEdges.forEach(edge => {
+    filteredEdges.forEach(edge => {
       connectionCounts[edge.source] = (connectionCounts[edge.source] || 0) + 1;
       connectionCounts[edge.target] = (connectionCounts[edge.target] || 0) + 1;
     });
 
     // Position nodes in a circle layout
-    return initialNodes.map((node, index) => {
-      const angle = (index / initialNodes.length) * 2 * Math.PI;
+    return filteredNodes.map((node, index) => {
+      const angle = (index / filteredNodes.length) * 2 * Math.PI;
       const radius = Math.min(width, height) * 0.3;
 
       return {
@@ -75,7 +124,7 @@ export default function KnowledgeGraphVisualization({
         connections: connectionCounts[node.id] || 0,
       };
     });
-  }, [initialNodes, initialEdges, width, height]);
+  }, [filteredNodes, filteredEdges, width, height]);
 
   // Get node position by ID
   const getNodePosition = useCallback((nodeId: string) => {
@@ -90,19 +139,34 @@ export default function KnowledgeGraphVisualization({
 
   // Get data for the selected node
   const selectedNodeData = selectedNode ? positionedNodes.find(n => n.id === selectedNode) : null;
-  const connectedEdges = selectedNode ? initialEdges.filter(e => e.source === selectedNode || e.target === selectedNode) : [];
-
-  // Assume isDarkMode is available from context or props
-  const isDarkMode = true; // Replace with actual dark mode check if available
+  const connectedEdges = selectedNode ? filteredEdges.filter(e => e.source === selectedNode || e.target === selectedNode) : [];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Medical Knowledge Graph</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <span>Medical Knowledge Graph</span>
+          <div className="text-sm text-muted-foreground">
+            {filteredNodes.length} / {initialNodes.length} entities
+            {filteredNodes.length !== initialNodes.length && " (limited for performance)"}
+          </div>
+        </CardTitle>
+        
+        {/* Search interface */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Input
+            placeholder="Search entities by name or type..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        
         {selectedNodeData && (
           <div className="text-sm text-muted-foreground">
             Selected: <span className="font-semibold">{selectedNodeData.name}</span>
-            <span className="ml-2 px-2 py-1 bg-gray-100 rounded text-xs capitalize">
+            <span className="ml-2 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs capitalize">
               {selectedNodeData.type}
             </span>
           </div>
@@ -117,7 +181,7 @@ export default function KnowledgeGraphVisualization({
             onClick={() => setSelectedNode(null)}
           >
             {/* Render edges */}
-            {initialEdges.map((edge, index) => {
+            {filteredEdges.map((edge, index) => {
               const sourceNode = getNodePosition(edge.source);
               const targetNode = getNodePosition(edge.target);
               if (!sourceNode || !targetNode) return null;
@@ -128,7 +192,7 @@ export default function KnowledgeGraphVisualization({
 
               return (
                 <line
-                  key={index}
+                  key={`edge-${edge.source}-${edge.target}-${index}`}
                   x1={sourceNode.x}
                   y1={sourceNode.y}
                   x2={targetNode.x}
@@ -263,6 +327,25 @@ export default function KnowledgeGraphVisualization({
               <p>No entities found in your knowledge graph.</p>
               <p className="text-sm">Upload and process documents to populate the graph.</p>
             </div>
+          </div>
+        )}
+        
+        {initialNodes.length > 0 && filteredNodes.length === 0 && (
+          <div className="flex items-center justify-center h-64 text-muted-foreground">
+            <div className="text-center">
+              <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p>No entities match your search criteria.</p>
+              <p className="text-sm">Try a different search term or clear the search.</p>
+            </div>
+          </div>
+        )}
+        
+        {filteredNodes.length > 0 && filteredNodes.length < initialNodes.length && (
+          <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded text-sm text-blue-700 dark:text-blue-300">
+            <p>Showing {filteredNodes.length} of {initialNodes.length} entities for optimal performance.</p>
+            {searchTerm.trim() === '' && (
+              <p>Use search to find specific entities or increase limits if needed.</p>
+            )}
           </div>
         )}
       </CardContent>

@@ -854,23 +854,56 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
-  // Get entities
+  // Get entities with optional pagination
   app.get("/api/rag/entities", isAuthenticated, async (req, res) => {
     try {
+      const { limit = '200', offset = '0', search } = req.query;
       const entities = await storage.getEntities();
-      res.json(entities);
+      
+      let filteredEntities = entities;
+      
+      // Apply search filter if provided
+      if (search && typeof search === 'string') {
+        const searchTerm = search.toLowerCase();
+        filteredEntities = entities.filter(entity =>
+          entity.name.toLowerCase().includes(searchTerm) ||
+          entity.type.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      // Apply pagination
+      const limitNum = Math.min(parseInt(limit as string) || 200, 500); // Max 500 entities
+      const offsetNum = parseInt(offset as string) || 0;
+      const paginatedEntities = filteredEntities.slice(offsetNum, offsetNum + limitNum);
+      
+      res.json({
+        entities: paginatedEntities,
+        total: filteredEntities.length,
+        hasMore: offsetNum + limitNum < filteredEntities.length
+      });
     } catch (error) {
       console.error("Error fetching entities:", error);
       res.status(500).json({ message: "Failed to fetch entities" });
     }
   });
 
-  // Get entity relationships
+  // Get entity relationships with optional pagination
   app.get("/api/rag/relationships/:entityId?", isAuthenticated, async (req, res) => {
     try {
       const { entityId } = req.params;
+      const { limit = '200', offset = '0' } = req.query;
       const relationships = await storage.getEntityRelationships(entityId);
-      res.json(relationships);
+      
+      // Apply pagination
+      const limitNum = Math.min(parseInt(limit as string) || 200, 1000); // Max 1000 relationships
+      const offsetNum = parseInt(offset as string) || 0;
+      const paginatedRelationships = relationships.slice(offsetNum, offsetNum + limitNum);
+      
+      res.json({
+        relationships: paginatedRelationships,
+        total: relationships.length,
+        hasMore: offsetNum + limitNum < relationships.length
+      });
     } catch (error) {
       console.error("Error fetching relationships:", error);
       res.status(500).json({ message: "Failed to fetch relationships" });

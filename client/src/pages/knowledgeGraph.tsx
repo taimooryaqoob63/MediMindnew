@@ -31,19 +31,19 @@ export default function KnowledgeGraphPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const { data: entities, isLoading: entitiesLoading } = useQuery<Entity[]>({
+  const { data: entitiesData, isLoading: entitiesLoading } = useQuery<{entities: Entity[], total: number, hasMore: boolean}>({
     queryKey: ['entities'],
     queryFn: async () => {
-      const response = await fetch('/api/rag/entities');
+      const response = await fetch('/api/rag/entities?limit=100');
       if (!response.ok) throw new Error('Failed to fetch entities');
       return response.json();
     },
   });
 
-  const { data: relationships, isLoading: relationshipsLoading } = useQuery<Relationship[]>({
+  const { data: relationshipsData, isLoading: relationshipsLoading } = useQuery<{relationships: Relationship[], total: number, hasMore: boolean}>({
     queryKey: ['relationships'],
     queryFn: async () => {
-      const response = await fetch('/api/rag/relationships');
+      const response = await fetch('/api/rag/relationships?limit=200');
       if (!response.ok) throw new Error('Failed to fetch relationships');
       return response.json();
     },
@@ -67,8 +67,9 @@ export default function KnowledgeGraphPage() {
         title: "Knowledge Graph Built Successfully",
         description: `Created ${data.stats.relationshipsCreated} new relationships between ${data.stats.entitiesProcessed} entities.`,
       });
-      // Invalidate and refetch the relationships data
+      // Invalidate and refetch the relationships and entities data
       queryClient.invalidateQueries({ queryKey: ['relationships'] });
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
     },
     onError: (error: Error) => {
       toast({
@@ -89,19 +90,23 @@ export default function KnowledgeGraphPage() {
     );
   }
 
+  // Extract entities and relationships from paginated data
+  const entities = entitiesData?.entities || [];
+  const relationships = relationshipsData?.relationships || [];
+
   // Transform data for visualization
-  const nodes = entities?.map(entity => ({
+  const nodes = entities.map(entity => ({
     id: entity.id,
     name: entity.name,
     type: entity.type
-  })) || [];
+  }));
 
-  const edges = relationships?.map(rel => ({
+  const edges = relationships.map(rel => ({
     source: rel.fromEntityId,
     target: rel.toEntityId,
     relationship: rel.relationshipType,
     weight: (rel.confidence || 100) / 100
-  })) || [];
+  }));
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -113,7 +118,7 @@ export default function KnowledgeGraphPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {relationships && relationships.length === 0 && entities && entities.length > 0 && (
+          {relationships.length === 0 && entities.length > 0 && (
             <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
               <AlertCircle className="w-4 h-4" />
               <span className="text-sm font-medium">No connections found</span>
@@ -121,7 +126,7 @@ export default function KnowledgeGraphPage() {
           )}
           <Button 
             onClick={() => buildKnowledgeGraphMutation.mutate(false)}
-            disabled={buildKnowledgeGraphMutation.isPending || !entities || entities.length === 0}
+            disabled={buildKnowledgeGraphMutation.isPending || entities.length === 0}
             variant="default"
             size="sm"
           >
@@ -130,9 +135,9 @@ export default function KnowledgeGraphPage() {
             ) : (
               <Network className="w-4 h-4 mr-2" />
             )}
-            {relationships && relationships.length > 0 ? 'Add More Connections' : 'Build Connections'}
+            {relationships.length > 0 ? 'Add More Connections' : 'Build Connections'}
           </Button>
-          {relationships && relationships.length > 0 && (
+          {relationships.length > 0 && (
             <Button 
               onClick={() => buildKnowledgeGraphMutation.mutate(true)}
               disabled={buildKnowledgeGraphMutation.isPending}
@@ -171,7 +176,7 @@ export default function KnowledgeGraphPage() {
                 <CardTitle className="text-sm font-medium">Total Entities</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{entities?.length || 0}</div>
+                <div className="text-2xl font-bold">{entities.length || 0}</div>
               </CardContent>
             </Card>
             
@@ -181,7 +186,7 @@ export default function KnowledgeGraphPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-600">
-                  {entities?.filter(e => e.type === 'medication').length || 0}
+                  {entities.filter(e => e.type === 'medication').length || 0}
                 </div>
               </CardContent>
             </Card>
@@ -192,7 +197,7 @@ export default function KnowledgeGraphPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-red-600">
-                  {entities?.filter(e => e.type === 'condition').length || 0}
+                  {entities.filter(e => e.type === 'condition').length || 0}
                 </div>
               </CardContent>
             </Card>
@@ -202,7 +207,7 @@ export default function KnowledgeGraphPage() {
                 <CardTitle className="text-sm font-medium">Relationships</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{relationships?.length || 0}</div>
+                <div className="text-2xl font-bold">{relationships.length || 0}</div>
               </CardContent>
             </Card>
           </div>
@@ -218,7 +223,7 @@ export default function KnowledgeGraphPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {entities?.map(entity => (
+                {entities.map(entity => (
                   <div key={entity.id} className="flex items-start justify-between p-4 border rounded-lg">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -237,7 +242,10 @@ export default function KnowledgeGraphPage() {
                       )}
                     </div>
                   </div>
-                )) || <p>No entities found. Upload and process documents to populate the knowledge graph.</p>}
+                ))}
+                {entities.length === 0 && (
+                  <p>No entities found. Upload and process documents to populate the knowledge graph.</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -253,9 +261,9 @@ export default function KnowledgeGraphPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {relationships?.map(rel => {
-                  const fromEntity = entities?.find(e => e.id === rel.fromEntityId);
-                  const toEntity = entities?.find(e => e.id === rel.toEntityId);
+                {relationships.map(rel => {
+                  const fromEntity = entities.find(e => e.id === rel.fromEntityId);
+                  const toEntity = entities.find(e => e.id === rel.toEntityId);
                   
                   return (
                     <div key={rel.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -273,7 +281,10 @@ export default function KnowledgeGraphPage() {
                       )}
                     </div>
                   );
-                }) || <p>No relationships found. Process more documents to discover entity connections.</p>}
+                })}
+                {relationships.length === 0 && (
+                  <p>No relationships found. Process more documents to discover entity connections.</p>
+                )}
               </div>
             </CardContent>
           </Card>
