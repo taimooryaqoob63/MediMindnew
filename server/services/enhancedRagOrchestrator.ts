@@ -13,6 +13,7 @@ import type {
   InsertIntentClassification, InsertResponseFeedback 
 } from '@shared/schema';
 import crypto from 'crypto';
+import { ResponseFormatter } from './responseFormatter';
 
 interface QueryAnalysis {
   intent: string;
@@ -229,8 +230,18 @@ export class EnhancedRagOrchestrator {
         cacheHit: false,
       });
 
+      // Apply beautiful formatting to the final content
+      const rawContent = this.cleanupFinalResponse(responseWithDisclaimer.content || finalResponse.content || '');
+      const beautifulContent = ResponseFormatter.formatResponse(rawContent, {
+        queryType: analysis.queryType,
+        confidence: responseWithDisclaimer.confidence || finalResponse.confidence,
+        sources: responseWithDisclaimer.sources || finalResponse.sources,
+        followUpQuestions: finalResponse.followUpQuestions,
+        suggestedActions: responseWithDisclaimer.suggestedActions || finalResponse.suggestedActions
+      });
+
       return {
-        content: this.cleanupFinalResponse(responseWithDisclaimer.content || finalResponse.content || ''),
+        content: beautifulContent,
         sources: responseWithDisclaimer.sources || finalResponse.sources,
         confidence: responseWithDisclaimer.confidence || finalResponse.confidence,
         followUpQuestions: finalResponse.followUpQuestions,
@@ -318,9 +329,11 @@ export class EnhancedRagOrchestrator {
 ⚠️ **This is educational content only. AI cannot replace emergency medical care or institutional protocols.**`;
     }
 
+    const formattedContent = ResponseFormatter.formatEmergencyResponse(response.content + emergencyDisclaimer);
+    
     return {
       ...response,
-      content: response.content + emergencyDisclaimer,
+      content: formattedContent,
       confidence: Math.min(response.confidence || 0, 85), // Reduce confidence for emergency-flagged content
       suggestedActions: [
         ...(response.suggestedActions || []),
