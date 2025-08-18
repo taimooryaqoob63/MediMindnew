@@ -475,21 +475,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
               
-              {/* TTS Toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('TTS toggle clicked, current state:', isTTSEnabled);
-                  toggleTTS();
-                }}
-                className={`glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105 ${isTTSEnabled ? 'bg-teal-400/30' : 'bg-white/10'}`}
-                title={isTTSEnabled ? "Disable Text-to-Speech" : "Enable Text-to-Speech"}
-              >
-                {isTTSEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-              </Button>
+              
               
               {/* Close/Minimize */}
               {(isMobile || isFullScreen) && (
