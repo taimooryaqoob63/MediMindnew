@@ -395,15 +395,15 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                  <Stethoscope className="w-6 h-6 text-white" />
+                <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <Stethoscope className="w-4 h-4 text-white" />
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-healthcare-green rounded-full border-2 border-white flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-healthcare-green rounded-full border-2 border-white flex items-center justify-center">
+                  <div className="w-1 h-1 bg-white rounded-full animate-pulse"></div>
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-white text-lg">MediMind AI Tutor</h3>
+                <h3 className="font-medium text-white text-sm">MediMind AI Tutor</h3>
               </div>
             </div>
             
@@ -681,7 +681,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  placeholder=""
+                  placeholder="Ask me anything"
                   className="w-full px-4 py-3 bg-transparent border-0 focus:outline-none resize-none placeholder-gray-500 text-gray-800"
                   disabled={chatMutation.isPending}
                   rows={1}
