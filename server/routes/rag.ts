@@ -7,6 +7,7 @@ import { ragOrchestrator } from "../services/ragAgents";
 import { enhancedRagOrchestrator } from "../services/enhancedRagOrchestrator";
 import { superEnhancedRagOrchestrator } from "../services/superEnhancedRagOrchestrator";
 import { enhancedDocumentProcessor } from "../services/enhancedDocumentProcessor";
+import { ResponseFormatter } from "../services/responseFormatter";
 import { insertDocumentSchema, insertRagChatMessageSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -377,7 +378,7 @@ export async function registerRAGRoutes(app: Express) {
         vectorsCleared = true;
         console.log('✅ All vectors cleared from Pinecone');
       } catch (error) {
-        console.log('Could not clear Pinecone vectors (may not be connected):', error.message);
+        console.log('Could not clear Pinecone vectors (may not be connected):', error instanceof Error ? error.message : 'Unknown error');
       }
       
       // Clear all document chunks from database
@@ -410,7 +411,7 @@ export async function registerRAGRoutes(app: Express) {
         await storage.clearEntities();
         console.log('✅ Knowledge graph and entities cleared');
       } catch (error) {
-        console.log('Could not clear knowledge graph:', error.message);
+        console.log('Could not clear knowledge graph:', error instanceof Error ? error.message : 'Unknown error');
       }
       
       // Clear any cached chat messages related to RAG
@@ -420,7 +421,7 @@ export async function registerRAGRoutes(app: Express) {
         console.log(`Found ${chatMessages.length} chat messages to clear`);
         // Note: Individual chat message deletion would need to be implemented in storage if needed
       } catch (error) {
-        console.log('Could not clear chat messages:', error.message);
+        console.log('Could not clear chat messages:', error instanceof Error ? error.message : 'Unknown error');
       }
       
       console.log('✅ Complete data cleanup finished');
@@ -886,6 +887,16 @@ export async function registerRAGRoutes(app: Express) {
         response.content = finalDeduplication(response.content);
       }
 
+      // Apply response formatting to convert JSON to beautiful markdown
+      if (response.content) {
+        console.log(`🎨 [${requestId}] Applying response formatting...`);
+        response.content = ResponseFormatter.formatResponse(response.content, {
+          confidence: response.confidence,
+          sources: response.sources,
+          queryType: 'educational'
+        });
+      }
+
       // Store the enhanced chat message
       console.log(`💾 [${requestId}] Storing chat message in database...`);
       const chatMessage = await storage.createRagChatMessage({
@@ -894,7 +905,7 @@ export async function registerRAGRoutes(app: Express) {
         message,
         response: response.content || '',
         sources: response.sources || [],
-        confidence: response.confidence || 0,
+        confidence: Math.round((response.confidence || 0) * 100), // Convert to integer percentage
         agentTrace: { 
           agents: response.agentsUsed || [],
           responseTime: response.responseTime || 0,

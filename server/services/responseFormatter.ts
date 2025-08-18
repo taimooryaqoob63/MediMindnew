@@ -81,11 +81,13 @@ export class ResponseFormatter {
       
       if (typeof action === 'object' && action['Next step']) {
         actionText = action['Next step'];
-      } else if (typeof action === 'string') {
+      } else if (typeof action === 'string' && action.trim() !== '') {
         actionText = action;
+      } else if (typeof action === 'number' && action !== -1) {
+        actionText = action.toString();
       }
       
-      if (actionText) {
+      if (actionText && actionText.trim() !== '') {
         formatted += `## ➡️ One Clear Action\n\n🔎 **Next Step**: ${actionText}\n\n`;
       }
     }
