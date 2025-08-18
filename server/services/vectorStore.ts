@@ -129,14 +129,15 @@ export class VectorStore {
     throw new Error('Index failed to become ready within timeout');
   }
 
-  async createEmbedding(text: string): Promise<number[]> {
+  async createEmbedding(text: string, model?: 'text-embedding-3-small' | 'text-embedding-3-large'): Promise<number[]> {
     if (!this.openai) {
       throw new Error('OpenAI not configured');
     }
     
     try {
+      const embeddingModel = model || 'text-embedding-3-small';
       const response = await this.openai.embeddings.create({
-        model: 'text-embedding-3-small',
+        model: embeddingModel,
         input: text,
       });
       
@@ -347,6 +348,28 @@ export class VectorStore {
         hasOpenAI: !!this.openai
       });
       // Return empty array on error to prevent app crash
+      return [];
+    }
+  }
+
+  // Enhanced query method for hybrid search compatibility
+  async query(
+    query: string,
+    topK: number = 5,
+    filters?: Record<string, any>
+  ): Promise<Array<{
+    id: string;
+    score: number;
+    metadata?: Record<string, any>;
+  }>> {
+    try {
+      // Create embedding for the query
+      const embedding = await this.createEmbedding(query);
+      
+      // Search for similar vectors
+      return await this.queryVectors(embedding, topK, filters);
+    } catch (error) {
+      console.error('Error querying vectors:', error);
       return [];
     }
   }

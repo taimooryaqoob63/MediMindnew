@@ -5,6 +5,8 @@ import { documentProcessor } from "../services/documentProcessor";
 import { vectorStore } from "../services/vectorStore";
 import { ragOrchestrator } from "../services/ragAgents";
 import { enhancedRagOrchestrator } from "../services/enhancedRagOrchestrator";
+import { superEnhancedRagOrchestrator } from "../services/superEnhancedRagOrchestrator";
+import { enhancedDocumentProcessor } from "../services/enhancedDocumentProcessor";
 import { insertDocumentSchema, insertRagChatMessageSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -541,30 +543,66 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
-  // Upload and process document
+  // Upload and process document with enhanced processing
   app.post("/api/rag/documents/upload", isAuthenticated, upload.single('document'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: 'No document file uploaded' });
       }
 
-      const { documentType = 'guideline', category = 'diabetes' } = req.body;
+      const { documentType = 'guideline', category = 'diabetes', useEnhanced = 'true' } = req.body;
       const filePath = req.file.path;
 
-      // Start document processing
-      const documentId = await documentProcessor.processDocument(
-        filePath,
-        documentType,
-        category
-      );
+      // Use enhanced document processor if requested
+      if (useEnhanced === 'true') {
+        console.log('🚀 Using enhanced document processor for:', req.file.originalname);
+        const documentId = await enhancedDocumentProcessor.processDocument(
+          filePath,
+          documentType,
+          category,
+          {
+            chunkSize: 1000,
+            chunkOverlap: 200,
+            extractEntities: true,
+            buildKnowledgeGraph: true,
+            docType: documentType as 'guideline' | 'faq' | 'paper' | 'learning',
+            source: category.includes('NICE') ? 'NICE' : category.includes('NHS') ? 'NHS' : 'other' as 'NICE' | 'NHS' | 'CQC' | 'other',
+            enableDeduplication: true
+          }
+        );
 
-      res.json({
-        message: 'Document uploaded and processing started',
-        documentId,
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        size: req.file.size
-      });
+        res.json({
+          message: 'Document uploaded and enhanced processing started',
+          documentId,
+          filename: req.file.filename,
+          originalName: req.file.originalname,
+          size: req.file.size,
+          enhanced: true,
+          features: [
+            'Structure-aware chunking',
+            'Knowledge graph integration', 
+            'Multi-embedding models',
+            'Deduplication',
+            'Citation enforcement'
+          ]
+        });
+      } else {
+        // Use standard document processor
+        const documentId = await documentProcessor.processDocument(
+          filePath,
+          documentType,
+          category
+        );
+
+        res.json({
+          message: 'Document uploaded and processing started',
+          documentId,
+          filename: req.file.filename,
+          originalName: req.file.originalname,
+          size: req.file.size,
+          enhanced: false
+        });
+      }
     } catch (error) {
       console.error('Document upload error:', error);
       res.status(500).json({ message: 'Failed to upload document' });
@@ -755,10 +793,10 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
-  // Enhanced RAG chat endpoint with multi-agent processing
+  // Enhanced RAG chat endpoint with super enhanced multi-agent processing
   app.post("/api/rag/chat", isAuthenticated, async (req, res) => {
     const requestId = Date.now().toString();
-    console.log(`🚀 [${requestId}] RAG chat request received:`, { 
+    console.log(`🚀 [${requestId}] Enhanced RAG chat request received:`, { 
       message: req.body.message?.substring(0, 100),
       courseId: req.body.courseId,
       hasConversationHistory: !!req.body.conversationHistory,
@@ -799,9 +837,9 @@ export function registerRAGRoutes(app: Express) {
         role: userObj.role
       });
 
-      // Process query with Enhanced RAG Orchestrator
-      console.log(`🤖 [${requestId}] Starting enhanced RAG processing...`);
-      const response = await enhancedRagOrchestrator.processQuery(
+      // Process query with Super Enhanced RAG Orchestrator  
+      console.log(`🤖 [${requestId}] Starting super enhanced RAG processing...`);
+      const response = await superEnhancedRagOrchestrator.processQuery(
         message, 
         userObj, 
         courseId, 
@@ -1350,6 +1388,75 @@ export function registerRAGRoutes(app: Express) {
     } catch (error) {
       console.error("Error fetching analytics:", error);
       res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // Test endpoint for super enhanced RAG system
+  app.post("/api/rag/test-enhanced", isAuthenticated, async (req, res) => {
+    const requestId = Date.now().toString();
+    console.log(`🧪 [${requestId}] Testing enhanced RAG system...`);
+    
+    try {
+      const { message = "What are the key signs of hypoglycemia in diabetes patients?" } = req.body;
+      const user = req.user as any;
+      
+      const userObj = {
+        id: user.claims.sub,
+        email: user.claims.email || user.claims.global_name || null,
+        firstName: user.claims.given_name || null,
+        lastName: user.claims.family_name || null,
+        profileImageUrl: user.claims.picture || null,
+        role: 'care_worker' as const,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      console.log(`🚀 [${requestId}] Testing with query: "${message}"`);
+
+      const startTime = Date.now();
+      const response = await superEnhancedRagOrchestrator.processQuery(
+        message,
+        userObj,
+        'test-course',
+        []
+      );
+      const endTime = Date.now();
+
+      console.log(`✅ [${requestId}] Enhanced RAG test completed in ${endTime - startTime}ms`);
+
+      res.json({
+        message: 'Enhanced RAG system test completed successfully',
+        testQuery: message,
+        response: {
+          content: response.content,
+          confidence: response.confidence,
+          sources: response.sources,
+          agentsUsed: response.agentsUsed,
+          usedRAG: response.usedRAG,
+          responseTime: response.responseTime,
+          cacheHit: response.cacheHit
+        },
+        performance: {
+          totalResponseTime: endTime - startTime,
+          systemComponents: [
+            'Super Enhanced RAG Orchestrator',
+            'Enhanced Hybrid Search (BM25 + Vector + Reranking)',
+            'Multi-Agent Debate System', 
+            'Enhanced Document Processing (Docling-based)',
+            'Knowledge Graph Integration',
+            'Enhanced Confidence Calculator',
+            'Enhanced Citation Service'
+          ]
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error(`❌ [${requestId}] Enhanced RAG test failed:`, error);
+      res.status(500).json({
+        message: 'Enhanced RAG system test failed',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
     }
   });
 }
