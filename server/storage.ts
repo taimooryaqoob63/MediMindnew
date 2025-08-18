@@ -9,7 +9,8 @@ import {
   type InsertChatSummary, type InsertQueryCache, type InsertResponseFeedback, type InsertRagAnalytics, type InsertIntentClassification,
   users, courses, modules, userProgress, chatMessages, resources,
   documents, documentChunks, entities, entityRelationships, ragChatMessages, processingJobs, notifications,
-  chatSummaries, queryCache, responseFeedback, ragAnalytics, intentClassification
+  chatSummaries, queryCache, responseFeedback, ragAnalytics, intentClassification,
+  SelectDocumentChunk
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -40,7 +41,6 @@ export interface IStorage {
   // Chat Messages
   getChatMessages(userId: string, courseId: string): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
-  clearChatMessages(userId: string, courseId: string): Promise<boolean>;
 
   // Resources
   getResources(): Promise<Resource[]>;
@@ -56,7 +56,7 @@ export interface IStorage {
 
   // Document Chunks
   getDocumentChunks(documentId: string): Promise<DocumentChunk[]>;
-  getAllDocumentChunks(): Promise<DocumentChunk[]>;
+  getAllDocumentChunks(): Promise<SelectDocumentChunk[]>;
   getDocumentChunk(id: string): Promise<DocumentChunk | undefined>;
   createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk>;
   updateDocumentChunk(id: string, updates: Partial<InsertDocumentChunk>): Promise<DocumentChunk | undefined>;
@@ -78,7 +78,6 @@ export interface IStorage {
   // RAG Chat Messages
   getRagChatMessages(userId: string, courseId?: string): Promise<RagChatMessage[]>;
   createRagChatMessage(message: InsertRagChatMessage): Promise<RagChatMessage>;
-  clearRagChatMessages(userId: string, courseId?: string): Promise<boolean>;
 
   // Processing Jobs
   getProcessingJobs(): Promise<ProcessingJob[]>;
@@ -245,12 +244,6 @@ export class DatabaseStorage implements IStorage {
     return message;
   }
 
-  async clearChatMessages(userId: string, courseId: string): Promise<boolean> {
-    const result = await this.db.delete(chatMessages)
-      .where(and(eq(chatMessages.userId, userId), eq(chatMessages.courseId, courseId)));
-    return (result.rowCount ?? 0) > 0;
-  }
-
   async getResources(): Promise<Resource[]> {
     return await this.db.select().from(resources);
   }
@@ -299,7 +292,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(documentChunks.documentId, documentId));
   }
 
-  async getAllDocumentChunks(): Promise<DocumentChunk[]> {
+  async getAllDocumentChunks(): Promise<SelectDocumentChunk[]> {
     return await this.db.select().from(documentChunks);
   }
 
@@ -395,18 +388,6 @@ export class DatabaseStorage implements IStorage {
   async createRagChatMessage(insertMessage: InsertRagChatMessage): Promise<RagChatMessage> {
     const [message] = await this.db.insert(ragChatMessages).values(insertMessage).returning();
     return message;
-  }
-
-  async clearRagChatMessages(userId: string, courseId?: string): Promise<boolean> {
-    if (courseId) {
-      const result = await this.db.delete(ragChatMessages)
-        .where(and(eq(ragChatMessages.userId, userId), eq(ragChatMessages.courseId, courseId)));
-      return (result.rowCount ?? 0) > 0;
-    } else {
-      const result = await this.db.delete(ragChatMessages)
-        .where(eq(ragChatMessages.userId, userId));
-      return (result.rowCount ?? 0) > 0;
-    }
   }
 
   // Processing Jobs
@@ -868,18 +849,6 @@ export class MemStorage implements IStorage {
     return message;
   }
 
-  async clearChatMessages(userId: string, courseId: string): Promise<boolean> {
-    const keysToDelete: string[] = [];
-    this.chatMessages.forEach((message, key) => {
-      if (message.userId === userId && message.courseId === courseId) {
-        keysToDelete.push(key);
-      }
-    });
-    
-    keysToDelete.forEach(key => this.chatMessages.delete(key));
-    return keysToDelete.length > 0;
-  }
-
   async getResources(): Promise<Resource[]> {
     return Array.from(this.resources.values());
   }
@@ -952,7 +921,7 @@ export class MemStorage implements IStorage {
     return [];
   }
 
-  async getAllDocumentChunks(): Promise<DocumentChunk[]> {
+  async getAllDocumentChunks(): Promise<SelectDocumentChunk[]> {
     return [];
   }
 
@@ -1048,11 +1017,6 @@ export class MemStorage implements IStorage {
       timestamp: new Date()
     };
     return newMessage;
-  }
-
-  async clearRagChatMessages(userId: string, courseId?: string): Promise<boolean> {
-    // No-op in memory storage - always return true
-    return true;
   }
 
   async getProcessingJobs(): Promise<ProcessingJob[]> {

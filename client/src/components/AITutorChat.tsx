@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Mic, MicOff, Volume2, VolumeX, ChevronDown, Stethoscope, Heart, BookOpen, AlertCircle, Maximize2, Minimize2, Trash2, FileText, Download, Sparkles, HighlighterIcon as Highlight, Plus } from "lucide-react";
+import { Bot, Send, Mic, MicOff, Volume2, VolumeX, ChevronDown, Stethoscope, Heart, BookOpen, AlertCircle, Maximize2, Minimize2, Trash2, FileText, Download, Sparkles, HighlighterIcon as Highlight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarkdownRenderer } from "@/components/ui/markdown";
@@ -330,30 +330,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     }
   };
 
-  const newChat = async () => {
-    try {
-      console.log("Starting new chat for course:", courseId);
-      // Clear current chat
-      await apiRequest("DELETE", `/api/chat/${courseId}`);
-      // Invalidate queries to refresh the UI
-      queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
-      // Reset UI state
-      setLastSessionBreak(new Date());
-      setInputMessage("");
-      setHighlightMode(false);
-      
-      // If in fullscreen, show a brief welcome animation
-      if (isFullScreen) {
-        setIsFullScreen(false);
-        setTimeout(() => setIsFullScreen(true), 100);
-      }
-      
-      console.log("New chat started successfully");
-    } catch (error) {
-      console.error("Failed to start new chat:", error);
-    }
-  };
-
   const summarizeConversation = async () => {
     if (messages.length === 0) return;
     
@@ -482,23 +458,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 title="Export chat"
               >
                 <Download className="w-4 h-4" />
-              </Button>
-              
-              {/* New Chat */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('New chat button clicked, starting fresh conversation');
-                  newChat();
-                }}
-                disabled={false}
-                className="glass-button p-2 text-white/90 hover:text-white hover:bg-green-400/30 rounded-xl transition-all duration-200 hover:scale-105"
-                title="Start new chat"
-              >
-                <Plus className="w-4 h-4" />
               </Button>
               
               {/* Clear Chat */}
