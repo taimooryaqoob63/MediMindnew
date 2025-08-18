@@ -36,19 +36,19 @@ interface ChatResponse {
 export default function AITutorChat({ courseId, currentModule, isMobile, isOpen, onClose }: AITutorChatProps) {
   const [inputMessage, setInputMessage] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  
+
   // Enhanced UI state
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [highlightMode, setHighlightMode] = useState(false);
   const [lastSessionBreak, setLastSessionBreak] = useState<Date>(new Date());
-  
+
   // TTS and STT state
   const [isListening, setIsListening] = useState(false);
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
   const [recognition, setRecognition] = useState<any>(null);
   const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null);
   const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -102,7 +102,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         courseId: data.courseId,
         timestamp: new Date().toISOString()
       });
-      
+
       // Always use RAG chat endpoint - server will handle fallbacks
       try {
         console.log('🤖 Attempting RAG chat with payload:', {
@@ -110,15 +110,15 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           courseId: data.courseId,
           payloadSize: JSON.stringify({ message: data.message, courseId: data.courseId }).length
         });
-        
+
         console.log('📡 Making RAG API request...');
         const ragResponse = await apiRequest("POST", "/api/rag/chat", {
           message: data.message,
           courseId: data.courseId
         });
-        
+
         console.log('📡 RAG API response status:', ragResponse.status);
-        
+
         if (!ragResponse.ok) {
           const errorText = await ragResponse.text();
           console.error('❌ RAG API error details:', {
@@ -129,7 +129,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           });
           throw new Error(`RAG API returned ${ragResponse.status}: ${ragResponse.statusText} - ${errorText}`);
         }
-        
+
         console.log('📊 Parsing RAG response...');
         const result = await ragResponse.json();
         console.log('✅ RAG response successful:', { 
@@ -148,14 +148,14 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           errorStack: ragError instanceof Error ? ragError.stack : null,
           timestamp: new Date().toISOString()
         });
-        
+
         console.log('🔄 Falling back to basic chat...');
         // Fallback to basic chat
         try {
           console.log('📡 Making basic chat API request...');
           const response = await apiRequest("POST", "/api/chat", data);
           console.log('📡 Basic chat API response status:', response.status);
-          
+
           if (!response.ok) {
             const errorText = await response.text();
             console.error('❌ Basic chat API error:', {
@@ -165,7 +165,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
             });
             throw new Error(`Basic chat API returned ${response.status}: ${response.statusText}`);
           }
-          
+
           const result = await response.json();
           console.log('✅ Basic chat fallback successful:', {
             hasResponse: !!result.response || !!result.content,
@@ -191,10 +191,10 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         sourcesCount: data.sources?.length || 0,
         timestamp: new Date().toISOString()
       });
-      
+
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       setInputMessage("");
-      
+
       // Read the AI response aloud if TTS is enabled
       const responseText = data.response || data.content;
       if (isTTSEnabled && synthesis && responseText) {
@@ -212,7 +212,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         inputMessage: inputMessage?.substring(0, 100) + '...',
         courseId: courseId
       });
-      
+
       // Check if it's a network error
       if (error instanceof Error && error.message.includes('fetch')) {
         console.error('🌐 Network error detected - checking connection');
@@ -236,22 +236,22 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   // TTS Functions
   const speakText = (text: string) => {
     if (!synthesis) return;
-    
+
     // Stop any current speech
     synthesis.cancel();
-    
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.9;
     utterance.pitch = 1;
     utterance.volume = 0.8;
-    
+
     // Find a suitable voice (prefer English voices)
     const voices = synthesis.getVoices();
     const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
     if (englishVoice) {
       utterance.voice = englishVoice;
     }
-    
+
     setCurrentUtterance(utterance);
     synthesis.speak(utterance);
   };
@@ -285,9 +285,9 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
-    
+
     const context = currentModule ? `Current module: ${currentModule.title} - ${currentModule.description}` : undefined;
-    
+
     chatMutation.mutate({
       message: inputMessage.trim(),
       courseId,
@@ -306,7 +306,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     const date = new Date(timestamp);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) return "Just now";
     if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hour ago`;
@@ -332,13 +332,13 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const summarizeConversation = async () => {
     if (messages.length === 0) return;
-    
+
     const conversationText = messages.map(msg => 
       `User: ${msg.message}\nAI: ${msg.response}`
     ).join('\n\n');
-    
+
     const summaryPrompt = `Please summarize this diabetes care learning conversation, highlighting key medical concepts, guidelines discussed, and main learning points:\n\n${conversationText}`;
-    
+
     chatMutation.mutate({
       message: summaryPrompt,
       courseId,
@@ -351,9 +351,9 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       const timestamp = formatTimestamp(msg.timestamp);
       return `[${timestamp}] You: ${msg.message}\n\n[${timestamp}] MediMind AI: ${msg.response}\n\n---\n\n`;
     }).join('');
-    
+
     const fullContent = `MediMind AI - Diabetes Care Learning Session\nExported: ${new Date().toLocaleString()}\nCourse ID: ${courseId}\n\n${chatContent}`;
-    
+
     const blob = new Blob([fullContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -369,7 +369,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     if (currentIndex === 0) return false;
     const currentMessage = messages[currentIndex];
     const previousMessage = messages[currentIndex - 1];
-    
+
     const timeDiff = new Date(currentMessage.timestamp).getTime() - new Date(previousMessage.timestamp).getTime();
     return timeDiff > 30 * 60 * 1000; // 30 minutes
   };
@@ -380,7 +380,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       {isFullScreen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 animate-fade-in" />
       )}
-      
+
       <div className={`
         ${isFullScreen 
           ? 'fixed inset-4 z-50 max-w-none max-h-none rounded-3xl shadow-2xl glass-morphism-strong' 
@@ -406,7 +406,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <h3 className="font-semibold text-white text-base leading-tight">MediMind AI Tutor</h3>
               </div>
             </div>
-            
+
             {/* Enhanced Action Buttons */}
             <div className="flex items-center space-x-2">
               {/* Learning Tools */}
@@ -425,7 +425,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               >
                 <FileText className="w-4 h-4" />
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -441,7 +441,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               >
                 <Download className="w-4 h-4" />
               </Button>
-              
+
               {/* Clear Chat */}
               <Button
                 variant="ghost"
@@ -458,7 +458,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
-              
+
               {/* Fullscreen Toggle */}
               <Button
                 variant="ghost"
@@ -474,9 +474,9 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               >
                 {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
-              
-              
-              
+
+
+
               {/* Close/Minimize */}
               {(isMobile || isFullScreen) && (
                 <Button
@@ -555,7 +555,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
               </div>
             )}
-            
+
             <div className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
               {/* User Message with Glassmorphism */}
               <div className="flex items-end space-x-3 justify-end mb-6">
@@ -597,7 +597,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                       `}
                     />
                   </div>
-                  
+
                   <p className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-300">
                     <span className="inline-flex items-center space-x-1">
                       <Bot className="w-3 h-3" />
@@ -663,7 +663,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 />
               </div>
             </div>
-            
+
             {/* Enhanced Control Buttons with Glassmorphism */}
             <div className="flex items-center space-x-2">
               <Button
@@ -674,7 +674,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               >
                 {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
               </Button>
-              
+
               <Button
                 onClick={stopSpeaking}
                 className={`glass-button p-3 rounded-xl transition-all duration-300 ${
@@ -687,7 +687,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               >
                 <VolumeX className="w-4 h-4" />
               </Button>
-              
+
               <Button
                 onClick={handleSendMessage}
                 disabled={!inputMessage.trim() || chatMutation.isPending}
@@ -698,7 +698,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               </Button>
             </div>
           </div>
-          
+
           {/* Enhanced Status Indicators with Glassmorphism */}
           <div className="flex items-center justify-between mt-2 px-2">
             <div className="flex items-center space-x-4 text-xs text-gray-600">
@@ -719,7 +719,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <span>Evidence-based responses</span>
               </span>
             </div>
-            
+
             <div className="flex items-center space-x-1 text-xs text-gray-500">
               <kbd className="px-1.5 py-0.5 glass-morphism-subtle rounded text-xs">Enter</kbd>
               <span>to send</span>

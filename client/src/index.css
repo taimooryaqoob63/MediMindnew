@@ -23,7 +23,7 @@
   --destructive-foreground: hsl(60, 9.1%, 97.8%);
   --ring: hsl(195, 60%, 42%);
   --radius: 0.5rem;
-  
+
   /* Enhanced healthcare theme - calm and professional */
   --medical-blue: hsl(202, 70%, 45%); /* Primary blue */
   --medical-blue-light: hsl(202, 60%, 92%); /* Light blue for backgrounds */
@@ -76,7 +76,7 @@
     margin: 0;
     padding: 0;
   }
-  
+
   #root {
     margin: 0;
     padding: 0;
@@ -87,31 +87,31 @@
   .medical-blue {
     color: var(--medical-blue);
   }
-  
+
   .bg-medical-blue {
     background-color: var(--medical-blue);
   }
-  
+
   .accent-purple {
     color: var(--accent-purple);
   }
-  
+
   .bg-accent-purple {
     background-color: var(--accent-purple);
   }
-  
+
   .bg-light {
     background-color: var(--bg-light);
   }
-  
+
   .text-dark {
     color: var(--text-dark);
   }
-  
+
   .success-green {
     color: var(--success-green);
   }
-  
+
   .bg-success-green {
     background-color: var(--success-green);
   }
@@ -313,23 +313,23 @@
   .interactive-hover {
     @apply transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-lg;
   }
-  
+
   .card-hover {
     @apply transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1;
   }
-  
+
   .button-interactive {
     @apply transition-all duration-200 ease-in-out hover:scale-102 active:scale-98;
   }
-  
+
   .fade-in {
     animation: fadeIn 0.5s ease-in-out;
   }
-  
+
   .slide-in-left {
     animation: slideInLeft 0.3s ease-out;
   }
-  
+
   .slide-in-right {
     animation: slideInRight 0.3s ease-out;
   }
@@ -353,13 +353,42 @@
     border: 1px solid hsl(210, 20%, 92%);
   }
 
-  /* Medical header gradient matching website theme */
+  /* Microsoft Teams header gradient */
   .medical-header-gradient {
-    background: linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #67e8f9 100%);
+    background: linear-gradient(135deg, #464775 0%, #5b5fc7 50%, #6264a7 100%);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 20px rgba(8, 145, 178, 0.3);
+    box-shadow: 0 4px 20px rgba(70, 71, 117, 0.3);
+  }
+
+  /* Teams-inspired input styling */
+  .teams-input-area {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(100, 100, 164, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(70, 71, 117, 0.1);
+  }
+
+  .teams-send-button {
+    background: linear-gradient(135deg, #5b5fc7 0%, #6264a7 100%);
+    color: white;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .teams-send-button:hover {
+    background: linear-gradient(135deg, #464775 0%, #5b5fc7 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(70, 71, 117, 0.4);
+  }
+
+  .teams-send-button:disabled {
+    background: rgba(155, 155, 155, 0.3);
+    color: rgba(155, 155, 155, 0.7);
+    transform: none;
+    box-shadow: none;
   }
 
   /* Enhanced Glassmorphism styles */
@@ -546,7 +575,7 @@
     @apply text-white shadow-md;
     background-color: hsl(202, 70%, 45%);
   }
-  
+
   .chat-button-primary:hover {
     background-color: hsl(202, 80%, 35%);
   }
@@ -571,19 +600,19 @@
   .animate-fade-in {
     animation: fadeIn 0.5s ease-in-out;
   }
-  
+
   .pulse-soft {
     animation: pulseSoft 2s infinite;
   }
-  
+
   .scale-102 {
     transform: scale(1.02);
   }
-  
+
   .scale-98 {
     transform: scale(0.98);
   }
-  
+
   /* Text utilities */
   .line-clamp-2 {
     display: -webkit-box;
@@ -597,26 +626,26 @@
     scrollbar-width: thin;
     scrollbar-color: #d1d5db #f3f4f6;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: #f3f4f6;
     border-radius: 3px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: #d1d5db;
     border-radius: 3px;
     transition: background 0.2s ease;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
   }
-  
+
   /* Smooth scrolling for chat */
   .chat-scroll {
     scroll-behavior: smooth;
@@ -694,11 +723,11 @@
   .mobile-hidden {
     display: none !important;
   }
-  
+
   .mobile-full-width {
     width: 100% !important;
   }
-  
+
   .mobile-padding {
     padding: 1rem !important;
   }
