@@ -1,0 +1,81 @@
+Core Enhancements
+1. Full-Screen & Compact Toggle
+•	Add a maximize/minimize button (like ⛶ / ✕) in the header.
+•	On maximize:
+o	Chat expands to full viewport height/width.
+o	Input area remains pinned at bottom.
+o	Background slightly blurred or shaded to emphasize focus.
+•	On minimize:
+o	Reverts back to sidebar-style size (e.g., w-96).
+👉 This makes it useful for both quick reference (small) and deep learning sessions (large).
+________________________________________
+2. Clear Chat Function
+•	Add a “Clear” icon (🗑 or ✨) in the header → wipes messages but keeps the chat container open.
+•	Optional:
+o	Offer "soft clear" → only removes user messages but keeps AI suggestions.
+•	 include a subtle animation (fade-out + scale-down) to make clearing satisfying.
+________________________________________
+5. Subtle Visual Improvements
+•	Glassmorphism for messages: Semi-transparent bubbles with blur → feels modern, not just flat colors.
+•	Section breaks: When switching topics, insert a thin divider with a timestamp (e.g., "Today, 2:14 PM").
+•	Contextual background shifts:
+o	Alerts use slight glowing effect around the message bubble.
+o	Normal responses remain subtle → keeps hierarchy clear.
+________________________________________
+6. Learning-Oriented Enhancements
+Since this is e-learning focused:
+•	Add “Summarize conversation” button in the header.
+•	Add “Highlight key points” toggle → AI responses auto-highlight takeaways.
+•	Add “Export chat” → lets learners save their study session as PDF.
+________________________________________
+7. Accessibility & UX Boosts
+•	Use contrast-aware design (important in medical themes).
+
+📝 Typography & Font Styling
+1. Font Choice
+•	Primary Font: Inter or Nunito Sans → both highly legible, modern, and great for UI.
+•	Secondary / Accent Font: Source Serif Pro or Merriweather for headings/quotes → gives a sense of academic trustworthiness.
+•	Code / Data: Fira Code or JetBrains Mono → clear and compact for inline medical codes or prescriptions.
+👉 This pairing ensures a balance between clean UI and serious academic tone.
+________________________________________
+2. Paragraph Styling
+•	Line height (leading): 1.6–1.75 → optimal for readability in long responses.
+•	Max line width: prevent fatigue (very important for study material).
+•	Justification: Left-aligned, never fully justified (to avoid “rivers” of whitespace).
+•	Spacing between paragraphs: 0.75em–1em → creates clear separation without feeling choppy.
+👉 Keeps text airy, scannable, and easy to study.
+________________________________________
+3. Headings & Hierarchy
+•	H1 (Chat Section Titles / Summaries): text-2xl, bold, colored accent (medical-blue or green).
+•	H2 (Subtopics): text-xl, semi-bold, neutral black/gray.
+•	H3 (Lists, evidence markers, guideline notes): text-lg, medium weight.
+•	Inline emphasis:
+o	Italic → definitions
+o	Bold → critical points
+o	🎯 Emoji + Bold → highlights (⚠️ Warning, ✅ Safe, 💊 Medication)
+👉 Users should be able to skim for key points in under 5 seconds.
+________________________________________
+4. Token / Message Size
+•	Optimal chunk size: ~250 words per message.
+•	For dense medical content:
+o	Break into sections with mini-headings.
+o	Use numbered / bulleted lists for protocols or steps.
+o	Keep alerts on separate lines with padding (never bury them in paragraphs).
+👉 Avoid “wall of text” → your AI should self-chunk responses.
+________________________________________
+5. Visual Contrast & Styling
+•	Background contrast: Use slightly tinted backgrounds for AI vs user messages.
+•	Blockquotes / Guidelines:
+o	Light-colored left border (e.g., border-l-4 border-blue-400 pl-3).
+o	Slight background shading.
+•	Tables: Rounded corners, alternating row shading (bg-gray-50 / bg-white).
+•	Inline tokens / keywords:
+o	rounded-md px-1 py-0.5
+o	Use light background color tags (e.g., Medications → purple-100).
+________________________________________
+6. Accessibility Considerations
+•	Minimum font size: 14px mobile, 16px desktop.
+•	Contrast ratio: 4.5:1 minimum (WCAG AA).
+•	Avoid too many colors at once — rely on weight + spacing instead.
+________________________________________
+
