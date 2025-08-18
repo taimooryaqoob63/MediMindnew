@@ -419,9 +419,10 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  console.log('Summarize button clicked, messages:', messages.length);
                   summarizeConversation();
                 }}
-                disabled={messages.length === 0}
+                disabled={false}
                 className="glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105"
                 title="Summarize conversation"
               >
@@ -449,9 +450,10 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  console.log('Export button clicked, messages:', messages.length);
                   exportChat();
                 }}
-                disabled={messages.length === 0}
+                disabled={false}
                 className="glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105"
                 title="Export chat"
               >
@@ -465,10 +467,10 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('Clear chat button clicked');
+                  console.log('Clear chat button clicked, messages:', messages.length);
                   clearChat();
                 }}
-                disabled={messages.length === 0}
+                disabled={false}
                 className="glass-button p-2 text-white/90 hover:text-white hover:bg-red-400/30 rounded-xl transition-all duration-200 hover:scale-105"
                 title="Clear chat"
               >
@@ -587,7 +589,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
             <div className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
               {/* User Message with Glassmorphism */}
               <div className="flex items-end space-x-3 justify-end mb-6">
-                <div className={`${isFullScreen ? 'max-w-2xl' : 'flex-1'}`}>
+                <div className="flex-1">
                   <div className="chat-message-user-glassmorphism transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
                     <p className="text-sm leading-relaxed select-text font-medium">{msg.message}</p>
                   </div>
@@ -609,7 +611,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <div className="chat-avatar-bot">
                   <Stethoscope className="w-4 h-4 text-white" />
                 </div>
-                <div className={`space-y-3 ${isFullScreen ? 'flex-1 max-w-4xl' : 'flex-1'}`}>
+                <div className="space-y-3 flex-1">
                   <div className="chat-message-bot-glassmorphism transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
                     <MarkdownRenderer 
                       content={msg.response} 
