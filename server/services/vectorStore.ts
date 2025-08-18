@@ -413,6 +413,29 @@ export class VectorStore {
       throw error;
     }
   }
+
+  async getIndexStats(): Promise<any> {
+    try {
+      if (!this.pinecone) {
+        throw new Error('Pinecone not initialized');
+      }
+      const index = this.pinecone.index(this.config.indexName);
+      return await index.describeIndexStats();
+    } catch (error) {
+      console.error('Error getting index stats:', error);
+      return null;
+    }
+  }
+
+  async isIndexEmpty(): Promise<boolean> {
+    try {
+      const stats = await this.getIndexStats();
+      return stats?.totalVectorCount === 0;
+    } catch (error) {
+      console.error('Error checking if index is empty:', error);
+      return true; // Assume empty on error
+    }
+  }
 }
 
 // Initialize global vector store instance

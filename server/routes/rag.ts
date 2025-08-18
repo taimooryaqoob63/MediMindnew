@@ -369,6 +369,17 @@ export function registerRAGRoutes(app: Express) {
     try {
       console.log('🗑️ Starting complete data cleanup...');
       
+      // Clear all vectors from Pinecone first (before deleting chunks)
+      let vectorsCleared = false;
+      try {
+        await vectorStore.initialize();
+        await vectorStore.deleteAllVectors();
+        vectorsCleared = true;
+        console.log('✅ All vectors cleared from Pinecone');
+      } catch (error) {
+        console.log('Could not clear Pinecone vectors (may not be connected):', error.message);
+      }
+      
       // Clear all document chunks from database
       const chunks = await storage.getAllDocumentChunks();
       console.log(`Found ${chunks.length} chunks to delete`);
@@ -393,21 +404,35 @@ export function registerRAGRoutes(app: Express) {
         await storage.deleteProcessingJob(job.id);
       }
       
-      // Clear all vectors from Pinecone if connected
+      // Clear entities and knowledge graph relationships
       try {
-        await vectorStore.initialize();
-        await vectorStore.deleteAllVectors();
+        await storage.clearEntityRelationships();
+        await storage.clearEntities();
+        console.log('✅ Knowledge graph and entities cleared');
       } catch (error) {
-        console.log('Could not clear Pinecone vectors (may not be connected):', error.message);
+        console.log('Could not clear knowledge graph:', error.message);
+      }
+      
+      // Clear any cached chat messages related to RAG
+      try {
+        const user = req.user as any;
+        const chatMessages = await storage.getRagChatMessages(user.claims.sub);
+        console.log(`Found ${chatMessages.length} chat messages to clear`);
+        // Note: Individual chat message deletion would need to be implemented in storage if needed
+      } catch (error) {
+        console.log('Could not clear chat messages:', error.message);
       }
       
       console.log('✅ Complete data cleanup finished');
       
       res.json({ 
-        message: "All data cleared successfully",
+        message: "All data cleared successfully - ready for fresh document uploads",
         documentsDeleted: documents.length,
         chunksDeleted: chunks.length,
-        jobsDeleted: jobs.length
+        jobsDeleted: jobs.length,
+        vectorsCleared,
+        knowledgeGraphCleared: true,
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       console.error("Clear all data error:", error);

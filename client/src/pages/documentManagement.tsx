@@ -251,29 +251,49 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between border-t pt-4">
-                <div>
-                  <p className="text-sm text-gray-600">
-                    Re-process existing documents to ensure they are properly indexed into Pinecone for search.
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    This will check all uploaded documents and re-index any that are missing from the vector store.
-                  </p>
-                </div>
-                <div className="flex gap-2 ml-4">
+              <div className="space-y-4 border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      Re-process existing documents to ensure they are properly indexed into Pinecone for search.
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      This will check all uploaded documents and re-index any that are missing from the vector store.
+                    </p>
+                  </div>
                   <Button
                     onClick={() => reprocessMutation.mutate()}
                     disabled={reprocessMutation.isPending}
                     variant="outline"
+                    className="ml-4"
                   >
                     {reprocessMutation.isPending ? "Reprocessing..." : "Reprocess Documents"}
                   </Button>
+                </div>
+                
+                <div className="flex items-center justify-between border-t pt-4">
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">
+                      🗑️ Clear All Data (Fresh Start)
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Removes all documents, chunks, vectors, and cached data. Use this to start completely fresh with new documents.
+                    </p>
+                    <p className="text-xs text-red-500 mt-1 font-medium">
+                      ⚠️ This action cannot be undone. All uploaded documents and processed data will be permanently deleted.
+                    </p>
+                  </div>
                   <Button
-                    onClick={() => clearAllMutation.mutate()}
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to clear ALL data? This will delete all documents, processed chunks, vectors, and cached data. This action cannot be undone.')) {
+                        clearAllMutation.mutate();
+                      }
+                    }}
                     disabled={clearAllMutation.isPending}
                     variant="destructive"
+                    className="ml-4"
                   >
-                    {clearAllMutation.isPending ? "Clearing..." : "Clear All Data"}
+                    {clearAllMutation.isPending ? "Clearing All Data..." : "Clear All Data"}
                   </Button>
                 </div>
               </div>
