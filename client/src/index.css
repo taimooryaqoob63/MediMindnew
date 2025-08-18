@@ -126,11 +126,13 @@
 
   /* Enhanced Chat Response Styling */
   .chat-response-formatted .prose h2 {
-    @apply flex items-center gap-3 text-lg font-semibold text-gray-800 mt-6 mb-4 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-medical-blue;
+    @apply flex items-center gap-3 text-lg font-semibold text-gray-800 mt-6 mb-4 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4;
+    border-left-color: hsl(var(--medical-blue));
   }
 
   .chat-response-formatted .prose hr {
-    @apply my-6 border-0 h-px bg-gradient-to-r from-transparent via-medical-blue to-transparent;
+    @apply my-6 border-0 h-px;
+    background: linear-gradient(90deg, transparent, hsl(var(--medical-blue)), transparent);
   }
 
   .chat-response-formatted .prose p:has(strong:first-child) {
@@ -146,7 +148,8 @@
   }
 
   .chat-response-formatted .prose ol li::marker {
-    @apply text-medical-blue font-bold;
+    @apply font-bold;
+    color: hsl(var(--medical-blue));
   }
 
   .bg-medical-blue-light {

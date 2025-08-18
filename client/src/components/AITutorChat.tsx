@@ -589,7 +589,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                   <Stethoscope className="w-4 h-4 text-white" />
                 </div>
                 <div className="space-y-3 flex-1">
-                  <div className={`${isFullScreen ? 'chat-message-bot-glassmorphism-fullscreen' : 'chat-message-bot-glassmorphism'} transition-all duration-300 hover:shadow-lg hover:scale-[1.01]`}>
+                  <div className={`${isFullScreen ? 'chat-message-bot-glassmorphism-fullscreen' : 'chat-message-bot-glassmorphism'} transition-all duration-300 hover:shadow-lg hover:scale-[1.01] chat-response-formatted`}>
                     <MarkdownRenderer 
                       content={(() => {
                         // Clean and format the response for better presentation
