@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Mic, MicOff, Volume2, VolumeX, ChevronDown, Stethoscope, Heart, BookOpen, AlertCircle } from "lucide-react";
+import { Bot, Send, Mic, MicOff, Volume2, VolumeX, ChevronDown, Stethoscope, Heart, BookOpen, AlertCircle, Maximize2, Minimize2, Trash2, FileText, Download, Sparkles, HighlighterIcon as Highlight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarkdownRenderer } from "@/components/ui/markdown";
@@ -36,6 +36,11 @@ interface ChatResponse {
 export default function AITutorChat({ courseId, currentModule, isMobile, isOpen, onClose }: AITutorChatProps) {
   const [inputMessage, setInputMessage] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Enhanced UI state
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [highlightMode, setHighlightMode] = useState(false);
+  const [lastSessionBreak, setLastSessionBreak] = useState<Date>(new Date());
   
   // TTS and STT state
   const [isListening, setIsListening] = useState(false);
@@ -308,54 +313,185 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     return date.toLocaleDateString();
   };
 
+  // Enhanced functionality methods
+  const toggleFullScreen = () => {
+    setIsFullScreen(!isFullScreen);
+  };
+
+  const clearChat = async () => {
+    try {
+      await apiRequest("DELETE", `/api/chat/${courseId}`);
+      queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
+      setLastSessionBreak(new Date());
+    } catch (error) {
+      console.error("Failed to clear chat:", error);
+    }
+  };
+
+  const summarizeConversation = async () => {
+    if (messages.length === 0) return;
+    
+    const conversationText = messages.map(msg => 
+      `User: ${msg.message}\nAI: ${msg.response}`
+    ).join('\n\n');
+    
+    const summaryPrompt = `Please summarize this diabetes care learning conversation, highlighting key medical concepts, guidelines discussed, and main learning points:\n\n${conversationText}`;
+    
+    chatMutation.mutate({
+      message: summaryPrompt,
+      courseId,
+      context: "Summary request - please provide a concise educational summary"
+    });
+  };
+
+  const exportChat = () => {
+    const chatContent = messages.map(msg => {
+      const timestamp = formatTimestamp(msg.timestamp);
+      return `[${timestamp}] You: ${msg.message}\n\n[${timestamp}] MediMind AI: ${msg.response}\n\n---\n\n`;
+    }).join('');
+    
+    const fullContent = `MediMind AI - Diabetes Care Learning Session\nExported: ${new Date().toLocaleString()}\nCourse ID: ${courseId}\n\n${chatContent}`;
+    
+    const blob = new Blob([fullContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `medimind-chat-${new Date().getTime()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const shouldShowSessionBreak = (currentIndex: number) => {
+    if (currentIndex === 0) return false;
+    const currentMessage = messages[currentIndex];
+    const previousMessage = messages[currentIndex - 1];
+    
+    const timeDiff = new Date(currentMessage.timestamp).getTime() - new Date(previousMessage.timestamp).getTime();
+    return timeDiff > 30 * 60 * 1000; // 30 minutes
+  };
+
   return (
-    <div className={`
-      ${isMobile 
-        ? 'h-96 chat-container border-t-0 rounded-t-2xl' 
-        : 'w-96 h-full chat-container border-l-0 rounded-l-none rounded-r-2xl'
-      } 
-      flex flex-col slide-in-right overflow-hidden
-    `}>
-      {/* Enhanced Header */}
-      <div className="px-6 py-4 bg-gradient-to-r from-medical-blue to-healthcare-green text-white flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <Stethoscope className="w-6 h-6 text-white" />
+    <>
+      {/* Fullscreen backdrop */}
+      {isFullScreen && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 animate-fade-in" />
+      )}
+      
+      <div className={`
+        ${isFullScreen 
+          ? 'fixed inset-4 z-50 max-w-none max-h-none rounded-3xl shadow-2xl' 
+          : isMobile 
+            ? 'h-96 chat-container border-t-0 rounded-t-2xl' 
+            : 'w-96 h-full chat-container border-l-0 rounded-l-none rounded-r-2xl'
+        } 
+        flex flex-col slide-in-right overflow-hidden transition-all duration-300 ease-in-out
+        ${isFullScreen ? 'chat-container-glassmorphism' : 'chat-container'}
+      `}>
+        {/* Enhanced Header with New Actions */}
+        <div className="px-6 py-4 bg-gradient-to-r from-medical-blue to-healthcare-green text-white flex-shrink-0 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                  <Stethoscope className="w-6 h-6 text-white" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-healthcare-green rounded-full border-2 border-white flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                </div>
               </div>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-healthcare-green rounded-full border-2 border-white flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+              <div>
+                <h3 className="font-semibold text-white text-lg">MediMind AI Tutor</h3>
+                <p className="text-white/80 text-sm font-medium">
+                  {isFullScreen ? "Deep Learning Mode" : "Diabetes Care Specialist"}
+                </p>
               </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-white text-lg">MediMind AI Tutor</h3>
-              <p className="text-white/80 text-sm font-medium">Diabetes Care Specialist</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsTTSEnabled(!isTTSEnabled)}
-              className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 border border-white/20"
-              title={isTTSEnabled ? "Disable Text-to-Speech" : "Enable Text-to-Speech"}
-            >
-              {isTTSEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </Button>
-            {isMobile && (
+            
+            {/* Enhanced Action Buttons */}
+            <div className="flex items-center space-x-2">
+              {/* Learning Tools */}
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onClose}
+                onClick={summarizeConversation}
+                disabled={messages.length === 0}
                 className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+                title="Summarize conversation"
               >
-                <ChevronDown className="w-5 h-5" />
+                <FileText className="w-4 h-4" />
               </Button>
-            )}
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setHighlightMode(!highlightMode)}
+                className={`p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 ${highlightMode ? 'bg-white/20' : ''}`}
+                title="Toggle highlight mode"
+              >
+                <Highlight className="w-4 h-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={exportChat}
+                disabled={messages.length === 0}
+                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+                title="Export chat"
+              >
+                <Download className="w-4 h-4" />
+              </Button>
+              
+              {/* Clear Chat */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearChat}
+                disabled={messages.length === 0}
+                className="p-2 text-white/80 hover:text-white hover:bg-red-400/20 rounded-xl transition-all duration-200"
+                title="Clear chat"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+              
+              {/* Fullscreen Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleFullScreen}
+                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+                title={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
+              >
+                {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </Button>
+              
+              {/* TTS Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsTTSEnabled(!isTTSEnabled)}
+                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 border border-white/20"
+                title={isTTSEnabled ? "Disable Text-to-Speech" : "Enable Text-to-Speech"}
+              >
+                {isTTSEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              </Button>
+              
+              {/* Close/Minimize */}
+              {(isMobile || isFullScreen) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={isFullScreen ? toggleFullScreen : onClose}
+                  className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+                >
+                  <ChevronDown className="w-5 h-5" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Enhanced Chat Messages Area */}
       <div 
@@ -404,67 +540,89 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           </div>
         </div>
 
-        {/* Enhanced Chat Messages */}
+        {/* Enhanced Chat Messages with Session Breaks */}
         {messages.map((msg, index) => (
-          <div key={msg.id} className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-            {/* User Message */}
-            <div className="flex items-end space-x-3 justify-end mb-6">
-              <div className="flex-1">
-                <div className="chat-message-user transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
-                  <p className="text-sm leading-relaxed select-text">{msg.message}</p>
+          <div key={msg.id}>
+            {/* Session Break */}
+            {shouldShowSessionBreak(index) && (
+              <div className="flex items-center my-6 session-break animate-fade-in">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                <div className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full text-xs text-gray-500 font-medium shadow-sm">
+                  <span>{new Date(msg.timestamp).toLocaleDateString()} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 text-right opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <span className="inline-flex items-center space-x-1">
-                    <span>You</span>
-                    <span>•</span>
-                    <span>{formatTimestamp(msg.timestamp)}</span>
-                  </span>
-                </p>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
               </div>
-              <div className="chat-avatar-user">
-                <span className="text-white text-xs font-semibold">You</span>
+            )}
+            
+            <div className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              {/* User Message with Glassmorphism */}
+              <div className="flex items-end space-x-3 justify-end mb-6">
+                <div className="flex-1">
+                  <div className="chat-message-user-glassmorphism transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
+                    <p className="text-sm leading-relaxed select-text font-medium">{msg.message}</p>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2 text-right opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <span className="inline-flex items-center space-x-1">
+                      <span>You</span>
+                      <span>•</span>
+                      <span>{formatTimestamp(msg.timestamp)}</span>
+                    </span>
+                  </p>
+                </div>
+                <div className="chat-avatar-user">
+                  <span className="text-white text-xs font-semibold">You</span>
+                </div>
               </div>
-            </div>
 
-            {/* Enhanced AI Response */}
-            <div className="flex items-start space-x-4 mb-6">
-              <div className="chat-avatar-bot">
-                <Stethoscope className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex-1 space-y-3">
-                <div className="chat-message-bot transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
-                  <MarkdownRenderer 
-                    content={msg.response} 
-                    className="text-sm leading-relaxed select-text prose prose-sm max-w-none prose-headings:text-gray-800 prose-strong:text-gray-900 prose-a:text-medical-blue hover:prose-a:text-medical-blue-dark prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded" 
-                  />
+              {/* Enhanced AI Response with Glassmorphism */}
+              <div className="flex items-start space-x-4 mb-6">
+                <div className="chat-avatar-bot">
+                  <Stethoscope className="w-4 h-4 text-white" />
                 </div>
-                
-                {/* Follow-up Actions */}
-                <div className="flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <button className="inline-flex items-center px-3 py-1.5 text-xs bg-medical-blue-light text-medical-blue rounded-full hover:bg-medical-blue hover:text-white transition-colors duration-200">
-                    <BookOpen className="w-3 h-3 mr-1" />
-                    View Guidelines
-                  </button>
-                  <button className="inline-flex items-center px-3 py-1.5 text-xs bg-healthcare-green-light text-healthcare-green rounded-full hover:bg-healthcare-green hover:text-white transition-colors duration-200">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    Test Knowledge
-                  </button>
-                  <button className="inline-flex items-center px-3 py-1.5 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-600 hover:text-white transition-colors duration-200">
-                    <Heart className="w-3 h-3 mr-1" />
-                    Related Topics
-                  </button>
+                <div className="flex-1 space-y-3">
+                  <div className="chat-message-bot-glassmorphism transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
+                    <MarkdownRenderer 
+                      content={msg.response} 
+                      className={`
+                        text-sm leading-relaxed select-text prose prose-sm max-w-none 
+                        prose-headings:text-gray-800 prose-headings:font-semibold
+                        prose-strong:text-gray-900 prose-strong:font-bold
+                        prose-a:text-medical-blue hover:prose-a:text-medical-blue-dark 
+                        prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded
+                        prose-p:mb-4 prose-p:leading-7
+                        prose-ul:my-4 prose-li:my-1
+                        ${highlightMode ? 'prose-strong:bg-yellow-200 prose-strong:px-1 prose-strong:rounded' : ''}
+                      `}
+                    />
+                  </div>
+                  
+                  {/* Enhanced Follow-up Actions */}
+                  <div className="flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <button className="inline-flex items-center px-3 py-1.5 text-xs bg-medical-blue-light text-medical-blue rounded-full hover:bg-medical-blue hover:text-white transition-colors duration-200 border border-medical-blue/20">
+                      <BookOpen className="w-3 h-3 mr-1" />
+                      View Guidelines
+                    </button>
+                    <button className="inline-flex items-center px-3 py-1.5 text-xs bg-healthcare-green-light text-healthcare-green rounded-full hover:bg-healthcare-green hover:text-white transition-colors duration-200 border border-healthcare-green/20">
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Test Knowledge
+                    </button>
+                    <button className="inline-flex items-center px-3 py-1.5 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-600 hover:text-white transition-colors duration-200 border border-purple-200">
+                      <Heart className="w-3 h-3 mr-1" />
+                      Related Topics
+                    </button>
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <span className="inline-flex items-center space-x-1">
+                      <Bot className="w-3 h-3" />
+                      <span>MediMind AI</span>
+                      <span>•</span>
+                      <span>{formatTimestamp(msg.timestamp)}</span>
+                      <span>•</span>
+                      <span className="text-healthcare-green">Evidence-based</span>
+                    </span>
+                  </p>
                 </div>
-                
-                <p className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <span className="inline-flex items-center space-x-1">
-                    <Bot className="w-3 h-3" />
-                    <span>MediMind AI</span>
-                    <span>•</span>
-                    <span>{formatTimestamp(msg.timestamp)}</span>
-                    <span>•</span>
-                    <span className="text-healthcare-green">Evidence-based</span>
-                  </span>
-                </p>
               </div>
             </div>
           </div>
@@ -581,6 +739,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
