@@ -529,7 +529,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         ref={scrollContainerRef}
         className={`
           flex-1 overflow-y-auto py-4 space-y-6 bg-gradient-to-b from-white to-gray-50/30
-          ${isFullScreen ? 'px-12 lg:px-20' : 'px-6'}
+          ${isFullScreen ? 'px-4' : 'px-6'}
           ${isMobile ? 'max-h-64' : 'min-h-0'}
           chat-scroll
         `}
@@ -537,6 +537,8 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           overscrollBehavior: 'contain',
           WebkitOverflowScrolling: 'touch'
         }}>
+        {/* Container for centered messages in full screen */}
+        <div className={`${isFullScreen ? 'max-w-4xl mx-auto' : ''}`}>
         {/* Enhanced Welcome Message */}
         <div className="flex items-start space-x-4 animate-fade-in">
           <div className="chat-avatar-bot">
@@ -590,7 +592,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               {/* User Message with Glassmorphism */}
               <div className="flex items-end space-x-3 justify-end mb-6">
                 <div className="flex-1">
-                  <div className="chat-message-user-glassmorphism transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
+                  <div className={`${isFullScreen ? 'chat-message-user-glassmorphism-fullscreen ml-auto' : 'chat-message-user-glassmorphism ml-auto'} transition-all duration-300 hover:shadow-lg hover:scale-[1.02]`}>
                     <p className="text-sm leading-relaxed select-text font-medium">{msg.message}</p>
                   </div>
                   <p className="text-xs text-gray-500 mt-2 text-right opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -612,7 +614,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                   <Stethoscope className="w-4 h-4 text-white" />
                 </div>
                 <div className="space-y-3 flex-1">
-                  <div className="chat-message-bot-glassmorphism transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
+                  <div className={`${isFullScreen ? 'chat-message-bot-glassmorphism-fullscreen' : 'chat-message-bot-glassmorphism'} transition-all duration-300 hover:shadow-lg hover:scale-[1.01]`}>
                     <MarkdownRenderer 
                       content={msg.response} 
                       className={`
@@ -683,11 +685,13 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         )}
 
         <div ref={messagesEndRef} />
+        </div> {/* End centered messages container */}
       </div>
 
       {/* Enhanced Input Area with Glassmorphism */}
       <div className="glass-morphism-subtle">
-        <div className={`${isFullScreen ? 'p-6 px-12 lg:px-20' : 'p-4'}`}>
+        <div className={`${isFullScreen ? 'p-6' : 'p-4'}`}>
+          <div className={`${isFullScreen ? 'max-w-4xl mx-auto' : ''}`}>
           <div className="flex items-end space-x-3">
             <div className="flex-1">
               <div className="relative glass-input rounded-2xl focus-within:shadow-lg focus-within:scale-[1.02] transition-all duration-300">
@@ -769,6 +773,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <span>to send</span>
             </div>
           </div>
+          </div> {/* End centered input container */}
         </div>
       </div>
       </div>
