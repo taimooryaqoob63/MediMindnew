@@ -15,7 +15,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
 
   // Register RAG routes
-  registerRAGRoutes(app);
+  await registerRAGRoutes(app);
 
   // Configure multer for video uploads
   const storage_config = multer.diskStorage({

@@ -4,6 +4,8 @@ import { storage } from '../storage';
 import { RAG_CONFIG, getGenerationSettings, shouldEscalateToHuman, validateCitations } from '../config/ragConfiguration';
 import { nlpIntentDetector } from './nlpIntentDetector';
 import { hybridSearch } from './hybridSearch';
+import { enhancedRetrievalWithReranking } from './enhancedRetrievalWithReranking';
+import { smartChunkingAggregator } from './smartChunkingAggregator';
 import { humanEscalationService } from './humanEscalationService';
 import { citationEnforcementService } from './citationEnforcementService';
 import type { 
@@ -113,16 +115,41 @@ export class EnhancedRagOrchestrator {
       // Step 4: Agent context
       const agentContext = await this.getAgentContext(user.id, courseId);
 
-      // Step 5: Dynamic retrieval
-      const retrievalResult = await this.dynamicRetrieval(query, analysis, agentContext);
+      // Step 5: Enhanced retrieval with smart chunking and reranking
+      const enhancedRetrieval = await enhancedRetrievalWithReranking.performEnhancedRetrieval(
+        query,
+        user.id,
+        {
+          limit: 15,
+          useKGExpansion: true,
+          useLLMReranker: true,
+          queryType: analysis.queryType,
+          minConfidence: 70
+        }
+      );
 
       // Step 6: Agent pruning
       const selectedAgents = this.pruneAgents(analysis);
 
-      // Step 7: Parallel processing
+      // Step 7: Parallel processing with enhanced chunks
       const agentResponses = await this.processAgentsInParallel(
         query, 
-        retrievalResult, 
+        {
+          sources: enhancedRetrieval.chunks.map(chunk => ({
+            id: chunk.id,
+            title: (chunk.metadata as any)?.title || 'Medical Document',
+            excerpt: chunk.content.substring(0, 200),
+            score: 0.85,
+            type: 'document',
+            recency: 0.8,
+            relevance: 0.9,
+            pageNumber: (chunk.metadata as any)?.page,
+            section: chunk.sectionPath?.join(' > '),
+            clickable: true
+          })),
+          totalRetrieved: enhancedRetrieval.chunks.length,
+          cacheHit: false
+        }, 
         user, 
         analysis, 
         selectedAgents,

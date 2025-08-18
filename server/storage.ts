@@ -2,15 +2,17 @@ import {
   type User, type Course, type Module, type UserProgress, type ChatMessage, type Resource,
   type Document, type DocumentChunk, type Entity, type EntityRelationship, type RagChatMessage, type ProcessingJob,
   type Notification, type ChatSummary, type QueryCache, type ResponseFeedback, type RagAnalytics, type IntentClassification,
+  type ChunkingAnalytics, type QueryRefinement,
   type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress,
   type InsertChatMessage, type InsertResource, type UpsertUser,
   type InsertDocument, type InsertDocumentChunk, type InsertEntity, type InsertEntityRelationship,
   type InsertRagChatMessage, type InsertProcessingJob, type InsertNotification,
   type InsertChatSummary, type InsertQueryCache, type InsertResponseFeedback, type InsertRagAnalytics, type InsertIntentClassification,
+  type InsertChunkingAnalytics, type InsertQueryRefinement,
   users, courses, modules, userProgress, chatMessages, resources,
   documents, documentChunks, entities, entityRelationships, ragChatMessages, processingJobs, notifications,
   chatSummaries, queryCache, responseFeedback, ragAnalytics, intentClassification,
-  SelectDocumentChunk
+  chunkingAnalytics, queryRefinements,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -56,7 +58,7 @@ export interface IStorage {
 
   // Document Chunks
   getDocumentChunks(documentId: string): Promise<DocumentChunk[]>;
-  getAllDocumentChunks(): Promise<SelectDocumentChunk[]>;
+  getAllDocumentChunks(): Promise<DocumentChunk[]>;
   getDocumentChunk(id: string): Promise<DocumentChunk | undefined>;
   createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk>;
   updateDocumentChunk(id: string, updates: Partial<InsertDocumentChunk>): Promise<DocumentChunk | undefined>;
@@ -115,6 +117,15 @@ export interface IStorage {
   // Intent Classification
   createIntentClassification(classification: InsertIntentClassification): Promise<IntentClassification>;
   getIntentClassifications(query?: string): Promise<IntentClassification[]>;
+
+  // Chunking Analytics
+  createChunkingAnalytics(analytics: InsertChunkingAnalytics): Promise<ChunkingAnalytics>;
+  getChunkingAnalytics(documentId?: string): Promise<ChunkingAnalytics[]>;
+  updateChunkingAnalytics(id: string, updates: Partial<InsertChunkingAnalytics>): Promise<ChunkingAnalytics | undefined>;
+
+  // Query Refinements
+  createQueryRefinement(refinement: InsertQueryRefinement): Promise<QueryRefinement>;
+  getQueryRefinements(userId: string): Promise<QueryRefinement[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1210,6 +1221,55 @@ export class MemStorage implements IStorage {
       createdAt: new Date()
     };
     return newClassification;
+  }
+
+  async getIntentClassifications(query?: string): Promise<IntentClassification[]> {
+    return [];
+  }
+
+  // Chunking Analytics implementations
+  async createChunkingAnalytics(analytics: InsertChunkingAnalytics): Promise<ChunkingAnalytics> {
+    const id = randomUUID();
+    const newAnalytics: ChunkingAnalytics = {
+      ...analytics,
+      id,
+      avgSemanticDensity: analytics.avgSemanticDensity ?? 50,
+      avgCompleteness: analytics.avgCompleteness ?? 100,
+      duplicatesRemoved: analytics.duplicatesRemoved ?? 0,
+      retrievalHits: analytics.retrievalHits ?? 0,
+      lowScoreQueries: analytics.lowScoreQueries ?? 0,
+      reformulationRate: analytics.reformulationRate ?? 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newAnalytics;
+  }
+
+  async getChunkingAnalytics(documentId?: string): Promise<ChunkingAnalytics[]> {
+    return [];
+  }
+
+  async updateChunkingAnalytics(id: string, updates: Partial<InsertChunkingAnalytics>): Promise<ChunkingAnalytics | undefined> {
+    return undefined;
+  }
+
+  // Query Refinements implementations
+  async createQueryRefinement(refinement: InsertQueryRefinement): Promise<QueryRefinement> {
+    const id = randomUUID();
+    const newRefinement: QueryRefinement = {
+      ...refinement,
+      id,
+      originalConfidence: refinement.originalConfidence ?? 0,
+      refinedConfidence: refinement.refinedConfidence ?? 0,
+      chunkFragmentation: refinement.chunkFragmentation ?? false,
+      automaticRefinement: refinement.automaticRefinement ?? false,
+      createdAt: new Date()
+    };
+    return newRefinement;
+  }
+
+  async getQueryRefinements(userId: string): Promise<QueryRefinement[]> {
+    return [];
   }
 
   async getIntentClassifications(query?: string): Promise<IntentClassification[]> {

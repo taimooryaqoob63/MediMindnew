@@ -85,15 +85,33 @@ export const documents = pgTable("documents", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Document chunks for granular retrieval
+// Enhanced document chunks for smart aggregation
 export const documentChunks = pgTable("document_chunks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   documentId: varchar("document_id").references(() => documents.id).notNull(),
   content: text("content").notNull(),
   chunkIndex: integer("chunk_index").notNull(),
   vectorId: text("vector_id").unique(), // Pinecone vector ID
-  metadata: json("metadata"), // page, section, context
+  
+  // Smart chunking enhancements
+  parentChunkId: varchar("parent_chunk_id").references(() => documentChunks.id), // For hierarchical chunks
+  chunkType: text("chunk_type").notNull().default("content"), // content, merged, table, figure, summary
+  tokenCount: integer("token_count").notNull().default(0),
+  sectionPath: text("section_path").array().notNull().default(sql`'{}'::text[]`), // hierarchical section path
+  
+  // Enhanced metadata for smart retrieval
+  metadata: json("metadata"), // Enhanced metadata structure
+  kgEntityIds: text("kg_entity_ids").array().default(sql`'{}'::text[]`), // Linked KG entities
+  confidenceScore: integer("confidence_score").default(100), // 0-100 confidence in content accuracy
+  
+  // Quality metrics for aggregation
+  semanticDensity: integer("semantic_density").default(50), // Information density score
+  completeness: integer("completeness").default(100), // How complete the chunk is
+  isAggregated: boolean("is_aggregated").default(false), // Whether this is a merged chunk
+  sourceChunkIds: text("source_chunk_ids").array().default(sql`'{}'::text[]`), // Original chunks if aggregated
+  
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Knowledge graph entities
@@ -222,6 +240,51 @@ export const intentClassification = pgTable("intent_classification", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Chunking analytics for continuous optimization
+export const chunkingAnalytics = pgTable("chunking_analytics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  documentId: varchar("document_id").references(() => documents.id).notNull(),
+  
+  // Performance metrics
+  originalChunkCount: integer("original_chunk_count").notNull(),
+  mergedChunkCount: integer("merged_chunk_count").notNull(),
+  avgTokenCount: integer("avg_token_count").notNull(),
+  minTokenCount: integer("min_token_count").notNull(),
+  maxTokenCount: integer("max_token_count").notNull(),
+  
+  // Quality scores
+  avgSemanticDensity: integer("avg_semantic_density").default(50),
+  avgCompleteness: integer("avg_completeness").default(100),
+  duplicatesRemoved: integer("duplicates_removed").default(0),
+  
+  // Usage patterns
+  retrievalHits: integer("retrieval_hits").default(0),
+  lowScoreQueries: integer("low_score_queries").default(0), // queries with low confidence
+  reformulationRate: integer("reformulation_rate").default(0), // % of follow-up queries
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Query refinement tracking for feedback loops
+export const queryRefinements = pgTable("query_refinements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  originalQuery: text("original_query").notNull(),
+  refinedQuery: text("refined_query").notNull(),
+  
+  // Context
+  originalConfidence: integer("original_confidence").default(0),
+  refinedConfidence: integer("refined_confidence").default(0),
+  chunkFragmentation: boolean("chunk_fragmentation").default(false), // indicates fragmented retrieval
+  
+  // Actions taken
+  action: text("action").notNull(), // reformulate, escalate, clarify, expand
+  automaticRefinement: boolean("automatic_refinement").default(false),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertCourseSchema = createInsertSchema(courses).omit({ id: true });
@@ -230,7 +293,7 @@ export const insertUserProgressSchema = createInsertSchema(userProgress).omit({ 
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({ id: true });
 export const insertResourceSchema = createInsertSchema(resources).omit({ id: true });
 export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, createdAt: true, updatedAt: true });
-export const insertDocumentChunkSchema = createInsertSchema(documentChunks).omit({ id: true, createdAt: true });
+export const insertDocumentChunkSchema = createInsertSchema(documentChunks).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertEntitySchema = createInsertSchema(entities).omit({ id: true, createdAt: true });
 export const insertEntityRelationshipSchema = createInsertSchema(entityRelationships).omit({ id: true, createdAt: true });
 export const insertRagChatMessageSchema = createInsertSchema(ragChatMessages).omit({ id: true, timestamp: true });
@@ -241,6 +304,8 @@ export const insertQueryCacheSchema = createInsertSchema(queryCache).omit({ id: 
 export const insertResponseFeedbackSchema = createInsertSchema(responseFeedback).omit({ id: true, createdAt: true });
 export const insertRagAnalyticsSchema = createInsertSchema(ragAnalytics).omit({ id: true, timestamp: true });
 export const insertIntentClassificationSchema = createInsertSchema(intentClassification).omit({ id: true, createdAt: true });
+export const insertChunkingAnalyticsSchema = createInsertSchema(chunkingAnalytics).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertQueryRefinementSchema = createInsertSchema(queryRefinements).omit({ id: true, createdAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -261,6 +326,37 @@ export type QueryCache = typeof queryCache.$inferSelect;
 export type ResponseFeedback = typeof responseFeedback.$inferSelect;
 export type RagAnalytics = typeof ragAnalytics.$inferSelect;
 export type IntentClassification = typeof intentClassification.$inferSelect;
+export type ChunkingAnalytics = typeof chunkingAnalytics.$inferSelect;
+export type QueryRefinement = typeof queryRefinements.$inferSelect;
+
+// Insert types
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertCourse = z.infer<typeof insertCourseSchema>;
+export type InsertModule = z.infer<typeof insertModuleSchema>;
+export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type InsertResource = z.infer<typeof insertResourceSchema>;
+export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type InsertDocumentChunk = z.infer<typeof insertDocumentChunkSchema>;
+export type InsertEntity = z.infer<typeof insertEntitySchema>;
+export type InsertEntityRelationship = z.infer<typeof insertEntityRelationshipSchema>;
+export type InsertRagChatMessage = z.infer<typeof insertRagChatMessageSchema>;
+export type InsertProcessingJob = z.infer<typeof insertProcessingJobSchema>;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type InsertChatSummary = z.infer<typeof insertChatSummarySchema>;
+export type InsertQueryCache = z.infer<typeof insertQueryCacheSchema>;
+export type InsertResponseFeedback = z.infer<typeof insertResponseFeedbackSchema>;
+export type InsertRagAnalytics = z.infer<typeof insertRagAnalyticsSchema>;
+export type InsertIntentClassification = z.infer<typeof insertIntentClassificationSchema>;
+export type InsertChunkingAnalytics = z.infer<typeof insertChunkingAnalyticsSchema>;
+export type InsertQueryRefinement = z.infer<typeof insertQueryRefinementSchema>;
+
+// Special types
+export type UpsertUser = Omit<User, 'createdAt' | 'updatedAt'> & { 
+  id: string; 
+  createdAt?: Date | string; 
+  updatedAt?: Date | string; 
+};
 
 // Chat message types
 export interface ChatResponse {

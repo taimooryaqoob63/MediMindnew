@@ -307,7 +307,7 @@ const upload = multer({
   }
 });
 
-export function registerRAGRoutes(app: Express) {
+export async function registerRAGRoutes(app: Express) {
   // Initialize vector store
   app.post("/api/rag/initialize", isAuthenticated, async (req, res) => {
     try {
@@ -1484,4 +1484,8 @@ export function registerRAGRoutes(app: Express) {
       });
     }
   });
+
+  // Smart Chunking API Routes
+  const { smartChunkingRoutes } = await import('./smartChunking.js');
+  app.use('/api/smart-chunking', smartChunkingRoutes);
 }
