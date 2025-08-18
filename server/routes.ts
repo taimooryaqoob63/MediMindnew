@@ -308,6 +308,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear chat messages - Protected route
+  app.delete("/api/chat/:courseId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const courseId = req.params.courseId;
+      
+      console.log(`Clearing chat for user: ${userId}, course: ${courseId}`);
+      
+      // Clear both regular chat messages and RAG chat messages
+      const [regularCleared, ragCleared] = await Promise.all([
+        storage.clearChatMessages(userId, courseId),
+        storage.clearRagChatMessages(userId, courseId)
+      ]);
+      
+      console.log(`Regular messages cleared: ${regularCleared}, RAG messages cleared: ${ragCleared}`);
+      
+      res.json({ 
+        message: "Chat cleared successfully",
+        regularCleared,
+        ragCleared
+      });
+    } catch (error) {
+      console.error('Failed to clear chat:', error);
+      res.status(500).json({ message: "Failed to clear chat" });
+    }
+  });
+
   // Get resources
   app.get("/api/resources", async (req, res) => {
     try {
