@@ -320,9 +320,11 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const clearChat = async () => {
     try {
+      console.log("Clearing chat for course:", courseId);
       await apiRequest("DELETE", `/api/chat/${courseId}`);
       queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
       setLastSessionBreak(new Date());
+      console.log("Chat cleared successfully");
     } catch (error) {
       console.error("Failed to clear chat:", error);
     }
@@ -414,9 +416,13 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={summarizeConversation}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  summarizeConversation();
+                }}
                 disabled={messages.length === 0}
-                className="glass-button p-2 text-white/90 hover:text-white rounded-xl"
+                className="glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105"
                 title="Summarize conversation"
               >
                 <FileText className="w-4 h-4" />
@@ -425,8 +431,13 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setHighlightMode(!highlightMode)}
-                className={`glass-button p-2 text-white/90 hover:text-white rounded-xl ${highlightMode ? 'glass-morphism-strong' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Highlight button clicked, current state:', highlightMode);
+                  setHighlightMode(!highlightMode);
+                }}
+                className={`glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105 ${highlightMode ? 'glass-morphism-strong bg-yellow-400/20' : ''}`}
                 title="Toggle highlight mode"
               >
                 <Highlight className="w-4 h-4" />
@@ -435,9 +446,13 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={exportChat}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  exportChat();
+                }}
                 disabled={messages.length === 0}
-                className="glass-button p-2 text-white/90 hover:text-white rounded-xl"
+                className="glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105"
                 title="Export chat"
               >
                 <Download className="w-4 h-4" />
@@ -447,9 +462,14 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={clearChat}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Clear chat button clicked');
+                  clearChat();
+                }}
                 disabled={messages.length === 0}
-                className="glass-button p-2 text-white/90 hover:text-white hover:bg-red-400/30 rounded-xl"
+                className="glass-button p-2 text-white/90 hover:text-white hover:bg-red-400/30 rounded-xl transition-all duration-200 hover:scale-105"
                 title="Clear chat"
               >
                 <Trash2 className="w-4 h-4" />
@@ -459,8 +479,13 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={toggleFullScreen}
-                className="glass-button p-2 text-white/90 hover:text-white rounded-xl"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Fullscreen toggle clicked, current state:', isFullScreen);
+                  toggleFullScreen();
+                }}
+                className="glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105"
                 title={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
               >
                 {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
