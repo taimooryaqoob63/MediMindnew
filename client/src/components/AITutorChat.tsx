@@ -391,19 +391,19 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         flex flex-col slide-in-right overflow-hidden transition-all duration-500 ease-in-out glass-floating
       `}>
         {/* Enhanced Header with New Actions */}
-        <div className="px-6 py-2 glass-header text-white flex-shrink-0 glass-shimmer">
+        <div className="px-6 py-3 text-white flex-shrink-0 medical-header-gradient">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <div className="relative">
                 <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                   <Stethoscope className="w-4 h-4 text-white" />
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-healthcare-green rounded-full border-2 border-white flex items-center justify-center">
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-teal-400 rounded-full border-2 border-white flex items-center justify-center">
                   <div className="w-1 h-1 bg-white rounded-full animate-pulse"></div>
                 </div>
               </div>
               <div>
-                <h3 className="font-medium text-white text-sm">MediMind AI Tutor</h3>
+                <h3 className="font-semibold text-white text-base leading-tight">MediMind AI Tutor</h3>
               </div>
             </div>
             
@@ -424,21 +424,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 title="Summarize conversation"
               >
                 <FileText className="w-4 h-4" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('Highlight button clicked, current state:', highlightMode);
-                  setHighlightMode(!highlightMode);
-                }}
-                className={`glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105 ${highlightMode ? 'glass-morphism-strong bg-yellow-400/20' : ''}`}
-                title="Toggle highlight mode"
-              >
-                <Highlight className="w-4 h-4" />
               </Button>
               
               <Button
@@ -498,9 +483,9 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('TTS toggle clicked, current state:', isTTSEnabled);
-                  setIsTTSEnabled(!isTTSEnabled);
+                  toggleTTS();
                 }}
-                className={`glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105 ${isTTSEnabled ? 'glass-morphism-strong bg-green-400/20' : ''}`}
+                className={`glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105 ${isTTSEnabled ? 'bg-teal-400/30' : 'bg-white/10'}`}
                 title={isTTSEnabled ? "Disable Text-to-Speech" : "Enable Text-to-Speech"}
               >
                 {isTTSEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
