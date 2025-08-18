@@ -148,6 +148,30 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
     }
   });
 
+  // Clear all data mutation
+  const clearAllMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/rag/clear-all");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rag/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rag/jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rag/verification"] });
+      toast({
+        title: "All Data Cleared",
+        description: "All documents and vectors have been removed.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Clear Failed",
+        description: "Failed to clear all data.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
