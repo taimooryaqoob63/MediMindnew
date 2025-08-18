@@ -80,6 +80,36 @@ export default function KnowledgeGraphPage() {
     }
   });
 
+  const clearKnowledgeGraphMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/rag/clear-knowledge-graph', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to clear knowledge graph');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Knowledge Graph Cleared",
+        description: "All entities and relationships have been removed.",
+      });
+      // Invalidate and refetch the relationships and entities data
+      queryClient.invalidateQueries({ queryKey: ['relationships'] });
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Failed to Clear Knowledge Graph",
+        description: error.message,
+      });
+    }
+  });
+
   if (entitiesLoading || relationshipsLoading) {
     return (
       <div className="container mx-auto p-6">
@@ -150,6 +180,21 @@ export default function KnowledgeGraphPage() {
                 <RefreshCw className="w-4 h-4 mr-2" />
               )}
               Rebuild All
+            </Button>
+          )}
+          {(entities.length > 0 || relationships.length > 0) && (
+            <Button 
+              onClick={() => clearKnowledgeGraphMutation.mutate()}
+              disabled={clearKnowledgeGraphMutation.isPending}
+              variant="destructive"
+              size="sm"
+            >
+              {clearKnowledgeGraphMutation.isPending ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <AlertCircle className="w-4 h-4 mr-2" />
+              )}
+              Clear Graph
             </Button>
           )}
         </div>

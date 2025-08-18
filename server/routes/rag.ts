@@ -964,6 +964,33 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
+  // Clear knowledge graph data
+  app.post("/api/rag/clear-knowledge-graph", isAuthenticated, async (req, res) => {
+    try {
+      console.log("🗑️ Starting knowledge graph cleanup...");
+      
+      // Clear all entities and relationships
+      await storage.clearEntityRelationships();
+      await storage.clearEntities();
+      
+      console.log("✅ Knowledge graph cleared successfully");
+      
+      res.json({ 
+        message: "Knowledge graph cleared successfully",
+        cleared: {
+          entities: true,
+          relationships: true
+        }
+      });
+    } catch (error) {
+      console.error("❌ Error clearing knowledge graph:", error);
+      res.status(500).json({ 
+        message: "Failed to clear knowledge graph",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Build/rebuild knowledge graph relationships
   app.post("/api/rag/build-knowledge-graph", isAuthenticated, async (req, res) => {
     try {

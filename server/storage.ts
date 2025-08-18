@@ -1,10 +1,10 @@
-import { 
+import {
   type User, type Course, type Module, type UserProgress, type ChatMessage, type Resource,
   type Document, type DocumentChunk, type Entity, type EntityRelationship, type RagChatMessage, type ProcessingJob,
   type Notification, type ChatSummary, type QueryCache, type ResponseFeedback, type RagAnalytics, type IntentClassification,
-  type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress, 
+  type InsertUser, type InsertCourse, type InsertModule, type InsertUserProgress,
   type InsertChatMessage, type InsertResource, type UpsertUser,
-  type InsertDocument, type InsertDocumentChunk, type InsertEntity, type InsertEntityRelationship, 
+  type InsertDocument, type InsertDocumentChunk, type InsertEntity, type InsertEntityRelationship,
   type InsertRagChatMessage, type InsertProcessingJob, type InsertNotification,
   type InsertChatSummary, type InsertQueryCache, type InsertResponseFeedback, type InsertRagAnalytics, type InsertIntentClassification,
   users, courses, modules, userProgress, chatMessages, resources,
@@ -68,6 +68,7 @@ export interface IStorage {
   createEntity(entity: InsertEntity): Promise<Entity>;
   updateEntity(id: string, updates: Partial<InsertEntity>): Promise<Entity | undefined>;
   deleteEntity(id: string): Promise<boolean>;
+  clearEntities(): Promise<void>;
 
   // Entity Relationships
   getEntityRelationships(entityId?: string): Promise<EntityRelationship[]>;
@@ -117,14 +118,17 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Add db instance to the class
+  private db = db;
+
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await this.db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
     try {
-      const [user] = await db
+      const [user] = await this.db
         .insert(users)
         .values({
           ...userData,
@@ -148,49 +152,49 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user = { 
-      ...insertUser, 
+    const user = {
+      ...insertUser,
       id,
       role: insertUser.role || "care_worker",
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    const [createdUser] = await db.insert(users).values(user).returning();
+    const [createdUser] = await this.db.insert(users).values(user).returning();
     return createdUser;
   }
 
   async getCourses(): Promise<Course[]> {
-    return await db.select().from(courses);
+    return await this.db.select().from(courses);
   }
 
   async getCourse(id: string): Promise<Course | undefined> {
-    const [course] = await db.select().from(courses).where(eq(courses.id, id));
+    const [course] = await this.db.select().from(courses).where(eq(courses.id, id));
     return course || undefined;
   }
 
   async createCourse(insertCourse: InsertCourse): Promise<Course> {
-    const [course] = await db.insert(courses).values(insertCourse).returning();
+    const [course] = await this.db.insert(courses).values(insertCourse).returning();
     return course;
   }
 
   async getModulesByCourse(courseId: string): Promise<Module[]> {
-    return await db.select().from(modules)
+    return await this.db.select().from(modules)
       .where(eq(modules.courseId, courseId))
       .orderBy(modules.orderIndex);
   }
 
   async getModule(id: string): Promise<Module | undefined> {
-    const [module] = await db.select().from(modules).where(eq(modules.id, id));
+    const [module] = await this.db.select().from(modules).where(eq(modules.id, id));
     return module || undefined;
   }
 
   async createModule(insertModule: InsertModule): Promise<Module> {
-    const [module] = await db.insert(modules).values(insertModule).returning();
+    const [module] = await this.db.insert(modules).values(insertModule).returning();
     return module;
   }
 
   async updateModule(id: string, updates: Partial<InsertModule>): Promise<Module | undefined> {
-    const [module] = await db
+    const [module] = await this.db
       .update(modules)
       .set(updates)
       .where(eq(modules.id, id))
@@ -199,17 +203,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteModule(id: string): Promise<boolean> {
-    const result = await db.delete(modules).where(eq(modules.id, id));
+    const result = await this.db.delete(modules).where(eq(modules.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 
   async getUserProgress(userId: string, courseId: string): Promise<UserProgress[]> {
-    return await db.select().from(userProgress)
+    return await this.db.select().from(userProgress)
       .where(and(eq(userProgress.userId, userId), eq(userProgress.courseId, courseId)));
   }
 
   async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
-    const existing = await db.select().from(userProgress)
+    const existing = await this.db.select().from(userProgress)
       .where(and(
         eq(userProgress.userId, insertProgress.userId),
         eq(userProgress.courseId, insertProgress.courseId),
@@ -217,59 +221,59 @@ export class DatabaseStorage implements IStorage {
       ));
 
     if (existing.length > 0) {
-      const [updated] = await db
+      const [updated] = await this.db
         .update(userProgress)
         .set(insertProgress)
         .where(eq(userProgress.id, existing[0].id))
         .returning();
       return updated;
     } else {
-      const [created] = await db.insert(userProgress).values(insertProgress).returning();
+      const [created] = await this.db.insert(userProgress).values(insertProgress).returning();
       return created;
     }
   }
 
   async getChatMessages(userId: string, courseId: string): Promise<ChatMessage[]> {
-    return await db.select().from(chatMessages)
+    return await this.db.select().from(chatMessages)
       .where(and(eq(chatMessages.userId, userId), eq(chatMessages.courseId, courseId)))
       .orderBy(chatMessages.timestamp);
   }
 
   async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
-    const [message] = await db.insert(chatMessages).values(insertMessage).returning();
+    const [message] = await this.db.insert(chatMessages).values(insertMessage).returning();
     return message;
   }
 
   async getResources(): Promise<Resource[]> {
-    return await db.select().from(resources);
+    return await this.db.select().from(resources);
   }
 
   async createResource(insertResource: InsertResource): Promise<Resource> {
-    const [resource] = await db.insert(resources).values(insertResource).returning();
+    const [resource] = await this.db.insert(resources).values(insertResource).returning();
     return resource;
   }
 
   // Documents
   async getDocuments(): Promise<Document[]> {
-    return await db.select().from(documents);
+    return await this.db.select().from(documents);
   }
 
   async getAllDocuments(): Promise<Document[]> {
-    return await db.select().from(documents);
+    return await this.db.select().from(documents);
   }
 
   async getDocument(id: string): Promise<Document | undefined> {
-    const [document] = await db.select().from(documents).where(eq(documents.id, id));
+    const [document] = await this.db.select().from(documents).where(eq(documents.id, id));
     return document || undefined;
   }
 
   async createDocument(insertDocument: InsertDocument): Promise<Document> {
-    const [document] = await db.insert(documents).values(insertDocument).returning();
+    const [document] = await this.db.insert(documents).values(insertDocument).returning();
     return document;
   }
 
   async updateDocument(id: string, updates: Partial<InsertDocument>): Promise<Document | undefined> {
-    const [document] = await db
+    const [document] = await this.db
       .update(documents)
       .set(updates)
       .where(eq(documents.id, id))
@@ -278,32 +282,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteDocument(id: string): Promise<boolean> {
-    const result = await db.delete(documents).where(eq(documents.id, id));
+    const result = await this.db.delete(documents).where(eq(documents.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 
   // Document Chunks
   async getDocumentChunks(documentId: string): Promise<DocumentChunk[]> {
-    return await db.select().from(documentChunks)
+    return await this.db.select().from(documentChunks)
       .where(eq(documentChunks.documentId, documentId));
   }
 
   async getAllDocumentChunks(): Promise<SelectDocumentChunk[]> {
-    return await db.select().from(documentChunks);
+    return await this.db.select().from(documentChunks);
   }
 
   async getDocumentChunk(id: string): Promise<DocumentChunk | undefined> {
-    const [chunk] = await db.select().from(documentChunks).where(eq(documentChunks.id, id));
+    const [chunk] = await this.db.select().from(documentChunks).where(eq(documentChunks.id, id));
     return chunk || undefined;
   }
 
   async createDocumentChunk(insertChunk: InsertDocumentChunk): Promise<DocumentChunk> {
-    const [chunk] = await db.insert(documentChunks).values(insertChunk).returning();
+    const [chunk] = await this.db.insert(documentChunks).values(insertChunk).returning();
     return chunk;
   }
 
   async updateDocumentChunk(id: string, updates: Partial<InsertDocumentChunk>): Promise<DocumentChunk | undefined> {
-    const [chunk] = await db
+    const [chunk] = await this.db
       .update(documentChunks)
       .set(updates)
       .where(eq(documentChunks.id, id))
@@ -312,27 +316,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteDocumentChunk(id: string): Promise<boolean> {
-    const result = await db.delete(documentChunks).where(eq(documentChunks.id, id));
+    const result = await this.db.delete(documentChunks).where(eq(documentChunks.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 
   // Entities
   async getEntities(): Promise<Entity[]> {
-    return await db.select().from(entities);
+    return await this.db.select().from(entities);
   }
 
   async getEntity(id: string): Promise<Entity | undefined> {
-    const [entity] = await db.select().from(entities).where(eq(entities.id, id));
+    const [entity] = await this.db.select().from(entities).where(eq(entities.id, id));
     return entity || undefined;
   }
 
   async createEntity(insertEntity: InsertEntity): Promise<Entity> {
-    const [entity] = await db.insert(entities).values(insertEntity).returning();
+    const [entity] = await this.db.insert(entities).values(insertEntity).returning();
     return entity;
   }
 
   async updateEntity(id: string, updates: Partial<InsertEntity>): Promise<Entity | undefined> {
-    const [entity] = await db
+    const [entity] = await this.db
       .update(entities)
       .set(updates)
       .where(eq(entities.id, id))
@@ -341,64 +345,68 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteEntity(id: string): Promise<boolean> {
-    const result = await db.delete(entities).where(eq(entities.id, id));
+    const result = await this.db.delete(entities).where(eq(entities.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  async clearEntities(): Promise<void> {
+    await this.db.delete(entities);
   }
 
   // Entity Relationships
   async getEntityRelationships(entityId?: string): Promise<EntityRelationship[]> {
     if (entityId) {
-      return await db.select().from(entityRelationships)
+      return await this.db.select().from(entityRelationships)
         .where(eq(entityRelationships.fromEntityId, entityId));
     }
-    return await db.select().from(entityRelationships);
+    return await this.db.select().from(entityRelationships);
   }
 
   async createEntityRelationship(insertRelationship: InsertEntityRelationship): Promise<EntityRelationship> {
-    const [relationship] = await db.insert(entityRelationships).values(insertRelationship).returning();
+    const [relationship] = await this.db.insert(entityRelationships).values(insertRelationship).returning();
     return relationship;
   }
 
   async clearEntityRelationships(): Promise<number> {
-    const result = await db.delete(entityRelationships);
+    const result = await this.db.delete(entityRelationships);
     return result.rowCount ?? 0;
   }
 
   // RAG Chat Messages
   async getRagChatMessages(userId: string, courseId?: string): Promise<RagChatMessage[]> {
     if (courseId) {
-      return await db.select().from(ragChatMessages)
+      return await this.db.select().from(ragChatMessages)
         .where(and(eq(ragChatMessages.userId, userId), eq(ragChatMessages.courseId, courseId)))
         .orderBy(ragChatMessages.timestamp);
     }
 
-    return await db.select().from(ragChatMessages)
+    return await this.db.select().from(ragChatMessages)
       .where(eq(ragChatMessages.userId, userId))
       .orderBy(ragChatMessages.timestamp);
   }
 
   async createRagChatMessage(insertMessage: InsertRagChatMessage): Promise<RagChatMessage> {
-    const [message] = await db.insert(ragChatMessages).values(insertMessage).returning();
+    const [message] = await this.db.insert(ragChatMessages).values(insertMessage).returning();
     return message;
   }
 
   // Processing Jobs
   async getProcessingJobs(): Promise<ProcessingJob[]> {
-    return await db.select().from(processingJobs);
+    return await this.db.select().from(processingJobs);
   }
 
   async getProcessingJob(id: string): Promise<ProcessingJob | undefined> {
-    const [job] = await db.select().from(processingJobs).where(eq(processingJobs.id, id));
+    const [job] = await this.db.select().from(processingJobs).where(eq(processingJobs.id, id));
     return job || undefined;
   }
 
   async createProcessingJob(insertJob: InsertProcessingJob): Promise<ProcessingJob> {
-    const [job] = await db.insert(processingJobs).values(insertJob).returning();
+    const [job] = await this.db.insert(processingJobs).values(insertJob).returning();
     return job;
   }
 
   async updateProcessingJob(id: string, updates: Partial<InsertProcessingJob>): Promise<ProcessingJob | undefined> {
-    const [job] = await db
+    const [job] = await this.db
       .update(processingJobs)
       .set(updates)
       .where(eq(processingJobs.id, id))
@@ -407,29 +415,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProcessingJob(id: string): Promise<void> {
-    await db.delete(processingJobs).where(eq(processingJobs.id, id));
+    await this.db.delete(processingJobs).where(eq(processingJobs.id, id));
   }
 
   // Notifications
   async getNotifications(userId: string): Promise<Notification[]> {
-    return await db.select().from(notifications)
+    return await this.db.select().from(notifications)
       .where(eq(notifications.userId, userId))
       .orderBy(notifications.createdAt);
   }
 
   async getUnreadNotifications(userId: string): Promise<Notification[]> {
-    return await db.select().from(notifications)
+    return await this.db.select().from(notifications)
       .where(and(eq(notifications.userId, userId), eq(notifications.read, false)))
       .orderBy(notifications.createdAt);
   }
 
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {
-    const [notification] = await db.insert(notifications).values(insertNotification).returning();
+    const [notification] = await this.db.insert(notifications).values(insertNotification).returning();
     return notification;
   }
 
   async markNotificationAsRead(id: string): Promise<boolean> {
-    const result = await db
+    const result = await this.db
       .update(notifications)
       .set({ read: true })
       .where(eq(notifications.id, id));
@@ -437,7 +445,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async markAllNotificationsAsRead(userId: string): Promise<boolean> {
-    const result = await db
+    const result = await this.db
       .update(notifications)
       .set({ read: true })
       .where(eq(notifications.userId, userId));
@@ -447,11 +455,11 @@ export class DatabaseStorage implements IStorage {
   // Chat Summaries
   async getChatSummaries(userId: string, courseId?: string): Promise<ChatSummary[]> {
     if (courseId) {
-      return await db.select().from(chatSummaries)
+      return await this.db.select().from(chatSummaries)
         .where(and(eq(chatSummaries.userId, userId), eq(chatSummaries.courseId, courseId)));
     }
 
-    return await db.select().from(chatSummaries).where(eq(chatSummaries.userId, userId));
+    return await this.db.select().from(chatSummaries).where(eq(chatSummaries.userId, userId));
   }
 
   async getChatSummary(userId: string, courseId?: string, agentType?: string | null): Promise<ChatSummary | undefined> {
@@ -469,17 +477,17 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
-    const [summary] = await db.select().from(chatSummaries).where(and(...conditions));
+    const [summary] = await this.db.select().from(chatSummaries).where(and(...conditions));
     return summary || undefined;
   }
 
   async createChatSummary(summary: InsertChatSummary): Promise<ChatSummary> {
-    const [created] = await db.insert(chatSummaries).values(summary).returning();
+    const [created] = await this.db.insert(chatSummaries).values(summary).returning();
     return created;
   }
 
   async updateChatSummary(id: string, updates: Partial<InsertChatSummary>): Promise<ChatSummary | undefined> {
-    const [updated] = await db.update(chatSummaries)
+    const [updated] = await this.db.update(chatSummaries)
       .set({ ...updates, lastUpdated: new Date() })
       .where(eq(chatSummaries.id, id))
       .returning();
@@ -488,18 +496,18 @@ export class DatabaseStorage implements IStorage {
 
   // Query Cache
   async getQueryCache(queryHash: string): Promise<QueryCache | undefined> {
-    const [cached] = await db.select().from(queryCache).where(eq(queryCache.queryHash, queryHash));
+    const [cached] = await this.db.select().from(queryCache).where(eq(queryCache.queryHash, queryHash));
     return cached || undefined;
   }
 
   async createQueryCache(cache: InsertQueryCache): Promise<QueryCache> {
-    const [created] = await db.insert(queryCache).values(cache).returning();
+    const [created] = await this.db.insert(queryCache).values(cache).returning();
     return created;
   }
 
   async updateQueryCacheHit(id: string): Promise<void> {
-    await db.update(queryCache)
-      .set({ 
+    await this.db.update(queryCache)
+      .set({
         hitCount: sql`${queryCache.hitCount} + 1`,
         lastAccessed: new Date()
       })
@@ -508,36 +516,36 @@ export class DatabaseStorage implements IStorage {
 
   // Response Feedback
   async createResponseFeedback(feedback: InsertResponseFeedback): Promise<ResponseFeedback> {
-    const [created] = await db.insert(responseFeedback).values(feedback).returning();
+    const [created] = await this.db.insert(responseFeedback).values(feedback).returning();
     return created;
   }
 
   async getResponseFeedback(messageId: string): Promise<ResponseFeedback[]> {
-    return await db.select().from(responseFeedback).where(eq(responseFeedback.messageId, messageId));
+    return await this.db.select().from(responseFeedback).where(eq(responseFeedback.messageId, messageId));
   }
 
   // RAG Analytics
   async createRagAnalytics(analytics: InsertRagAnalytics): Promise<RagAnalytics> {
-    const [created] = await db.insert(ragAnalytics).values(analytics).returning();
+    const [created] = await this.db.insert(ragAnalytics).values(analytics).returning();
     return created;
   }
 
   async getRagAnalytics(filters?: Partial<RagAnalytics>): Promise<RagAnalytics[]> {
     // Basic implementation - could be enhanced with proper filtering
-    return await db.select().from(ragAnalytics);
+    return await this.db.select().from(ragAnalytics);
   }
 
   // Intent Classification
   async createIntentClassification(classification: InsertIntentClassification): Promise<IntentClassification> {
-    const [created] = await db.insert(intentClassification).values(classification).returning();
+    const [created] = await this.db.insert(intentClassification).values(classification).returning();
     return created;
   }
 
   async getIntentClassifications(query?: string): Promise<IntentClassification[]> {
     if (query) {
-      return await db.select().from(intentClassification).where(eq(intentClassification.query, query));
+      return await this.db.select().from(intentClassification).where(eq(intentClassification.query, query));
     }
-    return await db.select().from(intentClassification);
+    return await this.db.select().from(intentClassification);
   }
 }
 
@@ -727,8 +735,8 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { 
-      ...insertUser, 
+    const user: User = {
+      ...insertUser,
       id,
       email: insertUser.email ?? null,
       firstName: insertUser.firstName ?? null,
@@ -752,8 +760,8 @@ export class MemStorage implements IStorage {
 
   async createCourse(insertCourse: InsertCourse): Promise<Course> {
     const id = randomUUID();
-    const course: Course = { 
-      ...insertCourse, 
+    const course: Course = {
+      ...insertCourse,
       id,
       category: insertCourse.category || "diabetes"
     };
@@ -773,8 +781,8 @@ export class MemStorage implements IStorage {
 
   async createModule(insertModule: InsertModule): Promise<Module> {
     const id = randomUUID();
-    const module: Module = { 
-      ...insertModule, 
+    const module: Module = {
+      ...insertModule,
       id,
       content: insertModule.content || null,
       duration: insertModule.duration || null,
@@ -805,8 +813,8 @@ export class MemStorage implements IStorage {
 
   async updateUserProgress(insertProgress: InsertUserProgress): Promise<UserProgress> {
     const existing = Array.from(this.userProgress.values())
-      .find(p => p.userId === insertProgress.userId && 
-                 p.courseId === insertProgress.courseId && 
+      .find(p => p.userId === insertProgress.userId &&
+                 p.courseId === insertProgress.courseId &&
                  p.moduleId === insertProgress.moduleId);
 
     if (existing) {
@@ -815,8 +823,8 @@ export class MemStorage implements IStorage {
       return updated;
     } else {
       const id = randomUUID();
-      const progress: UserProgress = { 
-        ...insertProgress, 
+      const progress: UserProgress = {
+        ...insertProgress,
         id,
         progress: insertProgress.progress ?? 0,
         completed: insertProgress.completed ?? false,
@@ -969,6 +977,10 @@ export class MemStorage implements IStorage {
     return false;
   }
 
+  async clearEntities(): Promise<void> {
+    // No-op in memory storage
+  }
+
   async getEntityRelationships(entityId?: string): Promise<EntityRelationship[]> {
     return [];
   }
@@ -983,6 +995,10 @@ export class MemStorage implements IStorage {
       createdAt: new Date()
     };
     return newRelationship;
+  }
+
+  async clearEntityRelationships(): Promise<number> {
+    return 0; // No-op in memory storage
   }
 
   async getRagChatMessages(userId: string, courseId?: string): Promise<RagChatMessage[]> {
