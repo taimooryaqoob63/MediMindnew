@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { MarkdownRenderer } from "@/components/ui/markdown";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { formatAIResponse, cleanupResponse } from "@/lib/responseFormatter";
 import type { ChatMessage, Module } from "@shared/schema";
 
 interface AITutorChatProps {
@@ -333,23 +334,29 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   const summarizeConversation = async () => {
     if (messages.length === 0) return;
 
-    const conversationText = messages.map(msg => 
-      `User: ${msg.message}\nAI: ${msg.response}`
-    ).join('\n\n');
+    const conversationText = messages.map(msg => {
+      // Format the AI response for summarization
+      const cleanedResponse = cleanupResponse(msg.response);
+      const formatted = formatAIResponse(cleanedResponse);
+      return `User: ${msg.message}\nAI: ${formatted.content}`;
+    }).join('\n\n');
 
-    const summaryPrompt = `Please summarize this diabetes care learning conversation, highlighting key medical concepts, guidelines discussed, and main learning points:\n\n${conversationText}`;
+    const summaryPrompt = `Please summarize this diabetes care learning conversation, highlighting key medical concepts, guidelines discussed, and main learning points. Format your response with clear sections including:\n\n## 📚 Key Concepts Discussed\n## 🎯 Main Learning Points\n## 💡 Important Guidelines\n## ➡️ Recommended Next Steps\n\nConversation to summarize:\n\n${conversationText}`;
 
     chatMutation.mutate({
       message: summaryPrompt,
       courseId,
-      context: "Summary request - please provide a concise educational summary"
+      context: "Summary request - please provide a structured educational summary"
     });
   };
 
   const exportChat = () => {
     const chatContent = messages.map(msg => {
       const timestamp = formatTimestamp(msg.timestamp);
-      return `[${timestamp}] You: ${msg.message}\n\n[${timestamp}] MediMind AI: ${msg.response}\n\n---\n\n`;
+      // Format the AI response for export
+      const cleanedResponse = cleanupResponse(msg.response);
+      const formatted = formatAIResponse(cleanedResponse);
+      return `[${timestamp}] You: ${msg.message}\n\n[${timestamp}] MediMind AI:\n${formatted.content}\n\n---\n\n`;
     }).join('');
 
     const fullContent = `MediMind AI - Diabetes Care Learning Session\nExported: ${new Date().toLocaleString()}\nCourse ID: ${courseId}\n\n${chatContent}`;
@@ -584,7 +591,12 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <div className="space-y-3 flex-1">
                   <div className={`${isFullScreen ? 'chat-message-bot-glassmorphism-fullscreen' : 'chat-message-bot-glassmorphism'} transition-all duration-300 hover:shadow-lg hover:scale-[1.01]`}>
                     <MarkdownRenderer 
-                      content={msg.response} 
+                      content={(() => {
+                        // Clean and format the response for better presentation
+                        const cleanedResponse = cleanupResponse(msg.response);
+                        const formatted = formatAIResponse(cleanedResponse);
+                        return formatted.content;
+                      })()} 
                       className={`
                         text-sm leading-relaxed select-text prose prose-sm max-w-none 
                         prose-headings:text-gray-800 prose-headings:font-semibold

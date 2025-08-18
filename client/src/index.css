@@ -124,6 +124,31 @@
     background-color: var(--healthcare-green-light);
   }
 
+  /* Enhanced Chat Response Styling */
+  .chat-response-formatted .prose h2 {
+    @apply flex items-center gap-3 text-lg font-semibold text-gray-800 mt-6 mb-4 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-medical-blue;
+  }
+
+  .chat-response-formatted .prose hr {
+    @apply my-6 border-0 h-px bg-gradient-to-r from-transparent via-medical-blue to-transparent;
+  }
+
+  .chat-response-formatted .prose p:has(strong:first-child) {
+    @apply bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 px-4 py-3 rounded-lg my-4;
+  }
+
+  .chat-response-formatted .prose ol {
+    @apply space-y-2;
+  }
+
+  .chat-response-formatted .prose ol li {
+    @apply flex items-start gap-3 p-3 bg-gray-50 rounded-lg;
+  }
+
+  .chat-response-formatted .prose ol li::marker {
+    @apply text-medical-blue font-bold;
+  }
+
   .bg-medical-blue-light {
     background-color: var(--medical-blue-light);
   }
