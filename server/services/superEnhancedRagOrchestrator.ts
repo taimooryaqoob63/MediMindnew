@@ -147,12 +147,20 @@ export class SuperEnhancedRagOrchestrator {
       // Step 7: Escalation Decision
       if (confidenceResult.escalationRequired) {
         console.log(`🚨 Escalating to human: ${confidenceResult.escalationType}`);
-        await humanEscalationService.escalateQuery(
-          query,
-          user.id,
-          confidenceResult.evidencePacket,
-          confidenceResult.score
-        );
+        try {
+          if (humanEscalationService?.escalateQuery) {
+            await humanEscalationService.escalateQuery(
+              query,
+              user.id,
+              confidenceResult.evidencePacket,
+              confidenceResult.score
+            );
+          } else {
+            console.log('📝 Human escalation service not available, logging for review');
+          }
+        } catch (escalationError) {
+          console.error('Human escalation failed:', escalationError);
+        }
       }
 
       // Step 8: Final Response Assembly

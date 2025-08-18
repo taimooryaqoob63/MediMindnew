@@ -186,7 +186,16 @@ Respond in JSON format:
         max_tokens: 2000
       });
 
-      const response = JSON.parse(completion.choices[0]?.message?.content || '{}');
+      let rawContent = completion.choices[0]?.message?.content || '{}';
+      
+      // Clean the response content to extract JSON
+      if (rawContent.startsWith('```json')) {
+        rawContent = rawContent.replace(/```json\s*/, '').replace(/\s*```$/, '');
+      } else if (rawContent.startsWith('```')) {
+        rawContent = rawContent.replace(/```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      const response = JSON.parse(rawContent);
       
       const agentResponse: AgentResponse = {
         agent: 'Medical Specialist',
@@ -274,7 +283,16 @@ Respond in JSON format:
         max_tokens: 2000
       });
 
-      const response = JSON.parse(completion.choices[0]?.message?.content || '{}');
+      let rawContent = completion.choices[0]?.message?.content || '{}';
+      
+      // Clean the response content to extract JSON for Round B
+      if (rawContent.startsWith('```json')) {
+        rawContent = rawContent.replace(/```json\s*/, '').replace(/\s*```$/, '');
+      } else if (rawContent.startsWith('```')) {
+        rawContent = rawContent.replace(/```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      const response = JSON.parse(rawContent);
       
       const agentResponse: AgentResponse = {
         agent: 'Compliance Officer',
@@ -367,7 +385,16 @@ Respond in JSON format:
         max_tokens: 2500
       });
 
-      const response = JSON.parse(completion.choices[0]?.message?.content || '{}');
+      let rawContent = completion.choices[0]?.message?.content || '{}';
+      
+      // Clean the response content to extract JSON for Round C
+      if (rawContent.startsWith('```json')) {
+        rawContent = rawContent.replace(/```json\s*/, '').replace(/\s*```$/, '');
+      } else if (rawContent.startsWith('```')) {
+        rawContent = rawContent.replace(/```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      const response = JSON.parse(rawContent);
       
       const agentResponse: AgentResponse = {
         agent: 'Learning Facilitator',

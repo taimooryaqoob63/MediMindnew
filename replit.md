@@ -27,11 +27,11 @@ The application employs a modern full-stack architecture:
 - **Hybrid Search Optimization**: BM25 + vector embeddings (30%/70% weighting) for faster, accurate retrieval.
 - **Citation Enforcement**: Mandatory authoritative citation requirements (NICE/NHS/CQC validation) with audit trails.
 - **Human-in-the-Loop Escalation**: Confidence-based routing (50-70% triggers supervisor review) for critical queries.
-- **Enhanced RAG Orchestrator**: Sophisticated multi-agent processing with parallel execution, dynamic context windowing, and intelligent agent pruning. Includes OpenAI-powered query analysis for optimal routing and agent selection.
+- **Super Enhanced RAG Orchestrator**: Comprehensive enhanced RAG system with Docling-based document processing, hybrid search (BM25 + Vector + Reranking), multi-agent debate system, knowledge graph integration, and enhanced confidence scoring. Successfully integrated with updated Pinecone API key and medimind-rag index (August 18, 2025).
 - **Performance Caching**: Query cache with SHA-256 hashing and 7-day expiration for frequently asked questions.
 - **Dynamic Context Windowing**: Token-budget-aware context building (1500-4000 tokens) based on complexity.
 - **Multi-Agent Architecture**: Specialized AI agents (Medical Specialist, Compliance Officer, Learning Facilitator) for enhanced capabilities.
-- **Document Processing Pipeline**: Comprehensive processing for PDFs, DOCX, HTML, and TXT files with vector storage.
+- **Enhanced Document Processing Pipeline**: Docling-based structure-aware chunking with metadata enhancement, deduplication, and comprehensive processing for PDFs, DOCX, HTML, and TXT files with vector storage.
 - **Knowledge Graph**: Entity Relationship Mapping and integration for medical entities and relationships.
 - **Authentication**: Replit Authentication for secure user management, using PostgreSQL-backed session storage.
 
