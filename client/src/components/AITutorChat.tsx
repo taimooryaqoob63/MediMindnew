@@ -390,7 +390,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         ${isFullScreen ? 'chat-container-glassmorphism' : 'chat-container'}
       `}>
         {/* Enhanced Header with New Actions */}
-        <div className="px-6 py-4 bg-black text-white flex-shrink-0 backdrop-blur-sm">
+        <div className="px-6 py-4 bg-gradient-to-r from-medical-blue to-healthcare-green text-white flex-shrink-0 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative">
@@ -402,9 +402,9 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 </div>
               </div>
               <div>
-                <h3 className="font-semibold text-red-500 text-lg">ENHANCED VERSION LOADED</h3>
-                <p className="text-yellow-400 text-sm font-medium">
-                  {isFullScreen ? "Deep Learning Mode" : "Enhanced Chat v2.0"}
+                <h3 className="font-semibold text-white text-lg">MediMind AI Tutor</h3>
+                <p className="text-white/80 text-sm font-medium">
+                  {isFullScreen ? "Deep Learning Mode" : "Diabetes Care Specialist"}
                 </p>
               </div>
             </div>
