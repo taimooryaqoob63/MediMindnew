@@ -391,7 +391,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         flex flex-col slide-in-right overflow-hidden transition-all duration-500 ease-in-out glass-floating
       `}>
         {/* Enhanced Header with New Actions */}
-        <div className="px-6 py-4 glass-header text-white flex-shrink-0 glass-shimmer">
+        <div className="px-6 py-2 glass-header text-white flex-shrink-0 glass-shimmer">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative">
@@ -404,9 +404,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               </div>
               <div>
                 <h3 className="font-semibold text-white text-lg">MediMind AI Tutor</h3>
-                <p className="text-white/80 text-sm font-medium">
-                  {isFullScreen ? "Deep Learning Mode" : "Diabetes Care Specialist"}
-                </p>
               </div>
             </div>
             
@@ -630,22 +627,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                     />
                   </div>
                   
-                  {/* Enhanced Follow-up Actions */}
-                  <div className="flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <button className="inline-flex items-center px-3 py-1.5 text-xs bg-medical-blue-light text-medical-blue rounded-full hover:bg-medical-blue hover:text-white transition-colors duration-200 border border-medical-blue/20">
-                      <BookOpen className="w-3 h-3 mr-1" />
-                      View Guidelines
-                    </button>
-                    <button className="inline-flex items-center px-3 py-1.5 text-xs bg-healthcare-green-light text-healthcare-green rounded-full hover:bg-healthcare-green hover:text-white transition-colors duration-200 border border-healthcare-green/20">
-                      <AlertCircle className="w-3 h-3 mr-1" />
-                      Test Knowledge
-                    </button>
-                    <button className="inline-flex items-center px-3 py-1.5 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-600 hover:text-white transition-colors duration-200 border border-purple-200">
-                      <Heart className="w-3 h-3 mr-1" />
-                      Related Topics
-                    </button>
-                  </div>
-                  
                   <p className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-300">
                     <span className="inline-flex items-center space-x-1">
                       <Bot className="w-3 h-3" />
@@ -690,7 +671,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
       {/* Enhanced Input Area with Glassmorphism */}
       <div className="glass-morphism-subtle">
-        <div className={`${isFullScreen ? 'p-6' : 'p-4'}`}>
+        <div className={`${isFullScreen ? 'px-6 py-3' : 'px-4 py-2'}`}>
           <div className={`${isFullScreen ? 'max-w-4xl mx-auto' : ''}`}>
           <div className="flex items-end space-x-3">
             <div className="flex-1">
@@ -700,7 +681,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  placeholder="Ask me anything about diabetes care..."
+                  placeholder=""
                   className="w-full px-4 py-3 bg-transparent border-0 focus:outline-none resize-none placeholder-gray-500 text-gray-800"
                   disabled={chatMutation.isPending}
                   rows={1}
@@ -748,7 +729,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           </div>
           
           {/* Enhanced Status Indicators with Glassmorphism */}
-          <div className="flex items-center justify-between mt-3 px-2">
+          <div className="flex items-center justify-between mt-2 px-2">
             <div className="flex items-center space-x-4 text-xs text-gray-600">
               {isListening && (
                 <span className="flex items-center space-x-1 text-red-600 animate-pulse glass-morphism-subtle px-2 py-1 rounded-full">
