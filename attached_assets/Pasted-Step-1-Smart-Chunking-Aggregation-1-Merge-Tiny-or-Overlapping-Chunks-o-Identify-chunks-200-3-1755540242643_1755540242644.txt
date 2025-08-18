@@ -1,0 +1,47 @@
+Step 1: Smart Chunking & Aggregation
+1.	Merge Tiny or Overlapping Chunks
+o	Identify chunks < 200–300 tokens and merge with adjacent sections if semantically related.
+o	For overlapping chunks (e.g., same table + paragraph), merge or tag for reranker scoring.
+2.	Maintain Section Hierarchy
+o	Keep the “section path” to preserve context for retrieval and citation.
+________________________________________
+Step 2: Enhanced Metadata & KG Anchoring
+1.	KG Entity Mapping
+o	Keep linking chunks to entities (drugs, conditions, procedures).
+o	Store relationship confidence scores in chunk metadata.
+2.	Contextual Metadata
+o	Include chunk type, source, document date, and token count for dynamic retrieval weighting.
+________________________________________
+Step 3: Retrieval & Reranking Optimization
+1.	Hybrid Retrieval
+o	Use BM25 + Vector Search + KG expansion.
+o	Limit retrieval to top N relevant chunks (e.g., top 10–15).
+2.	LLM Reranker
+o	Score chunks by relevance, accuracy, and completeness.
+o	Merge content from highly scored chunks if they overlap or complement each other.
+3.	Redundancy Removal
+o	Deduplicate information across retrieved chunks before sending to LLM.
+________________________________________
+Step 4: Answer Synthesis for Chatbox
+1.	Chunk Aggregation Before LLM
+o	Feed the reranked, merged chunks into LLM in a controlled order (e.g., most authoritative first).
+o	Preserve KG-based context and contraindications.
+2.	Inline Citations
+o	Include references for each statement from authoritative sources (NICE, NHS, CQC).
+3.	Confidence Scoring & Escalation
+o	If chunks conflict, lower confidence → suggest human escalation.
+o	Highlight ambiguous or partially supported answers in the chatbox.
+________________________________________
+Step 5: Continuous Feedback Loop
+1.	User Interaction Analysis
+o	Track query reformulations or follow-up questions → indicates where chunking/retrieval might be fragmented.
+2.	Dynamic Chunk Tuning
+o	Adjust merging rules and token thresholds based on analytics:
+	Too many chunks → increase merging threshold
+	Important details lost → decrease merging threshold
+________________________________________
+✅ Outcome
+•	Fewer, higher-quality chunks → LLM receives concise, semantically coherent input.
+•	KG and metadata ensure accuracy, safety, and context.
+•	Reranking + chunk aggregation → best possible chatbox answer.
+
