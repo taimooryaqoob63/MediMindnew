@@ -88,7 +88,7 @@ export default function TrainingPage() {
         isMobile={isMobile}
       />
 
-      <div className="flex h-screen pt-16 relative">
+      <div className="flex h-screen relative" style={{ height: 'calc(100vh - 64px)' }}>
         {/* Mobile Sidebar Overlay */}
         {isMobile && isSidebarOpen && (
           <div 
