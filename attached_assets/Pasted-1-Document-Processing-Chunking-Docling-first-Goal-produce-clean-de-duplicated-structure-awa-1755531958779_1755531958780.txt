@@ -1,0 +1,176 @@
+1) Document Processing & Chunking (Docling-first)
+Goal: produce clean, de-duplicated, structure-aware chunks with rich metadata.
+1.	Replace extraction with Docling
+o	Parse every file with Docling → structured JSON (sections, headings, paragraphs, tables, figures, references, page numbers).
+o	Persist raw Docling JSON alongside your file record for traceability.
+2.	Document-level deduplication (before chunking)
+o	Compute a SimHash/MinHash on normalized text (strip numbers/dates/refs).
+o	If Hamming distance < threshold vs. existing docs → skip or mark as new version of existing doc.
+3.	Structure-aware chunking
+o	Unit = paragraph OR table OR figure/caption.
+o	If unit > token budget (e.g., 1000), apply sliding window within that unit only.
+o	Keep overlap (e.g., 150–200 tokens) only for long units; zero overlap for short units.
+4.	Adaptive chunk sizing by type
+o	Guidelines/tables: 700–900 tokens (precision).
+o	FAQs/learning: 1000–1200 (breadth).
+o	Free text/HTML: 800–1000.
+5.	Enrich metadata (to store with vectors)
+6.	{
+7.	  "docId": "...",
+8.	  "version": "NG28-2024-05",
+9.	  "source": "NICE",
+10.	  "docType": "guideline|faq|paper",
+11.	  "title": "...",
+12.	  "sectionPath": ["3. Diabetes management", "3.2 Pharmacological therapy"],
+13.	  "nodeType": "paragraph|table|figure",
+14.	  "page": 12,
+15.	  "tableId": "T3.2a",
+16.	  "refIds": ["doi:10.1234/xyz", "NICE:NG28"],
+17.	  "publishedAt": "2024-05-01",
+18.	  "ingestedAt": "2025-08-10",
+19.	  "category": "endocrinology",
+20.	  "kgAnchors": ["Drug:Metformin", "Condition:T2D"]
+21.	}
+________________________________________
+2) Embeddings & Storage (Pinecone + Versioning)
+Goal: better semantic fidelity + auditable versions.
+1.	Model tiering
+o	Default: text-embedding-3-small
+o	Critical clinical/calc-heavy: text-embedding-3-large
+o	Store "embedModel": "…small|…large" in metadata.
+2.	Namespace & versioning
+o	Pinecone namespaces by collection (e.g., guidelines, education, faq).
+o	Always include version + publishedAt + source.
+3.	Upsert with docling metadata
+o	Use the metadata block above; include first 500 chars only for preview fields, not as a truth source.
+4.	Hybrid index
+o	Maintain a BM25 index (Elasticsearch/OpenSearch/Meilisearch) with fields:
+	text, title, sectionPath, docType, source, publishedAt, version, category.
+o	Reindex on doc (re)ingestion.
+________________________________________
+3) Retrieval Layer (Hybrid + KG + Reranker)
+Goal: retrieve the right chunks, not just similar ones.
+1.	Query analysis
+o	Your current analysis runs → add entity linking to KG (map terms to nodes; e.g., SNOMED/ATC where relevant).
+2.	KG expansion
+o	From linked nodes, gather: synonyms, parent/child concepts, drug classes, contraindications, age groups.
+o	Build expanded query terms (keep per-type caps to avoid drift, e.g., max 5 synonyms).
+3.	Dual retrieval
+o	BM25: query original + expanded terms; get top-N (e.g., 50).
+o	Pinecone: build one or more semantic queries:
+	Original question
+	Clarified/expanded variant (drug class, alternative names)
+	Fetch top-M (e.g., 50).
+4.	Fusion (pre-rerank)
+o	Use Reciprocal Rank Fusion (RRF) over BM25 + vector hits.
+o	Apply recency boost (e.g., +w if publishedAt ≥ 2024-01-01 and queryType=clinical).
+5.	LLM cross-reranker (required)
+o	Take top 30 fused; call lightweight LLM reranker (gpt-4-mini or similar):
+o	Prompt (pairwise or pointwise):
+o	Score 0–10: How directly does this passage answer the question?
+o	Consider specificity, correctness, and presence of actionable detail.
+o	Keep top K (e.g., 8–12) for the context window.
+________________________________________
+4) Knowledge Graph (ingest + query-time use)
+Goal: ground reasoning with explicit facts and edges.
+1.	KG build at ingestion
+o	From Docling JSON, run NER + relation extraction:
+	Nodes: Drug, Condition, Guideline, Population, Contraindication, DoseRange, Organization.
+	Edges: treats, contraindicated_in, references, recommended_for, dosage_for.
+o	Store edge provenance to docId+sectionPath+refId.
+2.	KG at query time
+o	Resolve entities from QueryAnalysis → optional 1–2 hop traversal to collect facts.
+o	Emit KG facts as compact triples for the agents and filter hints for retrieval.
+________________________________________
+5) Multi-Agent Architecture (debate + guardrails)
+Goal: higher accuracy with role fidelity.
+1.	Context assembly
+o	Build two blocks:
+	Structured facts (KG): top 10–15 triples with provenance.
+	Evidence passages (RAG): top 8–12 reranked chunks with inline ids [S1]…[S12].
+2.	Debate round (time-boxed)
+o	Round A: Medical specialist drafts answer with citations [S#] and [KG#].
+o	Round B: Compliance officer flags non-NICE/NHS claims or missing citations; suggests replacements.
+o	Round C: Learning facilitator simplifies phrasing—cannot edit dosages/clinical claims.
+3.	Guardrails
+o	Tooling enforces role-bounded prompts (e.g., facilitator: “Do not state new clinical facts, only rephrase flagged sentences.”)
+o	Any statement not supported by [S#] or [KG#] → auto-struck before finalization.
+________________________________________
+6) Response Synthesis & Safety (citations + fact-check)
+Goal: explainable, cited, safe outputs.
+1.	Inline citations
+o	Use: … according to NICE NG28 (2015; updated 2024) [S3].
+o	Map [S#] → Pinecone chunk metadata → source/title/section/page/version.
+o	Map [KG#] → triple with provenance (docId/section/refId).
+2.	Automated fact-check pass
+o	Final prompt verifies each claim is tied to at least one [S#] or [KG#].
+o	If missing, either (a) remove, or (b) downgrade confidence + mark as requires clinician review.
+3.	Tiered safety disclaimers
+o	Low-risk info: brief educational disclaimer.
+o	Clinical advice: stronger disclaimer + “consult clinician” call-to-action.
+o	Emergency intent: immediate emergency banner + local emergency numbers (your existing logic).
+________________________________________
+7) Confidence & Escalation (explainable scores)
+Goal: transparent confidence and responsible fallback.
+1.	Confidence features
+o	Source authority (NICE/NHS/CQC) weighting.
+o	Reranker relevance avg.
+o	KG consistency: fraction of claims matched to triples.
+o	Recency coverage: % of citations ≥ threshold date.
+o	Agreement in debate: # of unresolved compliance flags.
+2.	Compute & expose
+o	0–100 score + 2–3 explanations (e.g., “High because 4 NICE citations; Updated 2024; Matches KG relations.”).
+o	Thresholds:
+	<60 → partial answer + escalate to human.
+	60–75 → answer + caution tag.
+	≥75 → answer.
+3.	Escalation
+o	Include compact evidence packet (top 5 chunks, KG triples, user query, analysis) to the human queue.
+________________________________________
+8) Analytics & Feedback (continuous improvement)
+Goal: learn from use and drift.
+1.	Track
+o	Query → retrieval sets → reranker scores → used citations → confidence → user action (reformulate? thumbs down?).
+2.	Feedback → training
+o	Promote passages frequently selected by users.
+o	Penalize sources that lead to corrections.
+3.	Drift detection
+o	When a doc with same docId has newer version/publishedAt, mark older chunks stale and schedule re-embed.
+4.	A/B
+o	Test reranker prompts, KG hop limits, and context sizes.
+________________________________________
+9) System-level (latency, compliance, ops)
+1.	Caching
+o	Cache analysis/ELT for frequent intents.
+o	Cache reranker results for popular queries (keyed by normalized query + user role).
+2.	Audit trail
+o	Persist exact retrieval set, fusion/rerank scores, debate diffs, and final citations for each answer.
+3.	Privacy & access
+o	PHI redaction in logs; role-based access to clinical features.
+4.	Resilience
+o	Timeouts: if KG fails, fall back to hybrid (BM25+vector); if reranker fails, fall back to fused ranking with recency boost.
+________________________________________
+Minimal code touchpoints to modify
+•	documentProcessor.ts
+o	Swap to Docling → output structured JSON
+o	Add SimHash/MinHash dedup
+•	chunkDocument(..)
+o	Accept nodes (paragraph/table) + intra-node windowing
+•	vectorStore.upsertVector(..)
+o	Add enriched metadata + versioning
+•	hybridSearch.ts
+o	Implement BM25 + Pinecone + RRF
+•	enhancedRagOrchestrator.ts
+o	Add KG entity linking & expansion
+o	Add LLM reranker after fusion
+o	Build two-block context (KG facts + RAG passages)
+•	citationEnforcementService
+o	Resolve [S#]/[KG#] → full inline references
+o	Fact-check pass (remove or downgrade unsupported claims)
+•	agent*
+o	Add debate round + role-bounded prompts
+•	calculateResponseConfidence(..)
+o	Add features: KG consistency, rerank avg, recency coverage, debate agreement
+•	humanEscalationService
+o	Attach evidence packet
+
