@@ -362,6 +362,60 @@ export function registerRAGRoutes(app: Express) {
     }
   });
 
+  // Clear all data (documents, chunks, vectors)
+  app.post("/api/rag/clear-all", isAuthenticated, async (req, res) => {
+    try {
+      console.log('🗑️ Starting complete data cleanup...');
+      
+      // Clear all document chunks from database
+      const chunks = await storage.getAllDocumentChunks();
+      console.log(`Found ${chunks.length} chunks to delete`);
+      
+      for (const chunk of chunks) {
+        await storage.deleteDocumentChunk(chunk.id);
+      }
+      
+      // Clear all documents from database
+      const documents = await storage.getAllDocuments();
+      console.log(`Found ${documents.length} documents to delete`);
+      
+      for (const document of documents) {
+        await storage.deleteDocument(document.id);
+      }
+      
+      // Clear all processing jobs
+      const jobs = await storage.getProcessingJobs();
+      console.log(`Found ${jobs.length} processing jobs to delete`);
+      
+      for (const job of jobs) {
+        await storage.deleteProcessingJob(job.id);
+      }
+      
+      // Clear all vectors from Pinecone if connected
+      try {
+        await vectorStore.initialize();
+        await vectorStore.deleteAllVectors();
+      } catch (error) {
+        console.log('Could not clear Pinecone vectors (may not be connected):', error.message);
+      }
+      
+      console.log('✅ Complete data cleanup finished');
+      
+      res.json({ 
+        message: "All data cleared successfully",
+        documentsDeleted: documents.length,
+        chunksDeleted: chunks.length,
+        jobsDeleted: jobs.length
+      });
+    } catch (error) {
+      console.error("Clear all data error:", error);
+      res.status(500).json({ 
+        message: "Failed to clear all data",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Get verification data
   app.get("/api/rag/verification", isAuthenticated, async (req, res) => {
     try {

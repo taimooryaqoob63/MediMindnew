@@ -226,7 +226,7 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
                   {initializeMutation.isPending ? "Initializing..." : "Initialize Vector Store"}
                 </Button>
               </div>
-              
+
               <div className="flex items-center justify-between border-t pt-4">
                 <div>
                   <p className="text-sm text-gray-600">
@@ -236,14 +236,22 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
                     This will check all uploaded documents and re-index any that are missing from the vector store.
                   </p>
                 </div>
-                <Button
-                  onClick={() => reprocessMutation.mutate()}
-                  disabled={reprocessMutation.isPending}
-                  variant="outline"
-                  className="ml-4"
-                >
-                  {reprocessMutation.isPending ? "Reprocessing..." : "Reprocess Documents"}
-                </Button>
+                <div className="flex gap-2 ml-4">
+                  <Button
+                    onClick={() => reprocessMutation.mutate()}
+                    disabled={reprocessMutation.isPending}
+                    variant="outline"
+                  >
+                    {reprocessMutation.isPending ? "Reprocessing..." : "Reprocess Documents"}
+                  </Button>
+                  <Button
+                    onClick={() => clearAllMutation.mutate()}
+                    disabled={clearAllMutation.isPending}
+                    variant="destructive"
+                  >
+                    {clearAllMutation.isPending ? "Clearing..." : "Clear All Data"}
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>

@@ -376,6 +376,20 @@ export class VectorStore {
       throw error;
     }
   }
+
+  async deleteAllVectors(): Promise<void> {
+    try {
+      if (!this.pinecone) {
+        throw new Error('Pinecone not initialized');
+      }
+      const index = this.pinecone.index(this.config.indexName);
+      await index.deleteAll();
+      console.log('✅ All vectors deleted from Pinecone index');
+    } catch (error) {
+      console.error('Error deleting all vectors:', error);
+      throw error;
+    }
+  }
 }
 
 // Initialize global vector store instance

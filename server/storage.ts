@@ -9,7 +9,8 @@ import {
   type InsertChatSummary, type InsertQueryCache, type InsertResponseFeedback, type InsertRagAnalytics, type InsertIntentClassification,
   users, courses, modules, userProgress, chatMessages, resources,
   documents, documentChunks, entities, entityRelationships, ragChatMessages, processingJobs, notifications,
-  chatSummaries, queryCache, responseFeedback, ragAnalytics, intentClassification
+  chatSummaries, queryCache, responseFeedback, ragAnalytics, intentClassification,
+  SelectDocumentChunk
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -55,6 +56,7 @@ export interface IStorage {
 
   // Document Chunks
   getDocumentChunks(documentId: string): Promise<DocumentChunk[]>;
+  getAllDocumentChunks(): Promise<SelectDocumentChunk[]>;
   getDocumentChunk(id: string): Promise<DocumentChunk | undefined>;
   createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk>;
   updateDocumentChunk(id: string, updates: Partial<InsertDocumentChunk>): Promise<DocumentChunk | undefined>;
@@ -70,6 +72,7 @@ export interface IStorage {
   // Entity Relationships
   getEntityRelationships(entityId?: string): Promise<EntityRelationship[]>;
   createEntityRelationship(relationship: InsertEntityRelationship): Promise<EntityRelationship>;
+  clearEntityRelationships(): Promise<number>;
 
   // RAG Chat Messages
   getRagChatMessages(userId: string, courseId?: string): Promise<RagChatMessage[]>;
@@ -80,6 +83,7 @@ export interface IStorage {
   getProcessingJob(id: string): Promise<ProcessingJob | undefined>;
   createProcessingJob(job: InsertProcessingJob): Promise<ProcessingJob>;
   updateProcessingJob(id: string, updates: Partial<InsertProcessingJob>): Promise<ProcessingJob | undefined>;
+  deleteProcessingJob(id: string): Promise<void>;
 
   // Notifications
   getNotifications(userId: string): Promise<Notification[]>;
@@ -211,7 +215,7 @@ export class DatabaseStorage implements IStorage {
         eq(userProgress.courseId, insertProgress.courseId),
         eq(userProgress.moduleId, insertProgress.moduleId || "")
       ));
-    
+
     if (existing.length > 0) {
       const [updated] = await db
         .update(userProgress)
@@ -282,6 +286,10 @@ export class DatabaseStorage implements IStorage {
   async getDocumentChunks(documentId: string): Promise<DocumentChunk[]> {
     return await db.select().from(documentChunks)
       .where(eq(documentChunks.documentId, documentId));
+  }
+
+  async getAllDocumentChunks(): Promise<SelectDocumentChunk[]> {
+    return await db.select().from(documentChunks);
   }
 
   async getDocumentChunk(id: string): Promise<DocumentChunk | undefined> {
@@ -363,7 +371,7 @@ export class DatabaseStorage implements IStorage {
         .where(and(eq(ragChatMessages.userId, userId), eq(ragChatMessages.courseId, courseId)))
         .orderBy(ragChatMessages.timestamp);
     }
-    
+
     return await db.select().from(ragChatMessages)
       .where(eq(ragChatMessages.userId, userId))
       .orderBy(ragChatMessages.timestamp);
@@ -396,6 +404,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(processingJobs.id, id))
       .returning();
     return job || undefined;
+  }
+
+  async deleteProcessingJob(id: string): Promise<void> {
+    await db.delete(processingJobs).where(eq(processingJobs.id, id));
   }
 
   // Notifications
@@ -438,17 +450,17 @@ export class DatabaseStorage implements IStorage {
       return await db.select().from(chatSummaries)
         .where(and(eq(chatSummaries.userId, userId), eq(chatSummaries.courseId, courseId)));
     }
-    
+
     return await db.select().from(chatSummaries).where(eq(chatSummaries.userId, userId));
   }
 
   async getChatSummary(userId: string, courseId?: string, agentType?: string | null): Promise<ChatSummary | undefined> {
     let conditions = [eq(chatSummaries.userId, userId)];
-    
+
     if (courseId) {
       conditions.push(eq(chatSummaries.courseId, courseId));
     }
-    
+
     if (agentType !== undefined) {
       if (agentType === null) {
         conditions.push(isNull(chatSummaries.agentType));
@@ -456,7 +468,7 @@ export class DatabaseStorage implements IStorage {
         conditions.push(eq(chatSummaries.agentType, agentType));
       }
     }
-    
+
     const [summary] = await db.select().from(chatSummaries).where(and(...conditions));
     return summary || undefined;
   }
@@ -796,7 +808,7 @@ export class MemStorage implements IStorage {
       .find(p => p.userId === insertProgress.userId && 
                  p.courseId === insertProgress.courseId && 
                  p.moduleId === insertProgress.moduleId);
-    
+
     if (existing) {
       const updated = { ...existing, ...insertProgress };
       this.userProgress.set(existing.id, updated);
@@ -898,6 +910,10 @@ export class MemStorage implements IStorage {
   }
 
   async getDocumentChunks(documentId: string): Promise<DocumentChunk[]> {
+    return [];
+  }
+
+  async getAllDocumentChunks(): Promise<SelectDocumentChunk[]> {
     return [];
   }
 
@@ -1013,6 +1029,10 @@ export class MemStorage implements IStorage {
 
   async updateProcessingJob(id: string, updates: Partial<InsertProcessingJob>): Promise<ProcessingJob | undefined> {
     return undefined;
+  }
+
+  async deleteProcessingJob(id: string): Promise<void> {
+    // No-op in memory storage
   }
 
   // Notifications
