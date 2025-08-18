@@ -495,8 +495,13 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsTTSEnabled(!isTTSEnabled)}
-                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 border border-white/20"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('TTS toggle clicked, current state:', isTTSEnabled);
+                  setIsTTSEnabled(!isTTSEnabled);
+                }}
+                className={`glass-button p-2 text-white/90 hover:text-white rounded-xl transition-all duration-200 hover:scale-105 ${isTTSEnabled ? 'glass-morphism-strong bg-green-400/20' : ''}`}
                 title={isTTSEnabled ? "Disable Text-to-Speech" : "Enable Text-to-Speech"}
               >
                 {isTTSEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -521,7 +526,8 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       <div 
         ref={scrollContainerRef}
         className={`
-          flex-1 overflow-y-auto px-6 py-4 space-y-6 bg-gradient-to-b from-white to-gray-50/30
+          flex-1 overflow-y-auto py-4 space-y-6 bg-gradient-to-b from-white to-gray-50/30
+          ${isFullScreen ? 'px-12 lg:px-20' : 'px-6'}
           ${isMobile ? 'max-h-64' : 'min-h-0'}
           chat-scroll
         `}
@@ -581,7 +587,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
             <div className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
               {/* User Message with Glassmorphism */}
               <div className="flex items-end space-x-3 justify-end mb-6">
-                <div className="flex-1">
+                <div className={`${isFullScreen ? 'max-w-2xl' : 'flex-1'}`}>
                   <div className="chat-message-user-glassmorphism transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
                     <p className="text-sm leading-relaxed select-text font-medium">{msg.message}</p>
                   </div>
@@ -603,7 +609,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <div className="chat-avatar-bot">
                   <Stethoscope className="w-4 h-4 text-white" />
                 </div>
-                <div className="flex-1 space-y-3">
+                <div className={`space-y-3 ${isFullScreen ? 'flex-1 max-w-4xl' : 'flex-1'}`}>
                   <div className="chat-message-bot-glassmorphism transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
                     <MarkdownRenderer 
                       content={msg.response} 
@@ -679,7 +685,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
       {/* Enhanced Input Area with Glassmorphism */}
       <div className="glass-morphism-subtle">
-        <div className="p-4">
+        <div className={`${isFullScreen ? 'p-6 px-12 lg:px-20' : 'p-4'}`}>
           <div className="flex items-end space-x-3">
             <div className="flex-1">
               <div className="relative glass-input rounded-2xl focus-within:shadow-lg focus-within:scale-[1.02] transition-all duration-300">
