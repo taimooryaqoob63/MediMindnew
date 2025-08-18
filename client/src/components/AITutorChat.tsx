@@ -381,16 +381,15 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
       
       <div className={`
         ${isFullScreen 
-          ? 'fixed inset-4 z-50 max-w-none max-h-none rounded-3xl shadow-2xl' 
+          ? 'fixed inset-4 z-50 max-w-none max-h-none rounded-3xl shadow-2xl glass-morphism-strong' 
           : isMobile 
-            ? 'h-96 chat-container border-t-0 rounded-t-2xl' 
-            : 'w-96 h-full chat-container border-l-0 rounded-l-none rounded-r-2xl'
+            ? 'h-96 border-t-0 rounded-t-2xl glass-morphism' 
+            : 'w-96 h-full border-l-0 rounded-l-none rounded-r-2xl glass-morphism'
         } 
-        flex flex-col slide-in-right overflow-hidden transition-all duration-300 ease-in-out
-        ${isFullScreen ? 'chat-container-glassmorphism' : 'chat-container'}
+        flex flex-col slide-in-right overflow-hidden transition-all duration-500 ease-in-out glass-floating
       `}>
         {/* Enhanced Header with New Actions */}
-        <div className="px-6 py-4 bg-gradient-to-r from-medical-blue to-healthcare-green text-white flex-shrink-0 backdrop-blur-sm">
+        <div className="px-6 py-4 glass-header text-white flex-shrink-0 glass-shimmer">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative">
@@ -417,7 +416,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 size="sm"
                 onClick={summarizeConversation}
                 disabled={messages.length === 0}
-                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+                className="glass-button p-2 text-white/90 hover:text-white rounded-xl"
                 title="Summarize conversation"
               >
                 <FileText className="w-4 h-4" />
@@ -427,7 +426,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 variant="ghost"
                 size="sm"
                 onClick={() => setHighlightMode(!highlightMode)}
-                className={`p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 ${highlightMode ? 'bg-white/20' : ''}`}
+                className={`glass-button p-2 text-white/90 hover:text-white rounded-xl ${highlightMode ? 'glass-morphism-strong' : ''}`}
                 title="Toggle highlight mode"
               >
                 <Highlight className="w-4 h-4" />
@@ -438,7 +437,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 size="sm"
                 onClick={exportChat}
                 disabled={messages.length === 0}
-                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+                className="glass-button p-2 text-white/90 hover:text-white rounded-xl"
                 title="Export chat"
               >
                 <Download className="w-4 h-4" />
@@ -450,7 +449,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 size="sm"
                 onClick={clearChat}
                 disabled={messages.length === 0}
-                className="p-2 text-white/80 hover:text-white hover:bg-red-400/20 rounded-xl transition-all duration-200"
+                className="glass-button p-2 text-white/90 hover:text-white hover:bg-red-400/30 rounded-xl"
                 title="Clear chat"
               >
                 <Trash2 className="w-4 h-4" />
@@ -461,7 +460,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 variant="ghost"
                 size="sm"
                 onClick={toggleFullScreen}
-                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+                className="glass-button p-2 text-white/90 hover:text-white rounded-xl"
                 title={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
               >
                 {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -653,19 +652,19 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Enhanced Input Area */}
-      <div className="chat-input-container">
+      {/* Enhanced Input Area with Glassmorphism */}
+      <div className="glass-morphism-subtle">
         <div className="p-4">
           <div className="flex items-end space-x-3">
             <div className="flex-1">
-              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm focus-within:shadow-md focus-within:border-medical-blue transition-all duration-200">
+              <div className="relative glass-input rounded-2xl focus-within:shadow-lg focus-within:scale-[1.02] transition-all duration-300">
                 <textarea
                   ref={inputRef}
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyPress}
                   placeholder="Ask me anything about diabetes care..."
-                  className="chat-input placeholder-gray-400"
+                  className="w-full px-4 py-3 bg-transparent border-0 focus:outline-none resize-none placeholder-gray-500 text-gray-800"
                   disabled={chatMutation.isPending}
                   rows={1}
                   style={{ 
@@ -676,12 +675,12 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               </div>
             </div>
             
-            {/* Enhanced Control Buttons */}
+            {/* Enhanced Control Buttons with Glassmorphism */}
             <div className="flex items-center space-x-2">
               <Button
                 onClick={isListening ? stopListening : startListening}
                 disabled={chatMutation.isPending}
-                className={`chat-button ${isListening ? 'chat-button-voice listening' : 'chat-button-voice'}`}
+                className={`glass-button p-3 rounded-xl ${isListening ? 'glass-morphism-strong text-red-600' : 'text-medical-blue'}`}
                 size="sm"
               >
                 {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -689,10 +688,10 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               
               <Button
                 onClick={stopSpeaking}
-                className={`chat-button transition-all duration-200 ${
+                className={`glass-button p-3 rounded-xl transition-all duration-300 ${
                   synthesis?.speaking 
-                    ? 'bg-red-500 hover:bg-red-600 text-white' 
-                    : 'bg-gray-500 hover:bg-gray-600 text-white'
+                    ? 'text-red-600 glass-morphism-strong' 
+                    : 'text-gray-600'
                 }`}
                 size="sm"
                 title="Stop/Mute speech"
@@ -703,7 +702,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <Button
                 onClick={handleSendMessage}
                 disabled={!inputMessage.trim() || chatMutation.isPending}
-                className="chat-button chat-button-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                className="glass-button p-3 text-medical-blue hover:text-white hover:bg-medical-blue disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all duration-300"
                 size="sm"
               >
                 <Send className="w-4 h-4" />
@@ -711,29 +710,29 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
             </div>
           </div>
           
-          {/* Status Indicators */}
+          {/* Enhanced Status Indicators with Glassmorphism */}
           <div className="flex items-center justify-between mt-3 px-2">
-            <div className="flex items-center space-x-4 text-xs text-gray-500">
+            <div className="flex items-center space-x-4 text-xs text-gray-600">
               {isListening && (
-                <span className="flex items-center space-x-1 text-red-600 animate-pulse">
+                <span className="flex items-center space-x-1 text-red-600 animate-pulse glass-morphism-subtle px-2 py-1 rounded-full">
                   <Mic className="w-3 h-3" />
                   <span>Listening...</span>
                 </span>
               )}
               {synthesis?.speaking && (
-                <span className="flex items-center space-x-1 text-medical-blue animate-pulse">
+                <span className="flex items-center space-x-1 text-medical-blue animate-pulse glass-morphism-subtle px-2 py-1 rounded-full">
                   <Volume2 className="w-3 h-3" />
                   <span>Speaking...</span>
                 </span>
               )}
-              <span className="flex items-center space-x-1">
+              <span className="flex items-center space-x-1 glass-morphism-subtle px-2 py-1 rounded-full">
                 <Bot className="w-3 h-3" />
                 <span>Evidence-based responses</span>
               </span>
             </div>
             
-            <div className="flex items-center space-x-1 text-xs text-gray-400">
-              <kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">Enter</kbd>
+            <div className="flex items-center space-x-1 text-xs text-gray-500">
+              <kbd className="px-1.5 py-0.5 glass-morphism-subtle rounded text-xs">Enter</kbd>
               <span>to send</span>
             </div>
           </div>
