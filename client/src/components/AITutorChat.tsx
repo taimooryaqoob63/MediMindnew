@@ -404,7 +404,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
               <div>
                 <h3 className="font-semibold text-white text-lg">MediMind AI Tutor</h3>
                 <p className="text-white/80 text-sm font-medium">
-                  {isFullScreen ? "Deep Learning Mode" : "Diabetes Care Specialist"}
+                  {isFullScreen ? "Deep Learning Mode" : "Enhanced Chat"}
                 </p>
               </div>
             </div>
