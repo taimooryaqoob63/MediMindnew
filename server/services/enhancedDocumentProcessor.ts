@@ -767,6 +767,10 @@ export class EnhancedDocumentProcessor {
     }
   }
 
+  private escapeRegex(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   private async extractEntitiesEnhanced(
     documentId: string, 
     content: string, 
@@ -778,28 +782,41 @@ export class EnhancedDocumentProcessor {
       conditions: ['diabetes', 'hypoglycemia', 'hyperglycemia', 'neuropathy', 'retinopathy'],
       measurements: ['HbA1c', 'blood glucose', 'blood pressure', 'BMI'],
       organizations: ['NICE', 'NHS', 'CQC', 'WHO'],
+      // Only use short, meaningful references as entities, not full text
       guidelines: structure.references
+        .filter(ref => ref && ref.length < 50 && ref.length > 2) // Only short references
+        .map(ref => ref.trim())
+        .filter(ref => !ref.includes('http') && !ref.includes('(')) // Skip URLs and complex text
     };
 
     const extractedEntities = [];
 
     for (const [category, terms] of Object.entries(medicalEntities)) {
+      if (!Array.isArray(terms)) continue;
+      
       for (const term of terms) {
-        const regex = new RegExp(`\\b${term}\\b`, 'gi');
-        const matches = content.match(regex);
+        if (!term || typeof term !== 'string' || term.length > 100) continue; // Skip invalid or very long terms
         
-        if (matches && matches.length > 0) {
-          extractedEntities.push({
-            name: term,
-            type: category,
-            description: `${category} entity found in enhanced document`,
-            metadata: { 
-              frequency: matches.length,
-              documentId,
-              enhanced: true,
-              ontologyClass: category
-            }
-          });
+        try {
+          const escapedTerm = this.escapeRegex(term);
+          const regex = new RegExp(`\\b${escapedTerm}\\b`, 'gi');
+          const matches = content.match(regex);
+          
+          if (matches && matches.length > 0) {
+            extractedEntities.push({
+              name: term,
+              type: category,
+              description: `${category} entity found in enhanced document`,
+              metadata: { 
+                frequency: matches.length,
+                documentId,
+                enhanced: true,
+                ontologyClass: category
+              }
+            });
+          }
+        } catch (error) {
+          console.warn(`Skipping problematic term "${term}" in category ${category}:`, error.message);
         }
       }
     }
