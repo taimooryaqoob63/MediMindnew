@@ -167,7 +167,6 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         elements.push(
           <div key={`heading-wrapper-${lineIndex}`} className="my-2">
             <HeadingTag className={headingClasses[level as keyof typeof headingClasses] || headingClasses[6]}>
-              {level <= 3 && getHeadingIcon(title)}
               {title}
             </HeadingTag>
           </div>
@@ -315,30 +314,15 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
 
     // Process all markdown patterns in sequence
     const patterns = [
-      // Bold with icons for medical terms
+      // Bold with simplified styling - no icons or special containers
       {
         regex: /\*\*([^*]+)\*\*/g,
         render: (match: RegExpExecArray, key: string) => {
           const content = match[1];
-          const isClinical = /\b(NICE|NHS|CQC|CALL 999|EMERGENCY|CRITICAL|URGENT|IMMEDIATE|ACUTE|SEVERE)\b/i.test(content);
-          const isMedication = /\b(mg|ml|tablet|dose|medication|drug|prescription|insulin|glucose|HbA1c|mmol\/L|units)\b/i.test(content);
-          const isVitalSign = /\b(blood pressure|heart rate|temperature|respiratory rate|oxygen saturation|BP|HR|RR|SpO2)\b/i.test(content);
-
           return (
-            <strong 
-              key={key} 
-              className={`${
-                isClinical ? 'text-red-700 bg-red-100 px-2 py-1 rounded-md font-bold border border-red-200 shadow-sm' :
-                isMedication ? 'text-purple-700 bg-purple-100 px-2 py-1 rounded-md font-semibold border border-purple-200 shadow-sm' :
-                isVitalSign ? 'text-green-700 bg-green-100 px-2 py-1 rounded-md font-semibold border border-green-200 shadow-sm' :
-                'font-semibold text-gray-900'
-              }`}
-            >
-              {isClinical && <AlertTriangle className="w-3 h-3 inline mr-1" />}
-              {isMedication && <Pill className="w-3 h-3 inline mr-1" />}
-              {isVitalSign && <Activity className="w-3 h-3 inline mr-1" />}
+            <span key={key} className="font-semibold text-gray-900">
               {content}
-            </strong>
+            </span>
           );
         }
       },

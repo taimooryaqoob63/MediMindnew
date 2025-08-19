@@ -154,15 +154,14 @@ function formatStructuredResponse(data: any): string {
 function enhanceRegularResponse(content: string): string {
   let enhanced = content;
   
-  // Add section breaks for common patterns - NO EMOJIS
-  enhanced = enhanced.replace(/\n\n(Important|Note|Warning|Caution|Remember):/gi, '\n\n**$1:**');
-  enhanced = enhanced.replace(/\n\n(Example|For example):/gi, '\n\n**Example:**');
-  enhanced = enhanced.replace(/\n\n(Steps|To do this|Procedure):/gi, '\n\n**Steps:**');
-  enhanced = enhanced.replace(/\n\n(Next|Action|Next step):/gi, '\n\n**Next Step:**');
-  enhanced = enhanced.replace(/\n\n(Key points|Summary):/gi, '\n\n**Key Points:**');
+  // Add section breaks for common patterns - clean, no bold formatting
+  enhanced = enhanced.replace(/\n\n(Important|Note|Warning|Caution|Remember):/gi, '\n\n$1:');
+  enhanced = enhanced.replace(/\n\n(Example|For example):/gi, '\n\nExample:');
+  enhanced = enhanced.replace(/\n\n(Steps|To do this|Procedure):/gi, '\n\nSteps:');
+  enhanced = enhanced.replace(/\n\n(Next|Action|Next step):/gi, '\n\nNext Step:');
+  enhanced = enhanced.replace(/\n\n(Key points|Summary):/gi, '\n\nKey Points:');
   
-  // Enhance medication mentions
-  enhanced = enhanced.replace(/\b(insulin|metformin|glucagon|glucose|blood sugar|HbA1c)\b/gi, '**$1**');
+  // Keep medication mentions clean and simple - no special formatting
   
   // Add visual breaks for long paragraphs
   const paragraphs = enhanced.split('\n\n');
@@ -236,10 +235,41 @@ export function cleanupResponse(content: string): string {
   cleaned = cleaned.replace(/\\"/g, '"');
   cleaned = cleaned.replace(/\\n/g, '\n');
   
+  // Fix text duplication like "Type 1 DiabetesType 1 Diabetes"
+  cleaned = removeDuplicatedWords(cleaned);
+  
   // Fix numbered lists to ensure they start from 1 and are consecutive
   cleaned = fixNumberedLists(cleaned);
   
   return cleaned.trim();
+}
+
+/**
+ * Remove duplicated words like "Type 1 DiabetesType 1 Diabetes"
+ */
+function removeDuplicatedWords(content: string): string {
+  if (!content) return content;
+  
+  // Fix cases where words or phrases are duplicated without spaces
+  let cleaned = content;
+  
+  // Common medical terms that might get duplicated
+  const medicalTerms = [
+    'Type 1 Diabetes', 'Type 2 Diabetes', 'Gestational Diabetes',
+    'insulin', 'glucose', 'blood sugar', 'medication', 'treatment',
+    'symptoms', 'diagnosis', 'monitoring', 'management'
+  ];
+  
+  medicalTerms.forEach(term => {
+    // Remove duplications like "Type 1 DiabetesType 1 Diabetes"
+    const duplicatedPattern = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\1+`, 'gi');
+    cleaned = cleaned.replace(duplicatedPattern, '$1');
+  });
+  
+  // General pattern for any word followed immediately by itself
+  cleaned = cleaned.replace(/\b(\w+)\1+\b/g, '$1');
+  
+  return cleaned;
 }
 
 /**
