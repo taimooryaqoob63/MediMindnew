@@ -793,6 +793,42 @@
   }
 }
 
+/* Chat Markdown Styles - Clean formatting like ChatGPT */
+.chat-markdown {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.chat-markdown h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.chat-markdown p {
+  margin: 0.5rem 0;
+}
+
+.chat-markdown ul,
+.chat-markdown ol {
+  margin: 0.5rem 0 0.5rem 1.25rem;
+}
+
+.chat-markdown li {
+  margin: 0.25rem 0;
+}
+
+.chat-markdown strong {
+  font-weight: 600;
+}
+
+.chat-markdown code {
+  background: #f3f4f6;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
 /* Responsive design helpers */
 @media (max-width: 768px) {
   .mobile-hidden {

@@ -188,9 +188,26 @@ export function formatAIResponse(content: string): FormattedResponse {
     };
   }
   
+  let text = content;
+  
+  // 🔹 Fix common duplication bug like "OnsetOnset:"
+  text = text.replace(/(\b[A-Z][a-zA-Z ]+)\1/g, "$1");
+  
+  // 🔹 Normalize spacing around headings (###)
+  text = text.replace(/#+\s*/g, (m) => `${m.trim()} `);
+  
+  // 🔹 Ensure bullet points start correctly
+  text = text.replace(/-\s*/g, "- ");
+  
+  // 🔹 Fix bold markers (sometimes duplicated or missing space)
+  text = text.replace(/\*\*(\s*)/g, "**");
+  
+  // 🔹 Trim extra spaces & newlines
+  text = text.replace(/\n{3,}/g, "\n\n").trim();
+  
   // Check if this is a structured response that needs special formatting
-  if (isStructuredResponse(content)) {
-    const parsedData = tryParseJSON(content);
+  if (isStructuredResponse(text)) {
+    const parsedData = tryParseJSON(text);
     
     if (parsedData) {
       const formattedContent = formatStructuredResponse(parsedData);
@@ -202,7 +219,7 @@ export function formatAIResponse(content: string): FormattedResponse {
   }
   
   // For regular responses, apply enhancement formatting
-  const enhancedContent = enhanceRegularResponse(content);
+  const enhancedContent = enhanceRegularResponse(text);
   
   return {
     content: enhancedContent,
@@ -253,11 +270,15 @@ function removeDuplicatedWords(content: string): string {
   // Fix cases where words or phrases are duplicated without spaces
   let cleaned = content;
   
+  // 🔹 Fix common duplication bug like "OnsetOnset:" - enhanced pattern
+  cleaned = cleaned.replace(/(\b[A-Z][a-zA-Z ]+)\1/g, "$1");
+  
   // Common medical terms that might get duplicated
   const medicalTerms = [
     'Type 1 Diabetes', 'Type 2 Diabetes', 'Gestational Diabetes',
     'insulin', 'glucose', 'blood sugar', 'medication', 'treatment',
-    'symptoms', 'diagnosis', 'monitoring', 'management'
+    'symptoms', 'diagnosis', 'monitoring', 'management', 'onset',
+    'autoimmune condition', 'key characteristics', 'insulin dependence'
   ];
   
   medicalTerms.forEach(term => {
