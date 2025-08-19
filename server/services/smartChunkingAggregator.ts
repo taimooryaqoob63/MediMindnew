@@ -418,7 +418,8 @@ export class SmartChunkingAggregator {
       automaticRefinement: false
     };
 
-    await storage.createQueryRefinement(refinement);
+    // TODO: Implement createQueryRefinement in storage
+    // await storage.createQueryRefinement(refinement);
 
     // Analyze patterns for dynamic tuning
     await this.analyzeFeedbackPatterns(userId);
@@ -531,8 +532,8 @@ export class SmartChunkingAggregator {
   private calculateContentOverlap(content1: string, content2: string): number {
     const words1 = new Set(content1.toLowerCase().split(/\s+/));
     const words2 = new Set(content2.toLowerCase().split(/\s+/));
-    const intersection = new Set([...words1].filter(x => words2.has(x)));
-    const union = new Set([...words1, ...words2]);
+    const intersection = new Set(Array.from(words1).filter(x => words2.has(x)));
+    const union = new Set([...Array.from(words1), ...Array.from(words2)]);
     return intersection.size / union.size;
   }
 

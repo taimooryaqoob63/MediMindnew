@@ -18,8 +18,8 @@ export interface ProcessingOptions {
 
 export class DocumentProcessor {
   private defaultOptions: ProcessingOptions = {
-    chunkSize: 800,
-    chunkOverlap: 100,
+    chunkSize: 1000, // tokens, not words
+    chunkOverlap: 200, // tokens overlap
     extractEntities: true,
     buildKnowledgeGraph: true,
   };
@@ -209,17 +209,96 @@ export class DocumentProcessor {
     chunkSize: number,
     overlap: number
   ): Promise<string[]> {
+    // Split content into paragraphs first to preserve document structure
+    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
     const chunks: string[] = [];
-    const words = content.split(/\s+/);
-    
-    for (let i = 0; i < words.length; i += chunkSize - overlap) {
-      const chunk = words.slice(i, i + chunkSize).join(' ');
-      if (chunk.trim()) {
-        chunks.push(chunk.trim());
+    let currentChunk = '';
+    let currentTokens = 0;
+
+    for (const paragraph of paragraphs) {
+      const paragraphTokens = this.estimateTokenCount(paragraph);
+      
+      // If paragraph alone is larger than chunk size, split it by sentences
+      if (paragraphTokens > chunkSize) {
+        // Save current chunk if it has content
+        if (currentChunk.trim()) {
+          chunks.push(currentChunk.trim());
+          currentChunk = '';
+          currentTokens = 0;
+        }
+        
+        // Split large paragraph by sentences
+        const sentences = this.splitIntoSentences(paragraph);
+        let sentenceChunk = '';
+        let sentenceTokens = 0;
+        
+        for (const sentence of sentences) {
+          const sentenceTokenCount = this.estimateTokenCount(sentence);
+          
+          if (sentenceTokens + sentenceTokenCount > chunkSize && sentenceChunk.trim()) {
+            chunks.push(sentenceChunk.trim());
+            // Add overlap from previous chunk
+            sentenceChunk = this.getOverlapText(sentenceChunk, overlap) + ' ' + sentence;
+            sentenceTokens = this.estimateTokenCount(sentenceChunk);
+          } else {
+            sentenceChunk += (sentenceChunk ? ' ' : '') + sentence;
+            sentenceTokens += sentenceTokenCount;
+          }
+        }
+        
+        if (sentenceChunk.trim()) {
+          chunks.push(sentenceChunk.trim());
+        }
+      } else {
+        // Check if adding this paragraph would exceed chunk size
+        if (currentTokens + paragraphTokens > chunkSize && currentChunk.trim()) {
+          chunks.push(currentChunk.trim());
+          // Start new chunk with overlap
+          currentChunk = this.getOverlapText(currentChunk, overlap) + '\n\n' + paragraph;
+          currentTokens = this.estimateTokenCount(currentChunk);
+        } else {
+          currentChunk += (currentChunk ? '\n\n' : '') + paragraph;
+          currentTokens += paragraphTokens;
+        }
       }
     }
     
-    return chunks;
+    // Add final chunk if it has content
+    if (currentChunk.trim()) {
+      chunks.push(currentChunk.trim());
+    }
+    
+    // Filter out very small chunks (less than 50 tokens)
+    return chunks.filter(chunk => this.estimateTokenCount(chunk) >= 50);
+  }
+
+  private splitIntoSentences(text: string): string[] {
+    // Split by sentence boundaries while preserving structure
+    return text
+      .split(/([.!?]+\s+)/) // Split by sentence endings but keep the delimiters
+      .reduce((sentences: string[], part: string, index: number, array: string[]) => {
+        if (index % 2 === 0) {
+          // This is sentence content
+          const nextDelimiter = array[index + 1] || '';
+          sentences.push((part + nextDelimiter).trim());
+        }
+        return sentences;
+      }, [])
+      .filter(sentence => sentence.trim().length > 0);
+  }
+
+  private getOverlapText(text: string, overlapTokens: number): string {
+    const words = text.split(/\s+/);
+    const overlapWords = Math.min(Math.floor(overlapTokens * 0.75), words.length); // ~0.75 words per token
+    return words.slice(-overlapWords).join(' ');
+  }
+
+  private estimateTokenCount(text: string): number {
+    // More accurate token estimation: ~4 characters per token for English
+    // Account for word boundaries and punctuation
+    const words = text.split(/\s+/).length;
+    const chars = text.length;
+    return Math.ceil(Math.max(words * 0.75, chars / 4));
   }
 
   private async processChunk(
