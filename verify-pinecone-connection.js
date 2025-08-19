@@ -1,3 +1,4 @@
+
 import { Pinecone } from '@pinecone-database/pinecone';
 
 async function verifyPineconeConnection() {
@@ -122,15 +123,16 @@ async function verifyPineconeConnection() {
         success: true,
         indexName,
         stats,
-      features: [
-        'Pinecone vector storage',
-        'OpenAI embeddings',
-        'Semantic search',
-        'Hybrid retrieval',
-        'Multi-agent debate',
-        'Citation enforcement'
-      ]
-    };
+        features: [
+          'Pinecone vector storage',
+          'OpenAI embeddings',
+          'Semantic search',
+          'Hybrid retrieval',
+          'Multi-agent debate',
+          'Citation enforcement'
+        ]
+      };
+    }
 
   } catch (error) {
     console.error('❌ Pinecone connection verification failed:', error);
