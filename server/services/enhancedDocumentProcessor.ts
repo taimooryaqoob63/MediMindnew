@@ -112,42 +112,78 @@ export class EnhancedDocumentProcessor {
     return null;
   }
 
-  // Simulate Docling-like structured parsing
+  // Improved document structure parsing - much more inclusive
   private async parseWithDoclingStructure(content: string, filePath: string): Promise<DoclingStructure> {
-    // This simulates what Docling would provide - structured document parsing
     const lines = content.split('\n');
     const sections: DoclingStructure['sections'] = [];
     const references: string[] = [];
     const pageNumbers: Record<string, number> = {};
     
-    let currentSection: DoclingStructure['sections'][0] | null = null;
+    // Always create a default section to ensure content is captured
+    let currentSection: DoclingStructure['sections'][0] = {
+      heading: 'Document Content',
+      level: 1,
+      paragraphs: [],
+      tables: [],
+      figures: []
+    };
+    
     let currentPage = 1;
+    let currentParagraph = '';
 
     for (const line of lines) {
       const trimmedLine = line.trim();
-      if (!trimmedLine) continue;
+      if (!trimmedLine) {
+        // Empty line - if we have accumulated paragraph content, save it
+        if (currentParagraph.trim()) {
+          currentSection.paragraphs.push(currentParagraph.trim());
+          currentParagraph = '';
+        }
+        continue;
+      }
 
-      // Detect headings (simplified - look for numbered sections or all caps)
-      const headingMatch = trimmedLine.match(/^(\d+\.?\d*\.?\d*)\s+(.+)$/);
-      const isHeading = headingMatch || /^[A-Z\s]{5,}$/.test(trimmedLine);
+      // More flexible heading detection
+      const headingPatterns = [
+        /^(\d+\.?\d*\.?\d*)\s+(.+)$/, // Numbered headings
+        /^[A-Z][A-Z\s]{4,}$/, // All caps headings (reduced minimum)
+        /^(CHAPTER|SECTION|PART|INTRODUCTION|CONCLUSION|SUMMARY|BACKGROUND|METHODS|RESULTS|DISCUSSION)\b/i,
+        /^.{1,50}:$/, // Lines ending with colon (short titles)
+        /^#+\s/, // Markdown headings
+        /^[A-Z][^.!?]*$/ // Single sentence in title case without punctuation
+      ];
+
+      const isHeading = headingPatterns.some(pattern => pattern.test(trimmedLine)) && 
+                       trimmedLine.length < 100 && // Reasonable heading length
+                       !trimmedLine.includes('.') || trimmedLine.match(/^\d/); // Avoid normal sentences unless numbered
 
       if (isHeading) {
-        // Save previous section
-        if (currentSection) {
+        // Save current paragraph if exists
+        if (currentParagraph.trim()) {
+          currentSection.paragraphs.push(currentParagraph.trim());
+          currentParagraph = '';
+        }
+
+        // Save previous section if it has content
+        if (currentSection.paragraphs.length > 0 || currentSection.tables.length > 0 || currentSection.figures.length > 0) {
           sections.push(currentSection);
         }
 
         // Start new section
         currentSection = {
-          heading: headingMatch ? headingMatch[2] : trimmedLine,
-          level: headingMatch ? (headingMatch[1].split('.').length) : 1,
+          heading: trimmedLine,
+          level: 1,
           paragraphs: [],
           tables: [],
           figures: []
         };
-      } else if (currentSection) {
-        // Add to current section
-        if (trimmedLine.includes('Table') && trimmedLine.includes(':')) {
+      } else {
+        // Process content
+        if (trimmedLine.toLowerCase().includes('table') && trimmedLine.includes(':')) {
+          // Save current paragraph first
+          if (currentParagraph.trim()) {
+            currentSection.paragraphs.push(currentParagraph.trim());
+            currentParagraph = '';
+          }
           // Detect table
           const tableId = `T${currentSection.tables.length + 1}`;
           currentSection.tables.push({
@@ -155,7 +191,12 @@ export class EnhancedDocumentProcessor {
             caption: trimmedLine,
             data: []
           });
-        } else if (trimmedLine.includes('Figure') && trimmedLine.includes(':')) {
+        } else if (trimmedLine.toLowerCase().includes('figure') && trimmedLine.includes(':')) {
+          // Save current paragraph first
+          if (currentParagraph.trim()) {
+            currentSection.paragraphs.push(currentParagraph.trim());
+            currentParagraph = '';
+          }
           // Detect figure
           const figureId = `F${currentSection.figures.length + 1}`;
           currentSection.figures.push({
@@ -163,25 +204,61 @@ export class EnhancedDocumentProcessor {
             caption: trimmedLine,
             description: ''
           });
-        } else if (trimmedLine.includes('doi:') || trimmedLine.includes('NICE:')) {
+        } else if (trimmedLine.includes('doi:') || trimmedLine.includes('NICE:') || trimmedLine.includes('http')) {
           // Detect reference
           references.push(trimmedLine);
         } else {
-          // Regular paragraph
-          currentSection.paragraphs.push(trimmedLine);
+          // Accumulate paragraph content
+          currentParagraph += (currentParagraph ? ' ' : '') + trimmedLine;
         }
 
         // Track page numbers (simplified)
-        if (trimmedLine.includes('Page ') || currentSection.paragraphs.length % 20 === 0) {
+        if (trimmedLine.includes('Page ') || currentSection.paragraphs.length % 15 === 0) {
           pageNumbers[trimmedLine.substring(0, 50)] = currentPage++;
         }
       }
     }
 
-    // Add final section
-    if (currentSection) {
+    // Save final paragraph if exists
+    if (currentParagraph.trim()) {
+      currentSection.paragraphs.push(currentParagraph.trim());
+    }
+
+    // Always add the final section if it has content
+    if (currentSection.paragraphs.length > 0 || currentSection.tables.length > 0 || currentSection.figures.length > 0) {
       sections.push(currentSection);
     }
+
+    // If no sections were created, create one with all content as paragraphs
+    if (sections.length === 0) {
+      const allText = content.trim();
+      if (allText) {
+        // Split content into sentences and group them into paragraphs
+        const sentences = this.splitIntoSentences(allText);
+        const paragraphs: string[] = [];
+        let currentPara = '';
+        
+        for (const sentence of sentences) {
+          if (currentPara.length + sentence.length > 500) { // Max paragraph length
+            if (currentPara.trim()) paragraphs.push(currentPara.trim());
+            currentPara = sentence;
+          } else {
+            currentPara += (currentPara ? ' ' : '') + sentence;
+          }
+        }
+        if (currentPara.trim()) paragraphs.push(currentPara.trim());
+
+        sections.push({
+          heading: 'Document Content',
+          level: 1,
+          paragraphs: paragraphs,
+          tables: [],
+          figures: []
+        });
+      }
+    }
+
+    console.log(`📄 Document parsing completed: ${sections.length} sections, ${sections.reduce((acc, s) => acc + s.paragraphs.length, 0)} paragraphs`);
 
     return {
       sections,
@@ -201,7 +278,7 @@ export class EnhancedDocumentProcessor {
     return { size: 1000, overlap: 200 };
   }
 
-  // Structure-aware chunking with improved logic
+  // Semantic chunking - groups related sentences based on meaning rather than length
   private async chunkDocumentStructured(
     structure: DoclingStructure,
     docType: string,
@@ -212,56 +289,17 @@ export class EnhancedDocumentProcessor {
     for (const section of structure.sections) {
       const sectionPath = [section.heading];
 
-      // Process paragraphs with improved chunking
+      // Process paragraphs with semantic chunking
       for (const paragraph of section.paragraphs) {
-        const { size: chunkSize, overlap } = this.getAdaptiveChunkSize(docType, 'paragraph');
-        const paragraphTokens = this.estimateTokenCount(paragraph);
+        if (!paragraph.trim()) continue;
+
+        // Always create chunks from paragraphs - semantic grouping
+        const semanticChunks = await this.semanticChunkParagraph(paragraph, maxTokens);
         
-        if (paragraphTokens > chunkSize) {
-          // Split large paragraphs by sentences while preserving context
-          const sentences = this.splitIntoSentences(paragraph);
-          let currentChunk = '';
-          let currentTokens = 0;
-          
-          for (const sentence of sentences) {
-            const sentenceTokens = this.estimateTokenCount(sentence);
-            
-            if (currentTokens + sentenceTokens > chunkSize && currentChunk.trim()) {
-              // Add current chunk
-              chunks.push({
-                content: currentChunk.trim(),
-                metadata: {
-                  sectionPath,
-                  nodeType: 'paragraph',
-                  page: structure.pageNumbers[paragraph.substring(0, 50)]
-                }
-              });
-              
-              // Start new chunk with overlap
-              currentChunk = this.getOverlapText(currentChunk, overlap) + ' ' + sentence;
-              currentTokens = this.estimateTokenCount(currentChunk);
-            } else {
-              currentChunk += (currentChunk ? ' ' : '') + sentence;
-              currentTokens += sentenceTokens;
-            }
-          }
-          
-          // Add final chunk if it has content
-          if (currentChunk.trim()) {
+        for (const chunk of semanticChunks) {
+          if (chunk.trim()) { // Only check if content exists
             chunks.push({
-              content: currentChunk.trim(),
-              metadata: {
-                sectionPath,
-                nodeType: 'paragraph',
-                page: structure.pageNumbers[paragraph.substring(0, 50)]
-              }
-            });
-          }
-        } else {
-          // Keep short paragraphs as single chunks (lowered threshold to be more inclusive)
-          if (paragraphTokens >= 20) {
-            chunks.push({
-              content: paragraph,
+              content: chunk.trim(),
               metadata: {
                 sectionPath,
                 nodeType: 'paragraph',
@@ -272,7 +310,7 @@ export class EnhancedDocumentProcessor {
         }
       }
 
-      // Process tables
+      // Process tables - always include
       for (const table of section.tables) {
         chunks.push({
           content: `Table: ${table.caption}\nData: ${JSON.stringify(table.data)}`,
@@ -284,7 +322,7 @@ export class EnhancedDocumentProcessor {
         });
       }
 
-      // Process figures
+      // Process figures - always include
       for (const figure of section.figures) {
         chunks.push({
           content: `Figure: ${figure.caption}\nDescription: ${figure.description}`,
@@ -296,31 +334,49 @@ export class EnhancedDocumentProcessor {
       }
     }
 
-    // Fallback: If no chunks were created, try basic chunking on the raw content
+    // Ensure we always have chunks if we have content
     if (chunks.length === 0 && structure.sections.length > 0) {
-      console.warn('⚠️  Structure-aware chunking produced 0 chunks, falling back to basic chunking');
+      console.warn('⚠️  Semantic chunking produced 0 chunks, using sentence-based fallback');
       
-      // Combine all section content
+      // Combine all section content and force chunk creation
       const allContent = structure.sections
         .flatMap(s => s.paragraphs)
         .filter(p => p.trim().length > 0)
-        .join(' ');
+        .join('\n\n');
       
       if (allContent.trim()) {
-        // Use basic chunking as fallback
-        const basicChunks = await this.basicChunkContent(allContent, maxTokens);
-        for (let i = 0; i < basicChunks.length; i++) {
-          chunks.push({
-            content: basicChunks[i],
-            metadata: {
-              sectionPath: ['Fallback Content'],
-              nodeType: 'paragraph'
-            }
-          });
+        // Force creation of chunks using sentence-based approach
+        const sentences = this.splitIntoSentences(allContent);
+        if (sentences.length > 0) {
+          // Group sentences into chunks of reasonable size
+          const sentenceChunks = this.groupSentencesIntoChunks(sentences, maxTokens);
+          
+          for (let i = 0; i < sentenceChunks.length; i++) {
+            chunks.push({
+              content: sentenceChunks[i],
+              metadata: {
+                sectionPath: ['Document Content'],
+                nodeType: 'paragraph'
+              }
+            });
+          }
+        } else {
+          // Last resort: split by character length
+          const textChunks = this.forceCreateChunks(allContent, maxTokens);
+          for (const chunk of textChunks) {
+            chunks.push({
+              content: chunk,
+              metadata: {
+                sectionPath: ['Document Content'],
+                nodeType: 'paragraph'
+              }
+            });
+          }
         }
       }
     }
 
+    console.log(`🧠 Semantic chunking completed: ${chunks.length} chunks created`);
     return chunks;
   }
 
@@ -353,35 +409,107 @@ export class EnhancedDocumentProcessor {
     return Math.ceil(Math.max(words * 0.75, chars / 4));
   }
 
-  private async basicChunkContent(content: string, maxTokens: number = 1000): Promise<string[]> {
+  // Semantic chunking for individual paragraphs
+  private async semanticChunkParagraph(paragraph: string, maxTokens: number = 1000): Promise<string[]> {
+    if (!paragraph.trim()) return [];
+    
+    // If paragraph is short enough, return as single chunk
+    if (this.estimateTokenCount(paragraph) <= maxTokens) {
+      return [paragraph.trim()];
+    }
+
+    // Split into sentences for semantic grouping
+    const sentences = this.splitIntoSentences(paragraph);
+    if (sentences.length === 0) {
+      return paragraph.trim() ? [paragraph.trim()] : [];
+    }
+
+    return this.groupSentencesIntoChunks(sentences, maxTokens);
+  }
+
+  // Group sentences into semantically coherent chunks
+  private groupSentencesIntoChunks(sentences: string[], maxTokens: number = 1000): string[] {
+    if (sentences.length === 0) return [];
+    
     const chunks: string[] = [];
-    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
     let currentChunk = '';
     let currentTokens = 0;
-    const overlap = 200;
+    const minChunkSize = 50; // Minimum tokens for a chunk
+    const overlap = 50; // Token overlap between chunks
 
-    for (const paragraph of paragraphs) {
-      const paragraphTokens = this.estimateTokenCount(paragraph);
+    for (let i = 0; i < sentences.length; i++) {
+      const sentence = sentences[i].trim();
+      if (!sentence) continue;
       
-      // If adding this paragraph would exceed the limit and we have content
-      if (currentTokens + paragraphTokens > maxTokens && currentChunk.trim()) {
+      const sentenceTokens = this.estimateTokenCount(sentence);
+      
+      // If adding this sentence would exceed limit and we have enough content
+      if (currentTokens + sentenceTokens > maxTokens && currentTokens >= minChunkSize) {
         chunks.push(currentChunk.trim());
-        // Start new chunk with overlap from previous
-        currentChunk = this.getOverlapText(currentChunk, overlap) + '\n\n' + paragraph;
+        
+        // Start new chunk with some overlap for context
+        const overlapText = this.getLastSentences(currentChunk, overlap);
+        currentChunk = overlapText + (overlapText ? ' ' : '') + sentence;
         currentTokens = this.estimateTokenCount(currentChunk);
       } else {
-        currentChunk += (currentChunk ? '\n\n' : '') + paragraph;
-        currentTokens += paragraphTokens;
+        currentChunk += (currentChunk ? ' ' : '') + sentence;
+        currentTokens += sentenceTokens;
       }
     }
 
-    // Add final chunk if it has content
+    // Add final chunk
     if (currentChunk.trim()) {
       chunks.push(currentChunk.trim());
     }
 
-    // Filter out very small chunks (minimum 10 tokens for fallback)
-    return chunks.filter(chunk => this.estimateTokenCount(chunk) >= 10);
+    // Ensure we have at least one chunk if we had sentences
+    if (chunks.length === 0 && sentences.length > 0) {
+      const allText = sentences.join(' ').trim();
+      if (allText) {
+        chunks.push(allText);
+      }
+    }
+
+    return chunks;
+  }
+
+  // Get last few sentences for overlap
+  private getLastSentences(text: string, maxTokens: number): string {
+    const sentences = this.splitIntoSentences(text);
+    let result = '';
+    let tokens = 0;
+    
+    for (let i = sentences.length - 1; i >= 0; i--) {
+      const sentence = sentences[i];
+      const sentenceTokens = this.estimateTokenCount(sentence);
+      
+      if (tokens + sentenceTokens > maxTokens) break;
+      
+      result = sentence + (result ? ' ' + result : '');
+      tokens += sentenceTokens;
+    }
+    
+    return result;
+  }
+
+  // Force chunk creation as absolute last resort
+  private forceCreateChunks(content: string, maxTokens: number = 1000): string[] {
+    if (!content.trim()) return [];
+    
+    const chunks: string[] = [];
+    const words = content.split(/\s+/);
+    const wordsPerToken = 0.75; // Approximate words per token
+    const wordsPerChunk = Math.floor(maxTokens * wordsPerToken);
+    
+    for (let i = 0; i < words.length; i += wordsPerChunk) {
+      const chunkWords = words.slice(i, i + wordsPerChunk);
+      const chunk = chunkWords.join(' ').trim();
+      if (chunk) {
+        chunks.push(chunk);
+      }
+    }
+    
+    return chunks;
   }
 
   // Determine embedding model based on content type
