@@ -156,9 +156,9 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
         };
 
         const headingClasses = {
-          1: 'text-2xl font-bold text-gray-900 mt-8 mb-6 pb-3 border-b-2 border-gradient-to-r from-medical-blue to-medical-blue-light',
-          2: 'text-xl font-semibold text-gray-800 mt-6 mb-4 flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-medical-blue',
-          3: 'text-lg font-semibold text-gray-700 mt-5 mb-3 flex items-center gap-2 p-2 rounded-md bg-gray-50 border-l-3 border-gray-300',
+          1: 'text-2xl font-bold text-gray-900 mt-8 mb-6 pb-3 border-b-2 border-medical-blue',
+          2: 'text-xl font-semibold text-gray-800 mt-6 mb-4 flex items-center gap-3',
+          3: 'text-lg font-semibold text-gray-700 mt-5 mb-3 flex items-center gap-2',
           4: 'text-base font-semibold text-gray-600 mt-4 mb-3 flex items-center gap-2',
           5: 'text-sm font-semibold text-gray-600 mt-3 mb-2 flex items-center gap-2',
           6: 'text-sm font-medium text-gray-500 mt-2 mb-2 flex items-center gap-1'
