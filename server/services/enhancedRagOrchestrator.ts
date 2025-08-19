@@ -24,6 +24,7 @@ import type {
 } from "@shared/schema";
 import crypto from "crypto";
 import { ResponseFormatter } from "./responseFormatter";
+import { ImprovedResponseFormatter } from "./improvedResponseFormatter";
 
 interface QueryAnalysis {
   intent: string;
@@ -141,7 +142,7 @@ export class EnhancedRagOrchestrator {
             limit: 15,
             useKGExpansion: true,
             useLLMReranker: true,
-            queryType: analysis.queryType,
+            queryType: analysis.queryType === "emergency" ? "clinical" : analysis.queryType,
             minConfidence: 70,
           },
         );
@@ -174,7 +175,24 @@ export class EnhancedRagOrchestrator {
         agentContext,
       );
 
-      // Step 8: Synthesize response
+      // Step 8: Synthesize response  
+      const retrievalResult = {
+        sources: enhancedRetrieval.chunks.map((chunk) => ({
+          id: chunk.id,
+          title: (chunk.metadata as any)?.title || "Medical Document",
+          excerpt: chunk.content.substring(0, 200),
+          score: 0.85,
+          type: "document",
+          recency: 0.8,
+          relevance: 0.9,
+          pageNumber: (chunk.metadata as any)?.page,
+          section: chunk.sectionPath?.join(" > "),
+          clickable: true,
+        })),
+        totalRetrieved: enhancedRetrieval.chunks.length,
+        cacheHit: false,
+      };
+      
       const finalResponse = await this.synthesizeFinalResponse(
         agentResponses,
         analysis,
@@ -267,20 +285,17 @@ export class EnhancedRagOrchestrator {
         cacheHit: false,
       });
 
-      // Apply beautiful formatting to the final content
+      // STEP 1: Always clean the raw synthesized content.
       const rawContent = this.cleanupFinalResponse(
         responseWithDisclaimer.content || finalResponse.content || "",
       );
-      const beautifulContent = ResponseFormatter.formatResponse(rawContent, {
-        queryType: analysis.queryType,
-        confidence:
-          responseWithDisclaimer.confidence || finalResponse.confidence,
-        sources: responseWithDisclaimer.sources || finalResponse.sources,
-        followUpQuestions: finalResponse.followUpQuestions,
-        suggestedActions:
-          responseWithDisclaimer.suggestedActions ||
-          finalResponse.suggestedActions,
-      });
+
+      // STEP 2: Use your best formatter to structure the final output.
+      // This ensures a consistent, readable, and professional look for every response.
+      const beautifulContent = ImprovedResponseFormatter.formatDiabetesResponse(
+        rawContent,
+        responseWithDisclaimer.sources || finalResponse.sources || []
+      );
 
       return {
         content: beautifulContent,
@@ -1088,23 +1103,28 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
       throw new Error("No agent responses to synthesize");
     }
 
-    // Step 1: Apply semantic deduplication to agent responses (even for single responses)
-    console.log("Applying semantic deduplication to agent responses...");
+    // STEP 1: Aggressively deduplicate the agent responses first.
+    // This is the most critical change.
+    console.log("Applying robust semantic deduplication before synthesis...");
     const dedupedResponses =
       await this.semanticDeduplicateAgentResponses(agentResponses);
 
+    // If only one agent remains after deduplication, just use its response.
     if (dedupedResponses.length === 1) {
-      console.log("Returning single deduped response");
+      console.log("Returning single, deduplicated agent response.");
       return dedupedResponses[0];
     }
-
+    
+    // If no OpenAI key, we can't synthesize. Return the best single response.
     if (!this.openai) {
-      console.log("No OpenAI configured, returning first deduped response");
-      return dedupedResponses[0];
+      console.log("No OpenAI configured for synthesis, returning best agent response.");
+      // Sort by confidence and return the highest
+      return dedupedResponses.sort((a, b) => b.confidence - a.confidence)[0];
     }
-
+    
+    // STEP 2: Create a clean input for the synthesizer LLM.
     const agentOutputs = dedupedResponses
-      .map((response) => `${response.agentName}: ${response.content}`)
+      .map((response) => `Expert Opinion from ${response.agentName}:\n${response.content}`)
       .join("\n\n---\n\n");
 
     try {
@@ -1119,39 +1139,36 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
         messages: [
           {
             role: "system",
-            content: `You are an expert healthcare information synthesizer. Your critical task:
+            content: `You are an expert healthcare information synthesizer. Your critical task is to combine multiple expert opinions into ONE single, cohesive, and non-repetitive response.
+            
+CRITICAL RULES:
+1.  **NO REPETITION**: Do not repeat any sentence, fact, or instruction. If multiple experts say the same thing, state it only once.
+2.  **STRUCTURED FORMAT**: Use clear markdown headings (e.g., ## Explanation, ## Key Steps).
+3.  **BE CONCISE**: Synthesize, do not just combine. The final answer should be shorter than the inputs.
+4.  **PLAIN LANGUAGE**: Use simple, clear English suitable for a busy care worker.
+5.  **PROPER FORMATTING**: Use **bold** not *asterisk* patterns like *word*word*.
+6.  **NO PLACEHOLDERS**: Never include [BAD], [citation needed], or incomplete information.
+7.  **UNIQUE SENTENCES**: Each sentence must add new, different information.
+8.  **STOP DUPLICATING**: If you find yourself repeating content, stop immediately.
 
-CRITICAL ANTI-REPETITION AND FORMATTING RULES:
-1. NEVER repeat the same sentence twice
-2. NEVER duplicate any paragraph or section of text
-3. NEVER use malformed formatting like "Word*Word*" - use proper markdown **Word**
-4. NEVER include placeholder text like "[BAD]", "[citation needed]", or incomplete information
-5. Each piece of information must appear exactly ONCE in your response
-6. If multiple sources say the same thing, combine into ONE unique sentence
-7. Use proper markdown headings (## or ###) not raw text with ###
-8. Vary sentence structure completely - avoid any repetitive patterns
-9. STOP writing immediately if you find yourself about to repeat something
+RESPONSE STRUCTURE (Maximum 300 words):
+- ## Brief Explanation (1-2 sentences)
+- ## Practical Steps (3-4 clear actions)
+- ## Next Action (1 specific thing to do)
+- Each section must be unique and concise
 
-RESPONSE STRUCTURE (NO REPETITION, PROPER FORMATTING):
-- Maximum ${genSettings.maxTokens} tokens
-- Single cohesive response with unique sentences only
-- Proper markdown formatting throughout
-- Brief explanation → Practical example → Key steps → Next action
-- Each sentence must add NEW information
-- No redundant explanations or restatements
-
-FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses malformed formatting, or contains placeholder text, you have FAILED the task.`,
+FINAL CHECK: Review your response. Zero repetition allowed. Every sentence must be unique.`,
           },
           {
             role: "user",
-            content: `Query Type: ${analysis.queryType}\nComplexity: ${analysis.complexity}\n\nExpert Responses to synthesize:\n${agentOutputs}\n\nCreate ONE unified response with ZERO repetition. Each sentence must be unique and add new value.`,
+            content: `Please synthesize the following expert opinions into a single, final answer for the query. Ensure there is zero repetition.\n\n${agentOutputs}`,
           },
         ],
-        temperature: 0.05, // Extremely low temperature
-        max_tokens: Math.min(genSettings.maxTokens, 400), // Limit response length
-        presence_penalty: 2.0, // Maximum possible penalty
-        frequency_penalty: 2.0, // Maximum possible penalty
-        top_p: 0.5, // Very focused token selection
+        temperature: 0.1, // Low temperature for consistency
+        max_tokens: 250, // Much shorter responses
+        presence_penalty: 1.8, // High penalty for repetition
+        frequency_penalty: 1.8, // High penalty for repetition
+        top_p: 0.7, // Balanced token selection
         stop: [
           "As there is no specific",
           "Carbon dioxide (CO2) is a",
