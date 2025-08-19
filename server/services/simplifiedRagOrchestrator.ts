@@ -148,20 +148,32 @@ export class SimplifiedRagOrchestrator {
         searchResults = [];
       }
 
-      // Map results to our format
-      const sources = searchResults.map((result: any) => ({
-        id: result.id || result.metadata?.id || '',
-        title: result.metadata?.title || result.title || 'Medical Guidelines',
-        content: result.pageContent || result.content || result.text || '',
-        score: result.score || 0.8,
-        source: this.determineSource(result.metadata?.title || result.title || result.metadata?.source || ''),
-        pageNumber: result.metadata?.pageNumber,
-        section: result.metadata?.section
-      }));
+      // Map results to our format - handle various content field locations
+      const sources = searchResults.map((result: any) => {
+        const content = result.pageContent || result.content || result.text || 
+                       result.metadata?.content || result.metadata?.text || '';
+        const title = result.metadata?.title || result.title || 'Medical Guidelines';
+        const source = result.metadata?.source || 'Unknown';
+        
+        console.log(`📄 Processing result: ${result.id}, content length: ${content.length}, source: ${source}`);
+        
+        return {
+          id: result.id || result.metadata?.id || '',
+          title,
+          content,
+          score: result.score || 0.8,
+          source: this.determineSource(title + ' ' + source),
+          pageNumber: result.metadata?.pageNumber,
+          section: result.metadata?.section
+        };
+      });
 
       // Filter and sort by relevance and authority
       const filteredSources = sources
-        .filter((source: any) => source.content.length > 50) // Remove very short snippets
+        .filter((source: any) => {
+          console.log(`🔍 Filtering source ${source.id}: content length ${source.content.length}`);
+          return source.content.length > 20; // Lower threshold for testing
+        })
         .sort((a: any, b: any) => {
           // Prioritize NICE guidelines and Oxford book
           if (a.source === 'NICE' && b.source !== 'NICE') return -1;
@@ -170,6 +182,8 @@ export class SimplifiedRagOrchestrator {
           return b.score - a.score;
         })
         .slice(0, 5); // Keep only top 5 results
+        
+      console.log(`📚 Retrieved ${filteredSources.length} relevant sources`);
 
       return {
         sources: filteredSources,
