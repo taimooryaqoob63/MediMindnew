@@ -1,0 +1,39 @@
+Diabetes - type 1:
+How should I diagnose type 1 diabetes in an
+adult?
+Last revised in December 2024
+The content on the NICE Clinical Knowledge Summaries site (CKS) is the copyright ofClarity Informatics Limited (trading
+as Agilio Software Primary Care) (https://agiliosoftware.com/primary-care/). By using CKS, you agree to the licence set
+out in theCKS End User Licence Agreement (https://www.nice.org.uk/terms-and-conditions/cks-end-user-licence-
+agreement).Diagnose type 1 diabeteson clinical grounds in adults presenting with
+hyperglycaemia (random plasma glucose more than 11 mmol/L), bearing in mind that
+adults with type 1 diabetes typically (but do not always) have one or more of the
+following:
+Ketosis.
+Rapid weight loss.
+Age of onset younger than 50 years.
+Body mass index (BMI) below 25 kg/m.
+Personal and/or family history of autoimmune disease.
+Do not discount a diagnosis of type 1 diabetes if an adult presents with a BMI of 25
+kg/m or above, or is aged 50 years or older. 
+If type 1 diabetes is diagnosed, refer the person immediately (on the same day) to a
+diabetes specialist team to confirm the diagnosis and provide immediate care.
+Do not routinely measureC-peptide and/or diabetes-specific autoantibody titresto
+confirm the diagnosis of type 1 diabetes.
+C-peptide and/or diabetes-specific autoantibody titres may be measured (usually in
+secondary care) if:
+Type 1 diabetes is suspected but the clinical presentation includes some atypical
+features (for example age 50 years or older, BMI of 25 kg/m or above, or slow
+evolution of hyperglycaemia), or
+Type 1 diabetes has been diagnosed and treatment started but there is a clinical
+suspicion that the person may have a monogenic form of diabetes, and one or
+both tests may guide the use of genetic testing, or 
+Classification of diabetes is uncertain and confirming type 1 diabetes would have
+implications for availability of treatment, for example continuous subcutaneous
+insulin infusion (CSII or 'insulin pump') therapy. 
+Basis for recommendation
+Show2
+2
+
+©NICE (National Institute for Health and Care Excellence)2025. All rights reserved. Subject toNotice of rights
+(https://www.nice.org.uk/terms-and-conditions#notice-of-rights).
