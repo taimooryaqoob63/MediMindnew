@@ -234,14 +234,14 @@ export class ImprovedResponseFormatter {
    * Quick format method for simple responses
    */
   static quickFormat(explanation: string, example?: string, steps?: string[], action?: string): string {
-    let formatted = `## 🩺 Quick Explanation\n\n${explanation}\n\n`;
+    let formatted = `## Quick Explanation\n\n${explanation}\n\n`;
     
     if (example) {
-      formatted += `## 📍 In Your Care Home\n\n${example}\n\n`;
+      formatted += `## In Your Care Home\n\n${example}\n\n`;
     }
     
     if (steps && steps.length > 0) {
-      formatted += `## ✅ What To Do\n\n`;
+      formatted += `## What To Do\n\n`;
       steps.forEach((step, index) => {
         formatted += `${index + 1}. ${step}\n`;
       });
@@ -249,7 +249,7 @@ export class ImprovedResponseFormatter {
     }
     
     if (action) {
-      formatted += `## ➡️ Your Next Step\n\n**${action}**\n\n`;
+      formatted += `## Your Next Step\n\n**${action}**\n\n`;
     }
     
     return formatted.trim();

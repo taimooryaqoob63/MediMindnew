@@ -98,15 +98,15 @@ export class ResponseFormatter {
 
     // Add confidence banner if needed
     if (metadata?.confidence && metadata.confidence < 70) {
-      enhanced = `⚠️ **Please Note**: This response has moderate confidence. Consider consulting with a healthcare professional for complex cases.\n\n${enhanced}`;
+      enhanced = `**Please Note**: This response has moderate confidence. Consider consulting with a healthcare professional for complex cases.\n\n${enhanced}`;
     }
 
-    // Enhance headings with emojis
-    enhanced = enhanced.replace(/^## (Understanding|Explanation|Brief)/gmi, '## 🩺 $1');
-    enhanced = enhanced.replace(/^## (Example|Practical|For example)/gmi, '## 📍 $1');
-    enhanced = enhanced.replace(/^## (Steps|Key|Actions|Procedure)/gmi, '## ✅ $1');
-    enhanced = enhanced.replace(/^## (Next|Action|Immediate)/gmi, '## ➡️ $1');
-    enhanced = enhanced.replace(/^## (Emergency|Warning|Critical)/gmi, '## 🚨 $1');
+    // Enhance headings - NO EMOJIS
+    enhanced = enhanced.replace(/^## (Understanding|Explanation|Brief)/gmi, '## $1');
+    enhanced = enhanced.replace(/^## (Example|Practical|For example)/gmi, '## $1');
+    enhanced = enhanced.replace(/^## (Steps|Key|Actions|Procedure)/gmi, '## $1');
+    enhanced = enhanced.replace(/^## (Next|Action|Immediate)/gmi, '## $1');
+    enhanced = enhanced.replace(/^## (Emergency|Warning|Critical)/gmi, '## $1');
 
     // Enhance bullet points
     enhanced = enhanced.replace(/^- /gm, '• ');

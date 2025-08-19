@@ -64,19 +64,19 @@ function formatStructuredResponse(data: any): string {
   // Brief Explanation Section
   if (data.BriefExplanation || data.briefExplanation) {
     const explanation = data.BriefExplanation || data.briefExplanation;
-    formatted += `## 🩺 Brief Explanation\n\n${explanation}\n\n---\n\n`;
+    formatted += `## Brief Explanation\n\n${explanation}\n\n---\n\n`;
   }
   
   // Practical Example Section
   if (data.PracticalExample || data.practicalExample) {
     const example = data.PracticalExample || data.practicalExample;
-    formatted += `## 📍 Practical Example (Care Home Setting)\n\n${example}\n\n---\n\n`;
+    formatted += `## Practical Example (Care Home Setting)\n\n${example}\n\n---\n\n`;
   }
   
   // Key Steps Section
   if (data.KeySteps || data.keySteps) {
     const steps = data.KeySteps || data.keySteps;
-    formatted += `## ✅ Key Steps\n\n`;
+    formatted += `## Key Steps\n\n`;
     
     if (Array.isArray(steps)) {
       steps.forEach((step, index) => {
@@ -96,19 +96,19 @@ function formatStructuredResponse(data: any): string {
   // One Clear Action Section
   if (data.OneClearAction || data.oneClearAction) {
     const action = data.OneClearAction || data.oneClearAction;
-    formatted += `## ➡️ One Clear Action\n\n`;
+    formatted += `## One Clear Action\n\n`;
     
     if (typeof action === 'object' && action.NextStep) {
-      formatted += `🔎 **Next Step:** ${action.NextStep}\n\n`;
+      formatted += `**Next Step:** ${action.NextStep}\n\n`;
     } else if (typeof action === 'string') {
-      formatted += `🔎 **Next Step:** ${action}\n\n`;
+      formatted += `**Next Step:** ${action}\n\n`;
     }
   }
   
   // Additional sections that might be present
   if (data.KeyPoints || data.keyPoints) {
     const points = data.KeyPoints || data.keyPoints;
-    formatted += `## 🎯 Key Points\n\n`;
+    formatted += `## Key Points\n\n`;
     
     if (Array.isArray(points)) {
       points.forEach(point => {
@@ -123,19 +123,19 @@ function formatStructuredResponse(data: any): string {
   // Safety Information
   if (data.SafetyInformation || data.safetyInformation) {
     const safety = data.SafetyInformation || data.safetyInformation;
-    formatted += `## 🛡️ Safety Information\n\n⚠️ ${safety}\n\n`;
+    formatted += `## Safety Information\n\n**Warning:** ${safety}\n\n`;
   }
   
   // Guidelines/Compliance
   if (data.Guidelines || data.guidelines) {
     const guidelines = data.Guidelines || data.guidelines;
-    formatted += `## 📋 Guidelines & Compliance\n\n${guidelines}\n\n`;
+    formatted += `## Guidelines & Compliance\n\n${guidelines}\n\n`;
   }
   
   // Follow-up Questions
   if (data.FollowUpQuestions || data.followUpQuestions) {
     const questions = data.FollowUpQuestions || data.followUpQuestions;
-    formatted += `## 💡 Follow-up Questions\n\n`;
+    formatted += `## Follow-up Questions\n\n`;
     
     if (Array.isArray(questions)) {
       questions.forEach(question => {
@@ -154,12 +154,12 @@ function formatStructuredResponse(data: any): string {
 function enhanceRegularResponse(content: string): string {
   let enhanced = content;
   
-  // Add section breaks for common patterns
-  enhanced = enhanced.replace(/\n\n(Important|Note|Warning|Caution|Remember):/gi, '\n\n⚠️ **$1:**');
-  enhanced = enhanced.replace(/\n\n(Example|For example):/gi, '\n\n📍 **Example:**');
-  enhanced = enhanced.replace(/\n\n(Steps|To do this|Procedure):/gi, '\n\n✅ **Steps:**');
-  enhanced = enhanced.replace(/\n\n(Next|Action|Next step):/gi, '\n\n➡️ **Next Step:**');
-  enhanced = enhanced.replace(/\n\n(Key points|Summary):/gi, '\n\n🎯 **Key Points:**');
+  // Add section breaks for common patterns - NO EMOJIS
+  enhanced = enhanced.replace(/\n\n(Important|Note|Warning|Caution|Remember):/gi, '\n\n**$1:**');
+  enhanced = enhanced.replace(/\n\n(Example|For example):/gi, '\n\n**Example:**');
+  enhanced = enhanced.replace(/\n\n(Steps|To do this|Procedure):/gi, '\n\n**Steps:**');
+  enhanced = enhanced.replace(/\n\n(Next|Action|Next step):/gi, '\n\n**Next Step:**');
+  enhanced = enhanced.replace(/\n\n(Key points|Summary):/gi, '\n\n**Key Points:**');
   
   // Enhance medication mentions
   enhanced = enhanced.replace(/\b(insulin|metformin|glucagon|glucose|blood sugar|HbA1c)\b/gi, '**$1**');
