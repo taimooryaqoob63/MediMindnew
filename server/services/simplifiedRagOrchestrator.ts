@@ -150,12 +150,13 @@ export class SimplifiedRagOrchestrator {
 
       // Map results to our format - handle various content field locations
       const sources = searchResults.map((result: any) => {
-        const content = result.pageContent || result.content || result.text || 
+        // The vectorStore.searchSimilar returns content in 'excerpt' field
+        const content = result.excerpt || result.pageContent || result.content || result.text || 
                        result.metadata?.content || result.metadata?.text || '';
-        const title = result.metadata?.title || result.title || 'Medical Guidelines';
+        const title = result.title || result.metadata?.title || 'Medical Guidelines';
         const source = result.metadata?.source || 'Unknown';
         
-        console.log(`📄 Processing result: ${result.id}, content length: ${content.length}, source: ${source}`);
+        console.log(`📄 Processing result: ${result.id}, content length: ${content.length}, source: ${source}, title: ${title}`);
         
         return {
           id: result.id || result.metadata?.id || '',
@@ -163,8 +164,8 @@ export class SimplifiedRagOrchestrator {
           content,
           score: result.score || 0.8,
           source: this.determineSource(title + ' ' + source),
-          pageNumber: result.metadata?.pageNumber,
-          section: result.metadata?.section
+          pageNumber: result.metadata?.pageNumber || result.pageNumber,
+          section: result.metadata?.section || result.section
         };
       });
 
