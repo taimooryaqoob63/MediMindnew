@@ -1,0 +1,90 @@
+🔎 What’s Wrong in Your Current Code
+
+Excessive Styling + Gradients + Glassmorphism Everywhere
+
+You’re layering gradients (bg-gradient-to-b, glass-morphism, chat-message-bot-glassmorphism, etc.).
+
+This makes every message bubble too visually heavy compared to ChatGPT’s very minimal design.
+
+Prose Classes from Tailwind
+
+className={`
+  text-sm leading-relaxed select-text prose prose-sm max-w-none 
+  prose-headings:text-gray-800 prose-headings:font-semibold
+  prose-strong:text-gray-900 prose-strong:font-bold
+  prose-a:text-medical-blue hover:prose-a:text-medical-blue-dark 
+  prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded
+  prose-p:mb-4 prose-p:leading-7
+  prose-ul:my-4 prose-li:my-1
+  ${highlightMode ? 'prose-strong:bg-yellow-200 prose-strong:px-1 prose-strong:rounded' : ''}
+`}
+
+
+Tailwind prose utilities are great for blogs/docs, but in chat UIs they introduce too many colors, margins, font sizes, and spacing rules.
+
+That’s why your answers look multicolored and noisy.
+
+Strong + Headings Highlighted
+
+AI responses formatted with **bold** or ## headings are styled very aggressively (dark bold, large headings, colored links, highlighted background).
+
+ChatGPT does lightweight Markdown rendering only (subtle bold, same font size, inline code slightly gray).
+
+Extra Badges + Icons in Each Message
+
+You add avatars, timestamps, “evidence-based” tags, and icons around every message.
+
+While useful, they clutter the chat — ChatGPT keeps each bubble as just text + minimal metadata.
+
+✅ How to Fix (Make It ChatGPT-like)
+
+Strip Down Message Bubble Styling
+
+<div
+  className={`max-w-xl px-4 py-2 my-2 rounded-2xl ${
+    msg.role === "user"
+      ? "bg-blue-500 text-white self-end"
+      : "bg-gray-100 text-gray-900 self-start"
+  }`}
+>
+  <MarkdownRenderer content={msg.response || msg.message} />
+</div>
+
+
+User → blue background, white text
+
+AI → light gray background, dark text
+
+No gradients, no shadows, no multicolor badges.
+
+Remove Heavy prose Styling
+
+Replace with subtle Markdown styles:
+
+.chat-markdown p { margin: 0.5rem 0; }
+.chat-markdown strong { font-weight: 600; }
+.chat-markdown code { background: #f3f4f6; padding: 2px 4px; border-radius: 4px; }
+
+
+→ Keeps text readable but not noisy.
+
+Simplify Metadata
+
+Keep timestamps in a tiny gray font under the bubble (like ChatGPT).
+
+Remove per-message badges/icons unless really necessary.
+
+Example:
+
+<p className="text-xs text-gray-400 mt-1">
+  {formatTimestamp(msg.timestamp)}
+</p>
+
+
+Keep Chat Container Clean
+
+<div className="flex flex-col h-[80vh] overflow-y-auto p-4 bg-white">
+  {messages.map((msg, i) => (
+    <Message key={i} role={msg.role} text={msg.response || msg.message} />
+  ))}
+</div>

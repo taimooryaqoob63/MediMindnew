@@ -123,7 +123,7 @@ export const RAG_CONFIG: {
 } = {
   retrieval: {
     topK: 8,
-    minScore: 0.5, // Lowered from 0.75 to be more permissive
+    minScore: 0.3, // Lowered from 0.75 to be more permissive
     hybridSearchEnabled: true,
     bm25Weight: 0.3,
     embeddingWeight: 0.7,
@@ -136,7 +136,7 @@ export const RAG_CONFIG: {
     clinical: {
       temperature: 0.3,
       topP: 0.9,
-      maxTokens: 500,
+      maxTokens: 300,
       model: 'gpt-4o',
     },
     educational: {
