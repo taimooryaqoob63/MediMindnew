@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Mic, MicOff, Volume2, VolumeX, ChevronDown, Stethoscope, Heart, BookOpen, AlertCircle, Maximize2, Minimize2, Trash2, FileText, Download, Sparkles, HighlighterIcon as Highlight, User, Copy, CheckCheck, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Bot, Send, Mic, MicOff, Volume2, VolumeX, ChevronDown, Stethoscope, Heart, BookOpen, AlertCircle, Maximize2, Minimize2, Trash2, FileText, Download, Sparkles, HighlighterIcon as Highlight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarkdownRenderer } from "@/components/ui/markdown";
@@ -42,9 +42,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [highlightMode, setHighlightMode] = useState(false);
   const [lastSessionBreak, setLastSessionBreak] = useState<Date>(new Date());
-  const [showAllSources, setShowAllSources] = useState(false); // State for showing all sources
-  const [copiedMessageId, setCopiedMessageId] = useState<string | number | null>(null); // State for copy feedback
-  const [feedbackState, setFeedbackState] = useState<{ [key: string]: 'positive' | 'negative' | undefined }>({}); // State for feedback
 
   // TTS and STT state
   const [isListening, setIsListening] = useState(false);
@@ -384,30 +381,6 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
     return timeDiff > 30 * 60 * 1000; // 30 minutes
   };
 
-  const copyToClipboard = async (text: string, id: string | number) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedMessageId(id);
-      setTimeout(() => setCopiedMessageId(null), 2000); // Reset after 2 seconds
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    }
-  };
-
-  const handleFeedback = (messageId: string, type: 'positive' | 'negative') => {
-    setFeedbackState(prevState => ({ ...prevState, [messageId]: type }));
-    // Here you would typically send this feedback to your backend
-    console.log(`Feedback for message ${messageId}: ${type}`);
-  };
-
-  const handleFollowUpClick = (question: string) => {
-    setInputMessage(question);
-    inputRef.current?.focus();
-  };
-
-  // Determine if messages are loading (using chatMutation.isPending is more reliable)
-  const isLoading = chatMutation.isPending;
-
   return (
     <>
       {/* Fullscreen backdrop */}
@@ -415,14 +388,16 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 animate-fade-in" />
       )}
 
-      {/* Main Chat Container */}
-      <div className={`bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden ${
-          isFullScreen 
-            ? 'fixed inset-4 z-50' 
-            : 'h-[600px] w-full max-w-4xl mx-auto'
-        }`}>
-
-        {/* Enhanced Header */}
+      <div className={`
+        ${isFullScreen 
+          ? 'fixed inset-4 z-50 max-w-none max-h-none rounded-3xl shadow-2xl glass-morphism-strong' 
+          : isMobile 
+            ? 'h-96 border-t-0 rounded-t-2xl glass-morphism' 
+            : 'w-96 h-full border-l-0 rounded-l-none rounded-r-2xl glass-morphism'
+        } 
+        flex flex-col slide-in-right overflow-hidden transition-all duration-500 ease-in-out glass-floating
+      `}>
+        {/* Enhanced Header with New Actions */}
         <div className="px-6 py-3 text-white flex-shrink-0 medical-header-gradient">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -441,6 +416,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
             {/* Enhanced Action Buttons */}
             <div className="flex items-center space-x-2">
+              {/* Learning Tools */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -473,6 +449,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <Download className="w-4 h-4" />
               </Button>
 
+              {/* Clear Chat */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -489,6 +466,7 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 <Trash2 className="w-4 h-4" />
               </Button>
 
+              {/* Fullscreen Toggle */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -504,6 +482,9 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
                 {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
 
+
+
+              {/* Close/Minimize */}
               {(isMobile || isFullScreen) && (
                 <Button
                   variant="ghost"
@@ -518,246 +499,247 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
           </div>
         </div>
 
-        {/* Enhanced Chat Messages Area */}
-        <div 
-          ref={scrollContainerRef}
-          className={`
-            flex-1 overflow-y-auto py-4 space-y-6 bg-gradient-to-b from-white to-gray-50/30
-            ${isFullScreen ? 'px-4' : 'px-6'}
-            ${isMobile ? 'max-h-64' : 'min-h-0'}
-            chat-scroll
-          `}
-          style={{ 
-            overscrollBehavior: 'contain',
-            WebkitOverflowScrolling: 'touch'
-          }}>
-          <div className={`${isFullScreen ? 'max-w-4xl mx-auto' : ''}`}>
-          {/* Enhanced Welcome Message */}
+      {/* Enhanced Chat Messages Area */}
+      <div 
+        ref={scrollContainerRef}
+        className={`
+          flex-1 overflow-y-auto py-4 space-y-6 bg-gradient-to-b from-white to-gray-50/30
+          ${isFullScreen ? 'px-4' : 'px-6'}
+          ${isMobile ? 'max-h-64' : 'min-h-0'}
+          chat-scroll
+        `}
+        style={{ 
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch'
+        }}>
+        {/* Container for centered messages in full screen */}
+        <div className={`${isFullScreen ? 'max-w-4xl mx-auto' : ''}`}>
+        {/* Enhanced Welcome Message */}
+        <div className="flex items-start space-x-4 animate-fade-in">
+          <div className="chat-avatar-bot">
+            <Heart className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1">
+            <div className="chat-message-bot">
+              <div className="flex items-center space-x-2 mb-2">
+                <BookOpen className="w-4 h-4 text-healthcare-green" />
+                <span className="text-sm font-medium text-healthcare-green">Welcome Guide</span>
+              </div>
+              <p className="text-sm leading-relaxed">
+                Hello! I'm your MediMind AI tutor, specializing in evidence-based diabetes care. 
+                I can help with clinical guidelines, medication management, and patient care protocols 
+                based on <strong>NICE guidelines</strong>, <strong>NHS best practices</strong>, and <strong>CQC requirements</strong>.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-healthcare-green-light text-healthcare-green font-medium">
+                  📋 Clinical Guidelines
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-medical-blue-light text-medical-blue font-medium">
+                  💊 Medication Safety
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700 font-medium">
+                  🎯 Best Practices
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2 flex items-center space-x-1">
+              <Bot className="w-3 h-3" />
+              <span>AI Assistant • Always learning</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Enhanced Chat Messages with Session Breaks */}
+        {messages.map((msg, index) => (
+          <div key={msg.id}>
+            {/* Session Break */}
+            {shouldShowSessionBreak(index) && (
+              <div className="flex items-center my-6 session-break animate-fade-in">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                <div className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full text-xs text-gray-500 font-medium shadow-sm">
+                  <span>{new Date(msg.timestamp).toLocaleDateString()} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+              </div>
+            )}
+
+            <div className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              {/* User Message with Glassmorphism */}
+              <div className="flex items-end space-x-3 justify-end mb-6">
+                <div className="flex-1">
+                  <div className={`${isFullScreen ? 'chat-message-user-glassmorphism-fullscreen ml-auto' : 'chat-message-user-glassmorphism ml-auto'} transition-all duration-300 hover:shadow-lg hover:scale-[1.02]`}>
+                    <p className="text-sm leading-relaxed select-text font-medium">{msg.message}</p>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2 text-right opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <span className="inline-flex items-center space-x-1">
+                      <span>You</span>
+                      <span>•</span>
+                      <span>{formatTimestamp(msg.timestamp)}</span>
+                    </span>
+                  </p>
+                </div>
+                <div className="chat-avatar-user">
+                  <span className="text-white text-xs font-semibold">You</span>
+                </div>
+              </div>
+
+              {/* Enhanced AI Response with Glassmorphism */}
+              <div className="flex items-start space-x-4 mb-6">
+                <div className="chat-avatar-bot">
+                  <Stethoscope className="w-4 h-4 text-white" />
+                </div>
+                <div className="space-y-3 flex-1">
+                  <div className={`${isFullScreen ? 'chat-message-bot-glassmorphism-fullscreen' : 'chat-message-bot-glassmorphism'} transition-all duration-300 hover:shadow-lg hover:scale-[1.01] chat-response-formatted`}>
+                    <MarkdownRenderer 
+                      content={(() => {
+                        // Clean and format the response for better presentation
+                        const cleanedResponse = cleanupResponse(msg.response);
+                        const formatted = formatAIResponse(cleanedResponse);
+                        return formatted.content;
+                      })()} 
+                      className={`
+                        text-sm leading-relaxed select-text prose prose-sm max-w-none 
+                        prose-headings:text-gray-800 prose-headings:font-semibold
+                        prose-strong:text-gray-900 prose-strong:font-bold
+                        prose-a:text-medical-blue hover:prose-a:text-medical-blue-dark 
+                        prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded
+                        prose-p:mb-4 prose-p:leading-7
+                        prose-ul:my-4 prose-li:my-1
+                        ${highlightMode ? 'prose-strong:bg-yellow-200 prose-strong:px-1 prose-strong:rounded' : ''}
+                      `}
+                    />
+                  </div>
+
+                  <p className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <span className="inline-flex items-center space-x-1">
+                      <Bot className="w-3 h-3" />
+                      <span>MediMind AI</span>
+                      <span>•</span>
+                      <span>{formatTimestamp(msg.timestamp)}</span>
+                      <span>•</span>
+                      <span className="text-healthcare-green">Evidence-based</span>
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Enhanced Loading Message */}
+        {chatMutation.isPending && (
           <div className="flex items-start space-x-4 animate-fade-in">
             <div className="chat-avatar-bot">
-              <Heart className="w-4 h-4 text-white" />
+              <Stethoscope className="w-4 h-4 text-white animate-pulse" />
             </div>
             <div className="flex-1">
               <div className="chat-message-bot">
-                <div className="flex items-center space-x-2 mb-2">
-                  <BookOpen className="w-4 h-4 text-healthcare-green" />
-                  <span className="text-sm font-medium text-healthcare-green">Welcome Guide</span>
+                <div className="flex items-center space-x-3">
+                  <div className="chat-typing-indicator">
+                    <div className="chat-typing-dot" style={{ animationDelay: '0s' }}></div>
+                    <div className="chat-typing-dot" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="chat-typing-dot" style={{ animationDelay: '0.4s' }}></div>
+                  </div>
+                  <span className="text-sm text-gray-600 font-medium">Analyzing your question...</span>
                 </div>
-                <p className="text-sm leading-relaxed">
-                  Hello! I'm your MediMind AI tutor, specializing in evidence-based diabetes care. 
-                  I can help with clinical guidelines, medication management, and patient care protocols 
-                  based on <strong>NICE guidelines</strong>, <strong>NHS best practices</strong>, and <strong>CQC requirements</strong>.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-healthcare-green-light text-healthcare-green font-medium">
-                    📋 Clinical Guidelines
-                  </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-medical-blue-light text-medical-blue font-medium">
-                    💊 Medication Safety
-                  </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700 font-medium">
-                    🎯 Best Practices
-                  </span>
-                </div>
+                <p className="text-xs text-gray-500 mt-2">Consulting medical guidelines and evidence-based practices</p>
               </div>
-              <p className="text-xs text-gray-500 mt-2 flex items-center space-x-1">
-                <Bot className="w-3 h-3" />
-                <span>AI Assistant • Always learning</span>
-              </p>
             </div>
           </div>
+        )}
 
-          {/* Enhanced Chat Messages with Session Breaks */}
-          {messages.map((msg, index) => (
-            <div key={msg.id}>
-              {/* Session Break */}
-              {shouldShowSessionBreak(index) && (
-                <div className="flex items-center my-6 session-break animate-fade-in">
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                  <div className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full text-xs text-gray-500 font-medium shadow-sm">
-                    <span>{new Date(msg.timestamp).toLocaleDateString()} • {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                </div>
-              )}
+        <div ref={messagesEndRef} />
+        </div> {/* End centered messages container */}
+      </div>
 
-              <div className="group animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                {/* User Message with Glassmorphism */}
-                <div className="flex items-end space-x-3 justify-end mb-6">
-                  <div className="flex-1">
-                    <div className={`${isFullScreen ? 'chat-message-user-glassmorphism-fullscreen ml-auto' : 'chat-message-user-glassmorphism ml-auto'} transition-all duration-300 hover:shadow-lg hover:scale-[1.02]`}>
-                      <p className="text-sm leading-relaxed select-text font-medium">{msg.message}</p>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2 text-right opacity-0 group-hover:opacity-100 transition-all duration-300">
-                      <span className="inline-flex items-center space-x-1">
-                        <span>You</span>
-                        <span>•</span>
-                        <span>{formatTimestamp(msg.timestamp)}</span>
-                      </span>
-                    </p>
-                  </div>
-                  <div className="chat-avatar-user">
-                    <span className="text-white text-xs font-semibold">You</span>
-                  </div>
-                </div>
-
-                {/* Enhanced AI Response with Glassmorphism */}
-                <div className="flex items-start space-x-4 mb-6">
-                  <div className="chat-avatar-bot">
-                    <Stethoscope className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="space-y-3 flex-1">
-                    <div className={`${isFullScreen ? 'chat-message-bot-glassmorphism-fullscreen' : 'chat-message-bot-glassmorphism'} transition-all duration-300 hover:shadow-lg hover:scale-[1.01] chat-response-formatted`}>
-                      <MarkdownRenderer 
-                        content={(() => {
-                          // Clean and format the response for better presentation
-                          const cleanedResponse = cleanupResponse(msg.response);
-                          const formatted = formatAIResponse(cleanedResponse);
-                          return formatted.content;
-                        })()} 
-                        className={`
-                          text-sm leading-relaxed select-text prose prose-sm max-w-none 
-                          prose-headings:text-gray-800 prose-headings:font-semibold
-                          prose-strong:text-gray-900 prose-strong:font-bold
-                          prose-a:text-medical-blue hover:prose-a:text-medical-blue-dark 
-                          prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded
-                          prose-p:mb-4 prose-p:leading-7
-                          prose-ul:my-4 prose-li:my-1
-                          ${highlightMode ? 'prose-strong:bg-yellow-200 prose-strong:px-1 prose-strong:rounded' : ''}
-                        `}
-                      />
-                    </div>
-
-                    <p className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                      <span className="inline-flex items-center space-x-1">
-                        <Bot className="w-3 h-3" />
-                        <span>MediMind AI</span>
-                        <span>•</span>
-                        <span>{formatTimestamp(msg.timestamp)}</span>
-                        <span>•</span>
-                        <span className="text-healthcare-green">Evidence-based</span>
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Enhanced Loading Message */}
-          {isLoading && (
-            <div className="flex items-start space-x-4 animate-fade-in">
-              <div className="chat-avatar-bot">
-                <Stethoscope className="w-4 h-4 text-white animate-pulse" />
-              </div>
-              <div className="flex-1">
-                <div className="chat-message-bot">
-                  <div className="flex items-center space-x-3">
-                    <div className="chat-typing-indicator">
-                      <div className="chat-typing-dot" style={{ animationDelay: '0s' }}></div>
-                      <div className="chat-typing-dot" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="chat-typing-dot" style={{ animationDelay: '0.4s' }}></div>
-                    </div>
-                    <span className="text-sm text-gray-600 font-medium">Analyzing your question...</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">Consulting medical guidelines and evidence-based practices</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-          </div> {/* End centered messages container */}
-        </div>
-
-        {/* Enhanced Input Area */}
-        <div className="glass-morphism-subtle">
-          <div className={`${isFullScreen ? 'px-6 py-3' : 'px-4 py-2'}`}>
-            <div className={`${isFullScreen ? 'max-w-4xl mx-auto' : ''}`}>
-            <div className="flex items-end space-x-3">
-              <div className="flex-1">
-                <div className="relative glass-input rounded-2xl focus-within:shadow-lg focus-within:scale-[1.02] transition-all duration-300">
-                  <textarea
-                    ref={inputRef}
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    placeholder="Ask me anything"
-                    className="w-full px-4 py-3 bg-transparent border-0 focus:outline-none resize-none placeholder-gray-500 text-gray-800"
-                    disabled={chatMutation.isPending}
-                    rows={1}
-                    style={{ 
-                      minHeight: '48px',
-                      resize: 'none'
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Enhanced Control Buttons */}
-              <div className="flex items-center space-x-2">
-                <Button
-                  onClick={isListening ? stopListening : startListening}
+      {/* Enhanced Input Area with Glassmorphism */}
+      <div className="glass-morphism-subtle">
+        <div className={`${isFullScreen ? 'px-6 py-3' : 'px-4 py-2'}`}>
+          <div className={`${isFullScreen ? 'max-w-4xl mx-auto' : ''}`}>
+          <div className="flex items-end space-x-3">
+            <div className="flex-1">
+              <div className="relative glass-input rounded-2xl focus-within:shadow-lg focus-within:scale-[1.02] transition-all duration-300">
+                <textarea
+                  ref={inputRef}
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Ask me anything"
+                  className="w-full px-4 py-3 bg-transparent border-0 focus:outline-none resize-none placeholder-gray-500 text-gray-800"
                   disabled={chatMutation.isPending}
-                  className={`glass-button p-3 rounded-xl ${isListening ? 'glass-morphism-strong text-red-600' : 'text-medical-blue'}`}
-                  size="sm"
-                >
-                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                </Button>
-
-                <Button
-                  onClick={stopSpeaking}
-                  className={`glass-button p-3 rounded-xl transition-all duration-300 ${
-                    synthesis?.speaking 
-                      ? 'text-red-600 glass-morphism-strong' 
-                      : 'text-gray-600'
-                  }`}
-                  size="sm"
-                  title="Stop/Mute speech"
-                >
-                  <VolumeX className="w-4 h-4" />
-                </Button>
-
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || chatMutation.isPending}
-                  className="glass-button p-3 text-medical-blue hover:text-white hover:bg-medical-blue disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all duration-300"
-                  size="sm"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+                  rows={1}
+                  style={{ 
+                    minHeight: '48px',
+                    resize: 'none'
+                  }}
+                />
               </div>
             </div>
 
-            {/* Enhanced Status Indicators */}
-            <div className="flex items-center justify-between mt-2 px-2">
-              <div className="flex items-center space-x-4 text-xs text-gray-600">
-                {isListening && (
-                  <span className="flex items-center space-x-1 text-red-600 animate-pulse glass-morphism-subtle px-2 py-1 rounded-full">
-                    <Mic className="w-3 h-3" />
-                    <span>Listening...</span>
-                  </span>
-                )}
-                {synthesis?.speaking && (
-                  <span className="flex items-center space-x-1 text-medical-blue animate-pulse glass-morphism-subtle px-2 py-1 rounded-full">
-                    <Volume2 className="w-3 h-3" />
-                    <span>Speaking...</span>
-                  </span>
-                )}
-                <span className="flex items-center space-x-1 glass-morphism-subtle px-2 py-1 rounded-full">
-                  <Bot className="w-3 h-3" />
-                  <span>Evidence-based responses</span>
-                </span>
-              </div>
+            {/* Enhanced Control Buttons with Glassmorphism */}
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={isListening ? stopListening : startListening}
+                disabled={chatMutation.isPending}
+                className={`glass-button p-3 rounded-xl ${isListening ? 'glass-morphism-strong text-red-600' : 'text-medical-blue'}`}
+                size="sm"
+              >
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </Button>
 
-              <div className="flex items-center space-x-1 text-xs text-gray-500">
-                <kbd className="px-1.5 py-0.5 glass-morphism-subtle rounded text-xs">Enter</kbd>
-                <span>to send</span>
-              </div>
+              <Button
+                onClick={stopSpeaking}
+                className={`glass-button p-3 rounded-xl transition-all duration-300 ${
+                  synthesis?.speaking 
+                    ? 'text-red-600 glass-morphism-strong' 
+                    : 'text-gray-600'
+                }`}
+                size="sm"
+                title="Stop/Mute speech"
+              >
+                <VolumeX className="w-4 h-4" />
+              </Button>
+
+              <Button
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || chatMutation.isPending}
+                className="glass-button p-3 text-medical-blue hover:text-white hover:bg-medical-blue disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all duration-300"
+                size="sm"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
             </div>
-            </div> {/* End centered input container */}
           </div>
+
+          {/* Enhanced Status Indicators with Glassmorphism */}
+          <div className="flex items-center justify-between mt-2 px-2">
+            <div className="flex items-center space-x-4 text-xs text-gray-600">
+              {isListening && (
+                <span className="flex items-center space-x-1 text-red-600 animate-pulse glass-morphism-subtle px-2 py-1 rounded-full">
+                  <Mic className="w-3 h-3" />
+                  <span>Listening...</span>
+                </span>
+              )}
+              {synthesis?.speaking && (
+                <span className="flex items-center space-x-1 text-medical-blue animate-pulse glass-morphism-subtle px-2 py-1 rounded-full">
+                  <Volume2 className="w-3 h-3" />
+                  <span>Speaking...</span>
+                </span>
+              )}
+              <span className="flex items-center space-x-1 glass-morphism-subtle px-2 py-1 rounded-full">
+                <Bot className="w-3 h-3" />
+                <span>Evidence-based responses</span>
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-1 text-xs text-gray-500">
+              <kbd className="px-1.5 py-0.5 glass-morphism-subtle rounded text-xs">Enter</kbd>
+              <span>to send</span>
+            </div>
+          </div>
+          </div> {/* End centered input container */}
         </div>
+      </div>
       </div>
     </>
   );

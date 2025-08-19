@@ -284,12 +284,11 @@
 
   /* Enhanced Message Styling */
   .chat-message-user-glassmorphism {
-    @apply text-white rounded-2xl rounded-br-md px-4 py-3 shadow-lg;
     background: linear-gradient(135deg, rgba(32, 131, 188, 0.9), rgba(59, 130, 246, 0.9));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(32, 131, 188, 0.4);
+    box-shadow: 0 8px 32px 0 rgba(32, 131, 188, 0.4);
     border-radius: 1.5rem;
     padding: 1rem 1.25rem;
     color: white;
@@ -298,12 +297,11 @@
   }
 
   .chat-message-bot-glassmorphism {
-    @apply text-gray-800 rounded-2xl rounded-bl-md px-4 py-3 shadow-lg;
     background: rgba(248, 250, 252, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(226, 232, 240, 0.6);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
     border-radius: 1.5rem;
     padding: 1rem 1.25rem;
     position: relative;
@@ -446,13 +444,13 @@
   /* Full screen mode message styles - ChatGPT like layout */
   .chat-message-user-glassmorphism-fullscreen {
     @apply text-white rounded-2xl rounded-br-md px-5 py-4 shadow-lg;
-    background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    background: rgba(59, 130, 246, 0.9);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
-    line-height: 1.6;
-    max-width: 32rem; /* Wider for full screen */
+    line-height: 1.5;
+    max-width: 48rem; /* Wider for full screen */
   }
 
   .chat-message-bot-glassmorphism-fullscreen {
@@ -680,52 +678,6 @@
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-  }
-
-  /* Simplified chat markdown styles */
-  .chat-markdown p { 
-    margin: 0.5rem 0; 
-    line-height: 1.6;
-  }
-
-  .chat-markdown strong { 
-    font-weight: 600; 
-  }
-
-  .chat-markdown code { 
-    background: #f3f4f6; 
-    padding: 2px 4px; 
-    border-radius: 4px; 
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 0.875em;
-  }
-
-  .chat-markdown h1, .chat-markdown h2, .chat-markdown h3 {
-    font-weight: 600;
-    margin: 1rem 0 0.5rem 0;
-  }
-
-  .chat-markdown h1 { font-size: 1.25em; }
-  .chat-markdown h2 { font-size: 1.125em; }
-  .chat-markdown h3 { font-size: 1em; }
-
-  .chat-markdown ul, .chat-markdown ol {
-    margin: 0.5rem 0;
-    padding-left: 1.5rem;
-  }
-
-  .chat-markdown li {
-    margin: 0.25rem 0;
-  }
-
-  .chat-markdown a {
-    color: #3b82f6;
-    text-decoration: none;
-  }
-
-  .chat-markdown a:hover {
-    color: #1d4ed8;
-    text-decoration: underline;
   }
 }
 
