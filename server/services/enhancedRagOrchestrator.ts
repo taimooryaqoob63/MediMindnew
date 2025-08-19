@@ -1,25 +1,35 @@
-import OpenAI from 'openai';
-import { vectorStore } from './vectorStore';
-import { storage } from '../storage';
-import { RAG_CONFIG, getGenerationSettings, shouldEscalateToHuman, validateCitations } from '../config/ragConfiguration';
-import { nlpIntentDetector } from './nlpIntentDetector';
-import { hybridSearch } from './hybridSearch';
-import { enhancedRetrievalWithReranking } from './enhancedRetrievalWithReranking';
-import { smartChunkingAggregator } from './smartChunkingAggregator';
-import { humanEscalationService } from './humanEscalationService';
-import { citationEnforcementService } from './citationEnforcementService';
-import type { 
-  User, ChatResponse, InsertRagAnalytics, InsertChatSummary, InsertQueryCache, 
-  InsertIntentClassification, InsertResponseFeedback 
-} from '@shared/schema';
-import crypto from 'crypto';
-import { ResponseFormatter } from './responseFormatter';
+import OpenAI from "openai";
+import { vectorStore } from "./vectorStore";
+import { storage } from "../storage";
+import {
+  RAG_CONFIG,
+  getGenerationSettings,
+  shouldEscalateToHuman,
+  validateCitations,
+} from "../config/ragConfiguration";
+import { nlpIntentDetector } from "./nlpIntentDetector";
+import { hybridSearch } from "./hybridSearch";
+import { enhancedRetrievalWithReranking } from "./enhancedRetrievalWithReranking";
+import { smartChunkingAggregator } from "./smartChunkingAggregator";
+import { humanEscalationService } from "./humanEscalationService";
+import { citationEnforcementService } from "./citationEnforcementService";
+import type {
+  User,
+  ChatResponse,
+  InsertRagAnalytics,
+  InsertChatSummary,
+  InsertQueryCache,
+  InsertIntentClassification,
+  InsertResponseFeedback,
+} from "@shared/schema";
+import crypto from "crypto";
+import { ResponseFormatter } from "./responseFormatter";
 
 interface QueryAnalysis {
   intent: string;
-  queryType: 'faq' | 'educational' | 'clinical' | 'emergency';
+  queryType: "faq" | "educational" | "clinical" | "emergency";
   entities: string[];
-  complexity: 'simple' | 'moderate' | 'complex';
+  complexity: "simple" | "moderate" | "complex";
   requiresSpecialistKnowledge: boolean;
   requiresComplianceCheck: boolean;
   suggestedFilters: Record<string, any>;
@@ -31,7 +41,7 @@ interface EnhancedAgentResponse {
   confidence: number;
   sources: any[];
   followUpQuestions?: string[];
-  suggestedActions?: Array<{label: string; action: string; url?: string}>;
+  suggestedActions?: Array<{ label: string; action: string; url?: string }>;
   agentName: string;
   responseTime: number;
   tokenUsage: {
@@ -79,147 +89,174 @@ export class EnhancedRagOrchestrator {
     query: string,
     user: User,
     courseId?: string,
-    conversationHistory?: string[]
+    conversationHistory?: string[],
   ): Promise<ChatResponse> {
     const startTime = Date.now();
-    
+
     try {
       // Step 1: Enhanced emergency and intent detection
-      const intentAnalysis = await nlpIntentDetector.analyzeIntent(query, conversationHistory?.join('\n'));
+      const intentAnalysis = await nlpIntentDetector.analyzeIntent(
+        query,
+        conversationHistory?.join("\n"),
+      );
       const emergencyCheck = {
         isEmergency: intentAnalysis.isEmergency,
         keywords: intentAnalysis.entities,
-        urgencyLevel: intentAnalysis.urgencyLevel
+        urgencyLevel: intentAnalysis.urgencyLevel,
       };
 
       // Step 2: Check cache
       const cacheResult = await this.checkQueryCache(query);
       if (cacheResult) {
         await this.logAnalytics({
-          eventType: 'cache_hit',
+          eventType: "cache_hit",
           userId: user.id,
-          queryType: 'cached',
+          queryType: "cached",
           cacheHit: true,
           responseTime: Date.now() - startTime,
         });
-        
+
         // Add emergency disclaimer to cached responses if needed
         if (emergencyCheck.isEmergency) {
-          return this.addEmergencyDisclaimer(cacheResult, emergencyCheck.keywords);
+          return this.addEmergencyDisclaimer(
+            cacheResult,
+            emergencyCheck.keywords,
+          );
         }
         return cacheResult;
       }
 
       // Step 3: Intent analysis
       const analysis = await this.analyzeQueryWithIntent(query, user);
-      
+
       // Step 4: Agent context
       const agentContext = await this.getAgentContext(user.id, courseId);
 
       // Step 5: Enhanced retrieval with smart chunking and reranking
-      const enhancedRetrieval = await enhancedRetrievalWithReranking.performEnhancedRetrieval(
-        query,
-        user.id,
-        {
-          limit: 15,
-          useKGExpansion: true,
-          useLLMReranker: true,
-          queryType: analysis.queryType,
-          minConfidence: 70
-        }
-      );
+      const enhancedRetrieval =
+        await enhancedRetrievalWithReranking.performEnhancedRetrieval(
+          query,
+          user.id,
+          {
+            limit: 15,
+            useKGExpansion: true,
+            useLLMReranker: true,
+            queryType: analysis.queryType,
+            minConfidence: 70,
+          },
+        );
 
       // Step 6: Agent pruning
       const selectedAgents = this.pruneAgents(analysis);
 
       // Step 7: Parallel processing with enhanced chunks
       const agentResponses = await this.processAgentsInParallel(
-        query, 
+        query,
         {
-          sources: enhancedRetrieval.chunks.map(chunk => ({
+          sources: enhancedRetrieval.chunks.map((chunk) => ({
             id: chunk.id,
-            title: (chunk.metadata as any)?.title || 'Medical Document',
+            title: (chunk.metadata as any)?.title || "Medical Document",
             excerpt: chunk.content.substring(0, 200),
             score: 0.85,
-            type: 'document',
+            type: "document",
             recency: 0.8,
             relevance: 0.9,
             pageNumber: (chunk.metadata as any)?.page,
-            section: chunk.sectionPath?.join(' > '),
-            clickable: true
+            section: chunk.sectionPath?.join(" > "),
+            clickable: true,
           })),
           totalRetrieved: enhancedRetrieval.chunks.length,
-          cacheHit: false
-        }, 
-        user, 
-        analysis, 
+          cacheHit: false,
+        },
+        user,
+        analysis,
         selectedAgents,
-        agentContext
+        agentContext,
       );
 
       // Step 8: Synthesize response
       const finalResponse = await this.synthesizeFinalResponse(
-        agentResponses, 
-        analysis, 
-        retrievalResult
+        agentResponses,
+        analysis,
+        retrievalResult,
       );
 
       // Step 9: Enhanced citation validation with audit trail
-      const citationValidation = await citationEnforcementService.validateCitations(
-        finalResponse.sources || [],
-        analysis.queryType,
-        finalResponse.content,
-        user.id
-      );
-      
+      const citationValidation =
+        await citationEnforcementService.validateCitations(
+          finalResponse.sources || [],
+          analysis.queryType,
+          finalResponse.content,
+          user.id,
+        );
+
       // Citation validation affects confidence but warnings are not shown to users
-      if (!citationValidation.isValid && finalResponse.confidence && finalResponse.confidence > 60) {
+      if (
+        !citationValidation.isValid &&
+        finalResponse.confidence &&
+        finalResponse.confidence > 60
+      ) {
         finalResponse.confidence = Math.max(citationValidation.confidence, 30);
         // Citation enforcement still works internally, but warning messages are not appended to user response
         // The citations themselves will still be displayed, just not the warning text
       }
 
       // Step 10: Check for human escalation
-      const escalationResult = await humanEscalationService.evaluateForEscalation(
-        query,
-        finalResponse,
-        user,
-        conversationHistory?.join('\n'),
-        emergencyCheck.urgencyLevel
-      );
+      const escalationResult =
+        await humanEscalationService.evaluateForEscalation(
+          query,
+          finalResponse,
+          user,
+          conversationHistory?.join("\n"),
+          emergencyCheck.urgencyLevel,
+        );
 
       if (escalationResult.shouldEscalate) {
         // Return escalation response instead of AI response
         const escalationResponse = escalationResult.escalationResponse!;
-        
+
         await this.logAnalytics({
-          eventType: 'escalation',
+          eventType: "escalation",
           userId: user.id,
           queryType: analysis.queryType,
           confidence: finalResponse.confidence || 0,
           responseTime: Date.now() - startTime,
-          metadata: { escalationId: escalationResult.escalationId }
+          metadata: { escalationId: escalationResult.escalationId },
         });
 
         return escalationResponse;
       }
 
       // Step 11: Add emergency disclaimer if needed
-      const responseWithDisclaimer = emergencyCheck.isEmergency 
-        ? this.addEmergencyDisclaimer(finalResponse, emergencyCheck.keywords, emergencyCheck.urgencyLevel)
+      const responseWithDisclaimer = emergencyCheck.isEmergency
+        ? this.addEmergencyDisclaimer(
+            finalResponse,
+            emergencyCheck.keywords,
+            emergencyCheck.urgencyLevel,
+          )
         : finalResponse;
 
       // Step 12: Cache if appropriate (cache original response, not the one with disclaimer)
-      if (analysis.queryType === 'faq' || (finalResponse.confidence && finalResponse.confidence > RAG_CONFIG.performance.cacheThreshold)) {
+      if (
+        analysis.queryType === "faq" ||
+        (finalResponse.confidence &&
+          finalResponse.confidence > RAG_CONFIG.performance.cacheThreshold)
+      ) {
         await this.cacheResponse(query, finalResponse);
       }
 
       // Step 13: Update summaries
-      await this.updateAgentSummaries(user.id, courseId, query, finalResponse, selectedAgents);
+      await this.updateAgentSummaries(
+        user.id,
+        courseId,
+        query,
+        finalResponse,
+        selectedAgents,
+      );
 
       // Step 14: Log analytics
       await this.logAnalytics({
-        eventType: 'response',
+        eventType: "response",
         userId: user.id,
         queryType: analysis.queryType,
         agentsUsed: selectedAgents,
@@ -231,79 +268,109 @@ export class EnhancedRagOrchestrator {
       });
 
       // Apply beautiful formatting to the final content
-      const rawContent = this.cleanupFinalResponse(responseWithDisclaimer.content || finalResponse.content || '');
+      const rawContent = this.cleanupFinalResponse(
+        responseWithDisclaimer.content || finalResponse.content || "",
+      );
       const beautifulContent = ResponseFormatter.formatResponse(rawContent, {
         queryType: analysis.queryType,
-        confidence: responseWithDisclaimer.confidence || finalResponse.confidence,
+        confidence:
+          responseWithDisclaimer.confidence || finalResponse.confidence,
         sources: responseWithDisclaimer.sources || finalResponse.sources,
         followUpQuestions: finalResponse.followUpQuestions,
-        suggestedActions: responseWithDisclaimer.suggestedActions || finalResponse.suggestedActions
+        suggestedActions:
+          responseWithDisclaimer.suggestedActions ||
+          finalResponse.suggestedActions,
       });
 
       return {
         content: beautifulContent,
         sources: responseWithDisclaimer.sources || finalResponse.sources,
-        confidence: responseWithDisclaimer.confidence || finalResponse.confidence,
+        confidence:
+          responseWithDisclaimer.confidence || finalResponse.confidence,
         followUpQuestions: finalResponse.followUpQuestions,
-        suggestedActions: responseWithDisclaimer.suggestedActions || finalResponse.suggestedActions,
+        suggestedActions:
+          responseWithDisclaimer.suggestedActions ||
+          finalResponse.suggestedActions,
         usedRAG: true,
         cacheHit: false,
-        agentsUsed: 'agentsUsed' in responseWithDisclaimer ? responseWithDisclaimer.agentsUsed : selectedAgents,
+        agentsUsed:
+          "agentsUsed" in responseWithDisclaimer
+            ? responseWithDisclaimer.agentsUsed
+            : selectedAgents,
         responseTime: Date.now() - startTime,
         streamable: true,
       };
-
     } catch (error) {
-      console.error('Enhanced RAG processing error:', error);
-      
+      console.error("Enhanced RAG processing error:", error);
+
       await this.logAnalytics({
-        eventType: 'error',
+        eventType: "error",
         userId: user.id,
-        queryType: 'error',
+        queryType: "error",
         responseTime: Date.now() - startTime,
         metadata: { error: (error as Error).message },
       });
 
       return {
-        content: "I'm experiencing technical difficulties. Please consult your local healthcare guidelines for immediate assistance.",
+        content:
+          "I'm experiencing technical difficulties. Please consult your local healthcare guidelines for immediate assistance.",
         confidence: 0,
         sources: [],
         usedRAG: false,
-        agentsUsed: ['error_handler'],
+        agentsUsed: ["error_handler"],
         responseTime: Date.now() - startTime,
       };
     }
   }
 
   // Deprecated - replaced by NLP intent detection
-  private checkEmergencyKeywords(query: string): { isEmergency: boolean; keywords: string[] } {
+  private checkEmergencyKeywords(query: string): {
+    isEmergency: boolean;
+    keywords: string[];
+  } {
     // Fallback for when NLP analysis fails
     const emergencyKeywords = [
-      'emergency', 'urgent', 'immediate', 'critical', 'severe', 'danger',
-      'unconscious', 'seizure', 'stroke', 'heart attack', 'hypoglycemia',
-      'ketoacidosis', 'diabetic coma', 'blood sugar', 'insulin shock'
+      "emergency",
+      "urgent",
+      "immediate",
+      "critical",
+      "severe",
+      "danger",
+      "unconscious",
+      "seizure",
+      "stroke",
+      "heart attack",
+      "hypoglycemia",
+      "ketoacidosis",
+      "diabetic coma",
+      "blood sugar",
+      "insulin shock",
     ];
-    
+
     const queryLower = query.toLowerCase();
-    const foundKeywords = emergencyKeywords.filter(keyword => 
-      queryLower.includes(keyword)
+    const foundKeywords = emergencyKeywords.filter((keyword) =>
+      queryLower.includes(keyword),
     );
-    
+
     return {
       isEmergency: foundKeywords.length > 0,
-      keywords: foundKeywords
+      keywords: foundKeywords,
     };
   }
 
-  private addEmergencyDisclaimer(response: ChatResponse, keywords: string[], urgencyLevel?: string): ChatResponse {
-    let emergencyDisclaimer = '';
-    
-    if (urgencyLevel === 'critical' || urgencyLevel === 'high') {
+  private addEmergencyDisclaimer(
+    response: ChatResponse,
+    keywords: string[],
+    urgencyLevel?: string,
+  ): ChatResponse {
+    let emergencyDisclaimer = "";
+
+    if (urgencyLevel === "critical" || urgencyLevel === "high") {
       emergencyDisclaimer = `
 
 ---
 
-🚨 **CRITICAL SAFETY NOTICE**: This appears to be a high-urgency medical situation (${keywords.join(', ')}).
+🚨 **CRITICAL SAFETY NOTICE**: This appears to be a high-urgency medical situation (${keywords.join(", ")}).
 
 **IMMEDIATE ACTIONS REQUIRED:**
 • **CALL 999 NOW** if someone is in immediate danger
@@ -318,7 +385,7 @@ export class EnhancedRagOrchestrator {
 
 ---
 
-🚨 **IMPORTANT SAFETY NOTICE**: Your query contains emergency-related terms (${keywords.join(', ')}). 
+🚨 **IMPORTANT SAFETY NOTICE**: Your query contains emergency-related terms (${keywords.join(", ")}). 
 
 **If this is an actual emergency:**
 • **CALL 999 IMMEDIATELY** for emergency medical assistance
@@ -329,8 +396,10 @@ export class EnhancedRagOrchestrator {
 ⚠️ **This is educational content only. AI cannot replace emergency medical care or institutional protocols.**`;
     }
 
-    const formattedContent = ResponseFormatter.formatEmergencyResponse(response.content + emergencyDisclaimer);
-    
+    const formattedContent = ResponseFormatter.formatEmergencyResponse(
+      response.content + emergencyDisclaimer,
+    );
+
     return {
       ...response,
       content: formattedContent,
@@ -338,13 +407,19 @@ export class EnhancedRagOrchestrator {
       suggestedActions: [
         ...(response.suggestedActions || []),
         { label: "Call 999", action: "emergency_call", url: "tel:999" },
-        { label: "Emergency Protocols", action: "view_protocols", url: "/emergency-protocols" }
+        {
+          label: "Emergency Protocols",
+          action: "view_protocols",
+          url: "/emergency-protocols",
+        },
       ],
-      agentsUsed: [...(response.agentsUsed || []), 'emergency_disclaimer']
+      agentsUsed: [...(response.agentsUsed || []), "emergency_disclaimer"],
     };
   }
 
-  private async handleEmergencyResponse(keywords: string[]): Promise<ChatResponse> {
+  private async handleEmergencyResponse(
+    keywords: string[],
+  ): Promise<ChatResponse> {
     return {
       content: `🚨 EMERGENCY DETECTED: This appears to be an urgent medical situation. Please:
 
@@ -353,30 +428,41 @@ export class EnhancedRagOrchestrator {
 3. Contact the on-call medical professional
 4. Document the incident as required by CQC guidelines
 
-Keywords detected: ${keywords.join(', ')}
+Keywords detected: ${keywords.join(", ")}
 
 ⚠️ AI systems cannot provide emergency medical care. This is an automated safety response.`,
       confidence: 100,
       sources: [],
       suggestedActions: [
         { label: "Call 999", action: "emergency_call", url: "tel:999" },
-        { label: "Emergency Protocols", action: "view_protocols", url: "/emergency-protocols" },
-        { label: "Incident Documentation", action: "document_incident", url: "/incident-form" }
+        {
+          label: "Emergency Protocols",
+          action: "view_protocols",
+          url: "/emergency-protocols",
+        },
+        {
+          label: "Incident Documentation",
+          action: "document_incident",
+          url: "/incident-form",
+        },
       ],
       usedRAG: false,
-      agentsUsed: ['emergency_handler'],
+      agentsUsed: ["emergency_handler"],
       responseTime: 0,
     };
   }
 
   private async checkQueryCache(query: string): Promise<ChatResponse | null> {
     try {
-      const queryHash = crypto.createHash('sha256').update(query.toLowerCase().trim()).digest('hex');
+      const queryHash = crypto
+        .createHash("sha256")
+        .update(query.toLowerCase().trim())
+        .digest("hex");
       const cached = await storage.getQueryCache(queryHash);
-      
+
       if (cached && new Date() < new Date(cached.expiresAt)) {
         await storage.updateQueryCacheHit(cached.id);
-        
+
         return {
           content: cached.response,
           sources: cached.sources as any[],
@@ -387,15 +473,18 @@ Keywords detected: ${keywords.join(', ')}
         };
       }
     } catch (error) {
-      console.error('Cache check error:', error);
+      console.error("Cache check error:", error);
     }
-    
+
     return null;
   }
 
-  private async analyzeQueryWithIntent(query: string, user: User): Promise<QueryAnalysis> {
+  private async analyzeQueryWithIntent(
+    query: string,
+    user: User,
+  ): Promise<QueryAnalysis> {
     if (!this.openai) {
-      throw new Error('OpenAI not configured');
+      throw new Error("OpenAI not configured");
     }
 
     const startTime = Date.now();
@@ -427,16 +516,19 @@ Provide JSON response with:
 
       const analysisText = response.choices[0]?.message?.content;
       if (!analysisText) {
-        throw new Error('No analysis received');
+        throw new Error("No analysis received");
       }
 
       // Clean up any markdown formatting if present
-      const cleanedText = analysisText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const cleanedText = analysisText
+        .replace(/```json\n?/g, "")
+        .replace(/```\n?/g, "")
+        .trim();
       const analysis = JSON.parse(cleanedText);
-      
+
       await storage.createIntentClassification({
         query,
-        intent: analysis.intent || 'unknown',
+        intent: analysis.intent || "unknown",
         confidence: analysis.confidence || 50,
         modelUsed: "gpt-4o-mini",
         processingTime: Date.now() - startTime,
@@ -444,45 +536,57 @@ Provide JSON response with:
 
       return analysis;
     } catch (error) {
-      console.error('Intent analysis error:', error);
+      console.error("Intent analysis error:", error);
       return {
-        intent: 'general_inquiry',
-        queryType: 'educational',
+        intent: "general_inquiry",
+        queryType: "educational",
         entities: [],
-        complexity: 'moderate',
+        complexity: "moderate",
         requiresSpecialistKnowledge: false,
         requiresComplianceCheck: false,
-        suggestedFilters: { category: 'diabetes' },
+        suggestedFilters: { category: "diabetes" },
         confidence: 50,
       };
     }
   }
 
-  private async getAgentContext(userId: string, courseId?: string): Promise<AgentContext> {
+  private async getAgentContext(
+    userId: string,
+    courseId?: string,
+  ): Promise<AgentContext> {
     try {
       const summaries = await storage.getChatSummaries(userId, courseId);
-      
-      const summary = summaries.length > 0 
-        ? summaries.map(s => `${s.agentType}: ${s.summary}`).join('\n')
-        : 'No previous interactions recorded.';
+
+      const summary =
+        summaries.length > 0
+          ? summaries.map((s) => `${s.agentType}: ${s.summary}`).join("\n")
+          : "No previous interactions recorded.";
 
       const recentInteractions = summaries
-        .filter(s => s.lastUpdated && s.lastUpdated > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
-        .map(s => s.summary)
+        .filter(
+          (s) =>
+            s.lastUpdated &&
+            s.lastUpdated > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        )
+        .map((s) => s.summary)
         .slice(-5);
 
       return {
         summary,
         recentInteractions,
         roleSpecificContext: {
-          userRole: 'care_worker',
-          focusAreas: ['diabetes', 'medication_management', 'emergency_response'],
+          userRole: "care_worker",
+          focusAreas: [
+            "diabetes",
+            "medication_management",
+            "emergency_response",
+          ],
         },
       };
     } catch (error) {
-      console.error('Context retrieval error:', error);
+      console.error("Context retrieval error:", error);
       return {
-        summary: 'No context available',
+        summary: "No context available",
         recentInteractions: [],
         roleSpecificContext: {},
       };
@@ -490,49 +594,70 @@ Provide JSON response with:
   }
 
   private async dynamicRetrieval(
-    query: string, 
-    analysis: QueryAnalysis, 
-    context: AgentContext
+    query: string,
+    analysis: QueryAnalysis,
+    context: AgentContext,
   ): Promise<RetrievalResult> {
     try {
-      console.log(`🔍 [dynamicRetrieval] Starting retrieval for query: "${query.substring(0, 50)}..."`);
-      console.log(`🔍 [dynamicRetrieval] Analysis:`, { 
-        queryType: analysis.queryType, 
+      console.log(
+        `🔍 [dynamicRetrieval] Starting retrieval for query: "${query.substring(0, 50)}..."`,
+      );
+      console.log(`🔍 [dynamicRetrieval] Analysis:`, {
+        queryType: analysis.queryType,
         complexity: analysis.complexity,
-        suggestedFilters: analysis.suggestedFilters 
+        suggestedFilters: analysis.suggestedFilters,
       });
-      
+
       const filters = {
         ...analysis.suggestedFilters,
-        ...(analysis.queryType === 'clinical' && { recency_weight: 1.5 }),
+        ...(analysis.queryType === "clinical" && { recency_weight: 1.5 }),
         ...(analysis.requiresComplianceCheck && { compliance_focused: true }),
       };
-      
+
       // Log the filters for debugging
       console.log(`🔍 [dynamicRetrieval] Original filters:`, filters);
-      
+
       // Temporarily remove restrictive filters to test if vectors can be found
       const testFilters = {};
-      console.log(`🔍 [dynamicRetrieval] Using simplified filters:`, testFilters);
+      console.log(
+        `🔍 [dynamicRetrieval] Using simplified filters:`,
+        testFilters,
+      );
 
-      const limit = analysis.complexity === 'complex' ? 15 : 
-                   analysis.complexity === 'moderate' ? 10 : 5;
+      const limit =
+        analysis.complexity === "complex"
+          ? 15
+          : analysis.complexity === "moderate"
+            ? 10
+            : 5;
 
-      console.log(`🔍 [dynamicRetrieval] Calling vectorStore.searchSimilar with limit: ${limit}, filters:`, filters);
-      
-      const results = await vectorStore.searchSimilar(query, limit, testFilters);
-      
-      console.log(`🔍 [dynamicRetrieval] Vector search returned ${results.length} results`);
-      
-      const enhancedResults = results.map(result => ({
+      console.log(
+        `🔍 [dynamicRetrieval] Calling vectorStore.searchSimilar with limit: ${limit}, filters:`,
+        filters,
+      );
+
+      const results = await vectorStore.searchSimilar(
+        query,
+        limit,
+        testFilters,
+      );
+
+      console.log(
+        `🔍 [dynamicRetrieval] Vector search returned ${results.length} results`,
+      );
+
+      const enhancedResults = results.map((result) => ({
         ...result,
         recency: this.calculateRecencyScore(result),
         relevance: this.calculateRelevanceScore(result, analysis),
       }));
 
-      enhancedResults.sort((a, b) => 
-        (b.score * 0.6 + b.relevance * 0.3 + b.recency * 0.1) - 
-        (a.score * 0.6 + a.relevance * 0.3 + a.recency * 0.1)
+      enhancedResults.sort(
+        (a, b) =>
+          b.score * 0.6 +
+          b.relevance * 0.3 +
+          b.recency * 0.1 -
+          (a.score * 0.6 + a.relevance * 0.3 + a.recency * 0.1),
       );
 
       return {
@@ -541,11 +666,11 @@ Provide JSON response with:
         cacheHit: false,
       };
     } catch (error) {
-      console.error('❌ [dynamicRetrieval] Dynamic retrieval error:', error);
-      console.error('❌ [dynamicRetrieval] Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        query: query.substring(0, 100)
+      console.error("❌ [dynamicRetrieval] Dynamic retrieval error:", error);
+      console.error("❌ [dynamicRetrieval] Error details:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : "No stack trace",
+        query: query.substring(0, 100),
       });
       return {
         sources: [],
@@ -560,20 +685,26 @@ Provide JSON response with:
     return Math.max(0, 100 - (daysSinceUpdate / 365) * 100);
   }
 
-  private calculateRelevanceScore(result: any, analysis: QueryAnalysis): number {
+  private calculateRelevanceScore(
+    result: any,
+    analysis: QueryAnalysis,
+  ): number {
     let score = 70;
-    
-    analysis.entities.forEach(entity => {
+
+    analysis.entities.forEach((entity) => {
       if (result.excerpt?.toLowerCase().includes(entity.toLowerCase())) {
         score += 10;
       }
     });
 
-    if (analysis.queryType === 'clinical' && result.type === 'medical_guideline') {
+    if (
+      analysis.queryType === "clinical" &&
+      result.type === "medical_guideline"
+    ) {
       score += 15;
     }
-    
-    if (analysis.requiresComplianceCheck && result.type === 'regulation') {
+
+    if (analysis.requiresComplianceCheck && result.type === "regulation") {
       score += 20;
     }
 
@@ -583,20 +714,23 @@ Provide JSON response with:
   private pruneAgents(analysis: QueryAnalysis): string[] {
     const selectedAgents: string[] = [];
 
-    if (analysis.queryType === 'educational' || analysis.queryType === 'faq') {
-      selectedAgents.push('learning_facilitator');
+    if (analysis.queryType === "educational" || analysis.queryType === "faq") {
+      selectedAgents.push("learning_facilitator");
     }
 
-    if (analysis.queryType === 'clinical' || analysis.requiresSpecialistKnowledge) {
-      selectedAgents.push('medical_specialist');
+    if (
+      analysis.queryType === "clinical" ||
+      analysis.requiresSpecialistKnowledge
+    ) {
+      selectedAgents.push("medical_specialist");
     }
 
-    if (analysis.requiresComplianceCheck || analysis.queryType === 'clinical') {
-      selectedAgents.push('compliance_officer');
+    if (analysis.requiresComplianceCheck || analysis.queryType === "clinical") {
+      selectedAgents.push("compliance_officer");
     }
 
     if (selectedAgents.length === 0) {
-      selectedAgents.push('learning_facilitator');
+      selectedAgents.push("learning_facilitator");
     }
 
     return selectedAgents;
@@ -608,19 +742,27 @@ Provide JSON response with:
     user: User,
     analysis: QueryAnalysis,
     selectedAgents: string[],
-    context: AgentContext
+    context: AgentContext,
   ): Promise<EnhancedAgentResponse[]> {
-    const agentPromises = selectedAgents.map(agentType => 
-      this.processSingleAgent(query, retrieval, user, analysis, agentType, context)
+    const agentPromises = selectedAgents.map((agentType) =>
+      this.processSingleAgent(
+        query,
+        retrieval,
+        user,
+        analysis,
+        agentType,
+        context,
+      ),
     );
 
     const results = await Promise.allSettled(agentPromises);
-    
+
     return results
-      .filter((result): result is PromiseFulfilledResult<EnhancedAgentResponse> => 
-        result.status === 'fulfilled'
+      .filter(
+        (result): result is PromiseFulfilledResult<EnhancedAgentResponse> =>
+          result.status === "fulfilled",
       )
-      .map(result => result.value);
+      .map((result) => result.value);
   }
 
   private async processSingleAgent(
@@ -629,23 +771,24 @@ Provide JSON response with:
     user: User,
     analysis: QueryAnalysis,
     agentType: string,
-    context: AgentContext
+    context: AgentContext,
   ): Promise<EnhancedAgentResponse> {
     const startTime = Date.now();
-    
+
     if (!this.openai) {
-      throw new Error('OpenAI not configured');
+      throw new Error("OpenAI not configured");
     }
 
     const agentPrompts: Record<string, string> = {
       medical_specialist: `You are a medical specialist providing evidence-based guidance on diabetes care. Focus on clinical accuracy, medication management, and patient safety.`,
       compliance_officer: `You are a healthcare compliance officer ensuring adherence to NICE guidelines, NHS standards, and CQC requirements.`,
-      learning_facilitator: `You are an educational specialist helping healthcare workers understand diabetes care concepts.`
+      learning_facilitator: `You are an educational specialist helping healthcare workers understand diabetes care concepts.`,
     };
 
-    const systemPrompt = agentPrompts[agentType] || agentPrompts.learning_facilitator;
+    const systemPrompt =
+      agentPrompts[agentType] || agentPrompts.learning_facilitator;
     const contextWindow = this.buildContextWindow(retrieval.sources, analysis);
-    
+
     // Enhance system prompt to emphasize Markdown formatting, citation requirements and prevent repetition
     const enhancedSystemPrompt = `${systemPrompt}
 
@@ -669,7 +812,7 @@ You MUST format ALL responses using proper Markdown syntax for maximum readabili
 - ✅ for correct procedures or positive actions
 - ❌ for things to avoid or incorrect procedures
 - 🎯 for key takeaways or main points
-- 💡 for helpful tips or insights
+-  }>� for helpful tips or insights
 
 ### 3. Tables for Structured Data:
 Use tables when presenting medication schedules, blood glucose ranges, or comparing guidelines:
@@ -741,36 +884,38 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
     try {
       // Get appropriate generation settings based on query analysis
       const generationSettings = getGenerationSettings(analysis.queryType);
-      
+
       const response = await this.openai.chat.completions.create({
         model: generationSettings.model,
         messages: [
           { role: "system", content: enhancedSystemPrompt },
-          { 
-            role: "user", 
-            content: `Context from authoritative sources: ${contextWindow}\n\nUser Role: ${user.role}\n\nQuery: ${query}\n\nProvide a comprehensive response based on the available context. Remember to cite the sources and include specific guidance from NICE, NHS, or CQC documentation when available.`
-          }
+          {
+            role: "user",
+            content: `Context from authoritative sources: ${contextWindow}\n\nUser Role: ${user.role}\n\nQuery: ${query}\n\nProvide a comprehensive response based on the available context. Remember to cite the sources and include specific guidance from NICE, NHS, or CQC documentation when available.`,
+          },
         ],
         temperature: generationSettings.temperature,
         top_p: generationSettings.topP,
         max_tokens: generationSettings.maxTokens,
       });
 
-      let content = response.choices[0]?.message?.content || '';
-      
+      let content = response.choices[0]?.message?.content || "";
+
       // Apply basic semantic deduplication to individual agent responses
-      console.log('Applying deduplication to individual agent response...');
+      console.log("Applying deduplication to individual agent response...");
       const tempResponse: EnhancedAgentResponse = {
         content,
         confidence: 0,
         sources: [],
         agentName: agentType,
         responseTime: 0,
-        tokenUsage: { prompt: 0, completion: 0 }
+        tokenUsage: { prompt: 0, completion: 0 },
       };
-      const dedupedResponse = this.basicSemanticDeduplication([tempResponse])[0];
+      const dedupedResponse = this.basicSemanticDeduplication([
+        tempResponse,
+      ])[0];
       content = dedupedResponse.content;
-      
+
       const tokenUsage = {
         prompt: response.usage?.prompt_tokens || 0,
         completion: response.usage?.completion_tokens || 0,
@@ -778,7 +923,10 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
 
       return {
         content,
-        confidence: this.calculateResponseConfidence(content, retrieval.sources),
+        confidence: this.calculateResponseConfidence(
+          content,
+          retrieval.sources,
+        ),
         sources: retrieval.sources,
         followUpQuestions: this.extractFollowUpQuestions(content),
         suggestedActions: this.extractSuggestedActions(content, agentType),
@@ -800,10 +948,14 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
   }
 
   private buildContextWindow(sources: any[], analysis: QueryAnalysis): string {
-    const tokenBudget = analysis.complexity === 'complex' ? 4000 : 
-                       analysis.complexity === 'moderate' ? 2500 : 1500;
+    const tokenBudget =
+      analysis.complexity === "complex"
+        ? 4000
+        : analysis.complexity === "moderate"
+          ? 2500
+          : 1500;
 
-    let context = '';
+    let context = "";
     let currentTokens = 0;
 
     for (const source of sources) {
@@ -818,7 +970,7 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
       }
     }
 
-    return context || 'No relevant context found in knowledge base.';
+    return context || "No relevant context found in knowledge base.";
   }
 
   private calculateResponseConfidence(content: string, sources: any[]): number {
@@ -826,7 +978,9 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
 
     // Source quality scoring
     if (sources.length > 0) {
-      const avgSourceScore = sources.reduce((sum, source) => sum + (source.score || 0), 0) / sources.length;
+      const avgSourceScore =
+        sources.reduce((sum, source) => sum + (source.score || 0), 0) /
+        sources.length;
       confidence += Math.min(25, avgSourceScore * 25);
       confidence += Math.min(15, sources.length * 3);
     }
@@ -834,53 +988,91 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
     // Content quality indicators
     if (content.length > 200) confidence += 8;
     if (content.length > 500) confidence += 5;
-    
-    // Authoritative guideline references (weighted higher)
-    if (content.includes('NICE') || content.includes('NHS')) confidence += 12;
-    if (content.includes('CQC')) confidence += 8;
-    
-    // Clinical terminology and structure
-    if (content.includes('mg/dl') || content.includes('mmol/L') || content.includes('HbA1c')) confidence += 5;
-    
-    // Evidence-based language
-    if (content.includes('evidence shows') || content.includes('studies indicate') || content.includes('research demonstrates')) confidence += 8;
 
-    return Math.min(100, Math.max(RAG_CONFIG.safety.minResponseConfidence, confidence));
+    // Authoritative guideline references (weighted higher)
+    if (content.includes("NICE") || content.includes("NHS")) confidence += 12;
+    if (content.includes("CQC")) confidence += 8;
+
+    // Clinical terminology and structure
+    if (
+      content.includes("mg/dl") ||
+      content.includes("mmol/L") ||
+      content.includes("HbA1c")
+    )
+      confidence += 5;
+
+    // Evidence-based language
+    if (
+      content.includes("evidence shows") ||
+      content.includes("studies indicate") ||
+      content.includes("research demonstrates")
+    )
+      confidence += 8;
+
+    return Math.min(
+      100,
+      Math.max(RAG_CONFIG.safety.minResponseConfidence, confidence),
+    );
   }
 
   private extractFollowUpQuestions(content: string): string[] {
     const questions: string[] = [];
-    
-    if (content.includes('medication')) {
-      questions.push('What are the specific dosage guidelines for this medication?');
+
+    if (content.includes("medication")) {
+      questions.push(
+        "What are the specific dosage guidelines for this medication?",
+      );
     }
-    if (content.includes('diabetes')) {
-      questions.push('How should blood glucose levels be monitored?');
+    if (content.includes("diabetes")) {
+      questions.push("How should blood glucose levels be monitored?");
     }
-    if (content.includes('emergency')) {
-      questions.push('What are the emergency protocols for this situation?');
+    if (content.includes("emergency")) {
+      questions.push("What are the emergency protocols for this situation?");
     }
 
     return questions.slice(0, 3);
   }
 
-  private extractSuggestedActions(content: string, agentType: string): Array<{label: string; action: string; url?: string}> {
-    const actions: Array<{label: string; action: string; url?: string}> = [];
+  private extractSuggestedActions(
+    content: string,
+    agentType: string,
+  ): Array<{ label: string; action: string; url?: string }> {
+    const actions: Array<{ label: string; action: string; url?: string }> = [];
 
-    if (agentType === 'medical_specialist') {
+    if (agentType === "medical_specialist") {
       actions.push(
-        { label: 'View Clinical Guidelines', action: 'view_guidelines', url: '/guidelines' },
-        { label: 'Check Drug Interactions', action: 'drug_check', url: '/drug-checker' }
+        {
+          label: "View Clinical Guidelines",
+          action: "view_guidelines",
+          url: "/guidelines",
+        },
+        {
+          label: "Check Drug Interactions",
+          action: "drug_check",
+          url: "/drug-checker",
+        },
       );
-    } else if (agentType === 'compliance_officer') {
+    } else if (agentType === "compliance_officer") {
       actions.push(
-        { label: 'Review Compliance Checklist', action: 'compliance_check', url: '/compliance' },
-        { label: 'Document Procedure', action: 'document', url: '/documentation' }
+        {
+          label: "Review Compliance Checklist",
+          action: "compliance_check",
+          url: "/compliance",
+        },
+        {
+          label: "Document Procedure",
+          action: "document",
+          url: "/documentation",
+        },
       );
-    } else if (agentType === 'learning_facilitator') {
+    } else if (agentType === "learning_facilitator") {
       actions.push(
-        { label: 'Start Related Training', action: 'training', url: '/training' },
-        { label: 'Practice Scenarios', action: 'practice', url: '/scenarios' }
+        {
+          label: "Start Related Training",
+          action: "training",
+          url: "/training",
+        },
+        { label: "Practice Scenarios", action: "practice", url: "/scenarios" },
       );
     }
 
@@ -890,40 +1082,43 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
   private async synthesizeFinalResponse(
     agentResponses: EnhancedAgentResponse[],
     analysis: QueryAnalysis,
-    retrieval: RetrievalResult
+    retrieval: RetrievalResult,
   ): Promise<EnhancedAgentResponse> {
     if (agentResponses.length === 0) {
-      throw new Error('No agent responses to synthesize');
+      throw new Error("No agent responses to synthesize");
     }
 
     // Step 1: Apply semantic deduplication to agent responses (even for single responses)
-    console.log('Applying semantic deduplication to agent responses...');
-    const dedupedResponses = await this.semanticDeduplicateAgentResponses(agentResponses);
+    console.log("Applying semantic deduplication to agent responses...");
+    const dedupedResponses =
+      await this.semanticDeduplicateAgentResponses(agentResponses);
 
     if (dedupedResponses.length === 1) {
-      console.log('Returning single deduped response');
+      console.log("Returning single deduped response");
       return dedupedResponses[0];
     }
 
     if (!this.openai) {
-      console.log('No OpenAI configured, returning first deduped response');
+      console.log("No OpenAI configured, returning first deduped response");
       return dedupedResponses[0];
     }
-    
-    const agentOutputs = dedupedResponses.map(response => 
-      `${response.agentName}: ${response.content}`
-    ).join('\n\n---\n\n');
+
+    const agentOutputs = dedupedResponses
+      .map((response) => `${response.agentName}: ${response.content}`)
+      .join("\n\n---\n\n");
 
     try {
       // Get appropriate token limits based on query type
-      const queryType = analysis.requiresSpecialistKnowledge ? 'clinical' : 'educational';
+      const queryType = analysis.requiresSpecialistKnowledge
+        ? "clinical"
+        : "educational";
       const genSettings = getGenerationSettings(queryType);
-      
+
       const response = await this.openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
-            role: "system", 
+            role: "system",
             content: `You are an expert healthcare information synthesizer. Your critical task:
 
 CRITICAL ANTI-REPETITION AND FORMATTING RULES:
@@ -945,79 +1140,113 @@ RESPONSE STRUCTURE (NO REPETITION, PROPER FORMATTING):
 - Each sentence must add NEW information
 - No redundant explanations or restatements
 
-FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses malformed formatting, or contains placeholder text, you have FAILED the task.`
+FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses malformed formatting, or contains placeholder text, you have FAILED the task.`,
           },
           {
             role: "user",
-            content: `Query Type: ${analysis.queryType}\nComplexity: ${analysis.complexity}\n\nExpert Responses to synthesize:\n${agentOutputs}\n\nCreate ONE unified response with ZERO repetition. Each sentence must be unique and add new value.`
-          }
+            content: `Query Type: ${analysis.queryType}\nComplexity: ${analysis.complexity}\n\nExpert Responses to synthesize:\n${agentOutputs}\n\nCreate ONE unified response with ZERO repetition. Each sentence must be unique and add new value.`,
+          },
         ],
-        temperature: 0.05, // Extremely low temperature 
+        temperature: 0.05, // Extremely low temperature
         max_tokens: Math.min(genSettings.maxTokens, 400), // Limit response length
         presence_penalty: 2.0, // Maximum possible penalty
-        frequency_penalty: 2.0, // Maximum possible penalty  
+        frequency_penalty: 2.0, // Maximum possible penalty
         top_p: 0.5, // Very focused token selection
-        stop: ["As there is no specific", "Carbon dioxide (CO2) is a", "As a care worker", "*Infections*", "*Retinopathy*", "[BAD]"], // Stop tokens to prevent repetition and malformed formatting
+        stop: [
+          "As there is no specific",
+          "Carbon dioxide (CO2) is a",
+          "As a care worker",
+          "*Infections*",
+          "*Retinopathy*",
+          "[BAD]",
+        ], // Stop tokens to prevent repetition and malformed formatting
       });
 
-      let synthesizedContent = response.choices[0]?.message?.content || agentResponses[0].content;
-      
-      console.log('Pre-deduplication synthesized content length:', synthesizedContent.length);
-      
+      let synthesizedContent =
+        response.choices[0]?.message?.content || agentResponses[0].content;
+
+      console.log(
+        "Pre-deduplication synthesized content length:",
+        synthesizedContent.length,
+      );
+
       // Additional deduplication check for sentences
       synthesizedContent = this.deduplicateContent(synthesizedContent);
-      
+
       // Final response cleanup
       synthesizedContent = this.cleanupFinalResponse(synthesizedContent);
-      
-      console.log('Post-deduplication synthesized content length:', synthesizedContent.length);
-      
-      const allSources = agentResponses.flatMap(r => r.sources);
-      const uniqueSources = allSources.filter((source, index, array) => 
-        array.findIndex(s => s.id === source.id) === index
+
+      console.log(
+        "Post-deduplication synthesized content length:",
+        synthesizedContent.length,
+      );
+
+      const allSources = agentResponses.flatMap((r) => r.sources);
+      const uniqueSources = allSources.filter(
+        (source, index, array) =>
+          array.findIndex((s) => s.id === source.id) === index,
       );
 
       // Ensure citations are always included in the response
-      if (uniqueSources.length > 0 && !synthesizedContent.includes('References') && !synthesizedContent.includes('Sources')) {
+      if (
+        uniqueSources.length > 0 &&
+        !synthesizedContent.includes("References") &&
+        !synthesizedContent.includes("Sources")
+      ) {
         const citationSection = this.formatCitationSection(uniqueSources);
-        synthesizedContent += '\n\n' + citationSection;
+        synthesizedContent += "\n\n" + citationSection;
       }
 
-      const allQuestions = agentResponses.flatMap(r => r.followUpQuestions || []);
+      const allQuestions = agentResponses.flatMap(
+        (r) => r.followUpQuestions || [],
+      );
       const uniqueQuestions = Array.from(new Set(allQuestions)).slice(0, 3);
 
-      const allActions = agentResponses.flatMap(r => r.suggestedActions || []);
-      const uniqueActions = allActions.filter((action, index, array) => 
-        array.findIndex(a => a.label === action.label) === index
-      ).slice(0, 4);
+      const allActions = agentResponses.flatMap(
+        (r) => r.suggestedActions || [],
+      );
+      const uniqueActions = allActions
+        .filter(
+          (action, index, array) =>
+            array.findIndex((a) => a.label === action.label) === index,
+        )
+        .slice(0, 4);
 
       return {
         content: synthesizedContent,
-        confidence: Math.round(dedupedResponses.reduce((sum, r) => sum + r.confidence, 0) / dedupedResponses.length),
+        confidence: Math.round(
+          dedupedResponses.reduce((sum, r) => sum + r.confidence, 0) /
+            dedupedResponses.length,
+        ),
         sources: uniqueSources,
         followUpQuestions: uniqueQuestions,
         suggestedActions: uniqueActions,
-        agentName: 'synthesized',
-        responseTime: Math.max(...dedupedResponses.map(r => r.responseTime)),
-        tokenUsage: dedupedResponses.reduce((sum, r) => ({
-          prompt: sum.prompt + r.tokenUsage.prompt,
-          completion: sum.completion + r.tokenUsage.completion,
-        }), { prompt: 0, completion: 0 }),
+        agentName: "synthesized",
+        responseTime: Math.max(...dedupedResponses.map((r) => r.responseTime)),
+        tokenUsage: dedupedResponses.reduce(
+          (sum, r) => ({
+            prompt: sum.prompt + r.tokenUsage.prompt,
+            completion: sum.completion + r.tokenUsage.completion,
+          }),
+          { prompt: 0, completion: 0 },
+        ),
       };
     } catch (error) {
-      console.error('Synthesis error:', error);
+      console.error("Synthesis error:", error);
       return agentResponses[0];
     }
   }
 
   private async semanticDeduplicateAgentResponses(
-    agentResponses: EnhancedAgentResponse[]
+    agentResponses: EnhancedAgentResponse[],
   ): Promise<EnhancedAgentResponse[]> {
     if (!this.openai || agentResponses.length === 0) {
       return agentResponses;
     }
 
-    console.log(`Starting semantic deduplication for ${agentResponses.length} agent response(s)...`);
+    console.log(
+      `Starting semantic deduplication for ${agentResponses.length} agent response(s)...`,
+    );
 
     try {
       // Extract all sentences from all agent responses
@@ -1031,32 +1260,37 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
       agentResponses.forEach((response, agentIndex) => {
         const sentences = this.extractSentences(response.content);
         sentences.forEach((sentence, sentenceIndex) => {
-          if (sentence.trim().length > 20) { // Only process meaningful sentences
+          if (sentence.trim().length > 20) {
+            // Only process meaningful sentences
             allSentences.push({
               text: sentence.trim(),
               agentIndex,
               originalIndex: sentenceIndex,
-              agentName: response.agentName
+              agentName: response.agentName,
             });
           }
         });
       });
 
-      console.log(`Processing ${allSentences.length} sentences for semantic deduplication`);
+      console.log(
+        `Processing ${allSentences.length} sentences for semantic deduplication`,
+      );
 
       if (allSentences.length === 0) {
-        console.log('No sentences to process, returning original responses');
+        console.log("No sentences to process, returning original responses");
         return agentResponses;
       }
 
       // If we only have a few sentences, apply basic deduplication
       if (allSentences.length < 3) {
-        console.log('Too few sentences for embedding-based deduplication, using basic approach');
+        console.log(
+          "Too few sentences for embedding-based deduplication, using basic approach",
+        );
         return this.basicSemanticDeduplication(agentResponses);
       }
 
       // Create embeddings for all sentences
-      const sentenceTexts = allSentences.map(s => s.text);
+      const sentenceTexts = allSentences.map((s) => s.text);
       const embeddings = await this.createEmbeddings(sentenceTexts);
 
       // Find semantically similar sentences using cosine similarity
@@ -1069,14 +1303,23 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
         for (let j = i + 1; j < embeddings.length; j++) {
           if (duplicateIndices.has(j)) continue;
 
-          const similarity = this.cosineSimilarity(embeddings[i], embeddings[j]);
-          
+          const similarity = this.cosineSimilarity(
+            embeddings[i],
+            embeddings[j],
+          );
+
           if (similarity > similarityThreshold) {
             // Keep the first occurrence, mark the second as duplicate
             duplicateIndices.add(j);
-            console.log(`Semantic duplicate found (similarity: ${similarity.toFixed(3)}):`);
-            console.log(`  Original: "${allSentences[i].text.substring(0, 100)}..."`);
-            console.log(`  Duplicate: "${allSentences[j].text.substring(0, 100)}..."`);
+            console.log(
+              `Semantic duplicate found (similarity: ${similarity.toFixed(3)}):`,
+            );
+            console.log(
+              `  Original: "${allSentences[i].text.substring(0, 100)}..."`,
+            );
+            console.log(
+              `  Duplicate: "${allSentences[j].text.substring(0, 100)}..."`,
+            );
           }
         }
       }
@@ -1084,69 +1327,80 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
       // Rebuild agent responses without duplicates
       const processedResponses = agentResponses.map((response, agentIndex) => {
         const originalSentences = this.extractSentences(response.content);
-        const filteredSentences = originalSentences.filter((sentence, sentenceIndex) => {
-          const globalIndex = allSentences.findIndex(
-            s => s.agentIndex === agentIndex && s.originalIndex === sentenceIndex
-          );
-          return globalIndex === -1 || !duplicateIndices.has(globalIndex);
-        });
+        const filteredSentences = originalSentences.filter(
+          (sentence, sentenceIndex) => {
+            const globalIndex = allSentences.findIndex(
+              (s) =>
+                s.agentIndex === agentIndex &&
+                s.originalIndex === sentenceIndex,
+            );
+            return globalIndex === -1 || !duplicateIndices.has(globalIndex);
+          },
+        );
 
-        const newContent = filteredSentences.join(' ').trim();
-        
+        const newContent = filteredSentences.join(" ").trim();
+
         return {
           ...response,
-          content: newContent || response.content // Fallback to original if all filtered out
+          content: newContent || response.content, // Fallback to original if all filtered out
         };
       });
 
-      console.log(`Semantic deduplication complete. Removed ${duplicateIndices.size} duplicate sentences.`);
-      return processedResponses.filter(response => response.content.trim().length > 0);
-
+      console.log(
+        `Semantic deduplication complete. Removed ${duplicateIndices.size} duplicate sentences.`,
+      );
+      return processedResponses.filter(
+        (response) => response.content.trim().length > 0,
+      );
     } catch (error) {
-      console.error('Semantic deduplication error:', error);
+      console.error("Semantic deduplication error:", error);
       // Fallback to basic deduplication if embeddings fail
-      console.log('Falling back to basic semantic deduplication...');
+      console.log("Falling back to basic semantic deduplication...");
       return this.basicSemanticDeduplication(agentResponses);
     }
   }
 
   private basicSemanticDeduplication(
-    agentResponses: EnhancedAgentResponse[]
+    agentResponses: EnhancedAgentResponse[],
   ): EnhancedAgentResponse[] {
-    console.log('Applying basic semantic deduplication...');
-    
-    return agentResponses.map(response => {
+    console.log("Applying basic semantic deduplication...");
+
+    return agentResponses.map((response) => {
       // First, fix asterisk repetition issues in the content
       let content = response.content
         // Remove patterns like "Word*Word*" or "Word***Word***"
-        .replace(/(\w+)\*+\1\**/gi, '**$1**')
+        .replace(/(\w+)\*+\1\**/gi, "**$1**")
         // Remove patterns like "Word*Word*:"
-        .replace(/(\w+)\*+\1\*+:/gi, '**$1**:')
+        .replace(/(\w+)\*+\1\*+:/gi, "**$1**:")
         // Clean up multiple asterisks
-        .replace(/\*{3,}/g, '**')
+        .replace(/\*{3,}/g, "**")
         // Remove standalone asterisks
-        .replace(/(?<!\*)\*(?!\*)/g, '')
+        .replace(/(?<!\*)\*(?!\*)/g, "")
         // Remove placeholder text
-        .replace(/\[BAD\]|\[PLACEHOLDER\]|\[TODO\]|\[MISSING\]/gi, '');
-      
+        .replace(/\[BAD\]|\[PLACEHOLDER\]|\[TODO\]|\[MISSING\]/gi, "");
+
       const sentences = this.extractSentences(content);
       const uniqueSentences = [];
       const seenNormalized = new Set<string>();
-      
+
       for (const sentence of sentences) {
         if (sentence.trim().length < 20) {
           uniqueSentences.push(sentence);
           continue;
         }
-        
+
         // More aggressive normalization for basic deduplication
-        const normalized = sentence.toLowerCase()
-          .replace(/[^\w\s]/g, ' ')
-          .replace(/\s+/g, ' ')
-          .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this|these|those|have|has|had|will|would|could|should|may|might|must|can|do|does|did|get|got|make|made|take|took|give|gave|come|came|go|went|see|saw|know|knew|think|thought|say|said|tell|told|ask|asked|work|worked|feel|felt|become|became|leave|left|put|putting)\b/g, '')
-          .replace(/\s+/g, ' ')
+        const normalized = sentence
+          .toLowerCase()
+          .replace(/[^\w\s]/g, " ")
+          .replace(/\s+/g, " ")
+          .replace(
+            /\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this|these|those|have|has|had|will|would|could|should|may|might|must|can|do|does|did|get|got|make|made|take|took|give|gave|come|came|go|went|see|saw|know|knew|think|thought|say|said|tell|told|ask|asked|work|worked|feel|felt|become|became|leave|left|put|putting)\b/g,
+            "",
+          )
+          .replace(/\s+/g, " ")
           .trim();
-        
+
         if (normalized.length > 10 && !seenNormalized.has(normalized)) {
           seenNormalized.add(normalized);
           uniqueSentences.push(sentence);
@@ -1154,26 +1408,29 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
           console.log(`Basic dedup removed: "${sentence.substring(0, 80)}..."`);
         }
       }
-      
-      const newContent = uniqueSentences.join(' ').trim();
-      console.log(`Basic deduplication: ${sentences.length} -> ${uniqueSentences.length} sentences`);
-      
-      
+
+      const newContent = uniqueSentences.join(" ").trim();
+      console.log(
+        `Basic deduplication: ${sentences.length} -> ${uniqueSentences.length} sentences`,
+      );
+
       return {
         ...response,
-        content: newContent || response.content
+        content: newContent || response.content,
       };
     });
   }
 
   private extractSentences(text: string): string[] {
     // Split by sentence-ending punctuation, keeping the punctuation
-    return text.split(/(?<=[.!?])\s+/).filter(sentence => sentence.trim().length > 0);
+    return text
+      .split(/(?<=[.!?])\s+/)
+      .filter((sentence) => sentence.trim().length > 0);
   }
 
   private async createEmbeddings(texts: string[]): Promise<number[][]> {
     if (!this.openai) {
-      throw new Error('OpenAI not configured');
+      throw new Error("OpenAI not configured");
     }
 
     // Process in batches to avoid rate limits
@@ -1182,13 +1439,13 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
 
     for (let i = 0; i < texts.length; i += batchSize) {
       const batch = texts.slice(i, i + batchSize);
-      
+
       const response = await this.openai.embeddings.create({
-        model: 'text-embedding-3-small',
+        model: "text-embedding-3-small",
         input: batch,
       });
 
-      const batchEmbeddings = response.data.map(item => item.embedding);
+      const batchEmbeddings = response.data.map((item) => item.embedding);
       allEmbeddings.push(...batchEmbeddings);
     }
 
@@ -1197,7 +1454,7 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
 
   private cosineSimilarity(a: number[], b: number[]): number {
     if (a.length !== b.length) {
-      throw new Error('Vectors must have the same length');
+      throw new Error("Vectors must have the same length");
     }
 
     let dotProduct = 0;
@@ -1220,9 +1477,15 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
     return dotProduct / (normA * normB);
   }
 
-  private async cacheResponse(query: string, response: EnhancedAgentResponse): Promise<void> {
+  private async cacheResponse(
+    query: string,
+    response: EnhancedAgentResponse,
+  ): Promise<void> {
     try {
-      const queryHash = crypto.createHash('sha256').update(query.toLowerCase().trim()).digest('hex');
+      const queryHash = crypto
+        .createHash("sha256")
+        .update(query.toLowerCase().trim())
+        .digest("hex");
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
       await storage.createQueryCache({
@@ -1234,7 +1497,7 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
         expiresAt,
       });
     } catch (error) {
-      console.error('Cache storage error:', error);
+      console.error("Cache storage error:", error);
     }
   }
 
@@ -1243,19 +1506,26 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
     courseId: string | undefined,
     query: string,
     response: EnhancedAgentResponse,
-    agentsUsed: string[]
+    agentsUsed: string[],
   ): Promise<void> {
     try {
       for (const agentType of agentsUsed) {
-        const existingSummary = await storage.getChatSummary(userId, courseId, agentType);
-        
+        const existingSummary = await storage.getChatSummary(
+          userId,
+          courseId,
+          agentType,
+        );
+
         if (existingSummary) {
           const updatedSummary = `${existingSummary.summary}\n\nQ: ${query.slice(0, 100)}...\nA: ${response.content.slice(0, 200)}...`;
-          
+
           await storage.updateChatSummary(existingSummary.id, {
             summary: updatedSummary.slice(-2000),
             messageCount: (existingSummary.messageCount || 0) + 1,
-            tokenCount: (existingSummary.tokenCount || 0) + response.tokenUsage.prompt + response.tokenUsage.completion,
+            tokenCount:
+              (existingSummary.tokenCount || 0) +
+              response.tokenUsage.prompt +
+              response.tokenUsage.completion,
           });
         } else {
           await storage.createChatSummary({
@@ -1264,26 +1534,32 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
             agentType,
             summary: `Q: ${query.slice(0, 100)}...\nA: ${response.content.slice(0, 200)}...`,
             messageCount: 1,
-            tokenCount: response.tokenUsage.prompt + response.tokenUsage.completion,
+            tokenCount:
+              response.tokenUsage.prompt + response.tokenUsage.completion,
           });
         }
       }
     } catch (error) {
-      console.error('Summary update error:', error);
+      console.error("Summary update error:", error);
     }
   }
 
   private calculateTotalTokenUsage(responses: EnhancedAgentResponse[]): any {
-    return responses.reduce((total, response) => ({
-      prompt: total.prompt + response.tokenUsage.prompt,
-      completion: total.completion + response.tokenUsage.completion,
-    }), { prompt: 0, completion: 0 });
+    return responses.reduce(
+      (total, response) => ({
+        prompt: total.prompt + response.tokenUsage.prompt,
+        completion: total.completion + response.tokenUsage.completion,
+      }),
+      { prompt: 0, completion: 0 },
+    );
   }
 
-  private async logAnalytics(analytics: Partial<InsertRagAnalytics>): Promise<void> {
+  private async logAnalytics(
+    analytics: Partial<InsertRagAnalytics>,
+  ): Promise<void> {
     try {
       await storage.createRagAnalytics({
-        eventType: analytics.eventType || 'query',
+        eventType: analytics.eventType || "query",
         userId: analytics.userId || null,
         queryType: analytics.queryType || null,
         agentsUsed: analytics.agentsUsed || null,
@@ -1295,158 +1571,195 @@ FINAL CHECK: Review your complete response. If ANY sentence appears twice, uses 
         metadata: analytics.metadata || null,
       });
     } catch (error) {
-      console.error('Analytics logging error:', error);
+      console.error("Analytics logging error:", error);
     }
   }
 
   private deduplicateContent(content: string): string {
     if (!content) return content;
-    
-    console.log('Deduplication input length:', content.length);
-    console.log('Content preview:', content.substring(0, 200) + '...');
-    
-    // Step 1: Fix asterisk repetition patterns like "Infections*Infections*" 
+
+    console.log("Deduplication input length:", content.length);
+    console.log("Content preview:", content.substring(0, 200) + "...");
+
+    // Step 1: Fix asterisk repetition patterns like "Infections*Infections*"
     let cleaned = content
       // Remove patterns like "Word*Word*" or "Word***Word***"
-      .replace(/(\w+)\*+\1\**/gi, '**$1**')
+      .replace(/(\w+)\*+\1\**/gi, "**$1**")
       // Remove patterns like "Word*Word*:"
-      .replace(/(\w+)\*+\1\*+:/gi, '**$1**:')
+      .replace(/(\w+)\*+\1\*+:/gi, "**$1**:")
       // Clean up multiple asterisks
-      .replace(/\*{3,}/g, '**')
+      .replace(/\*{3,}/g, "**")
       // Remove standalone asterisks
-      .replace(/(?<!\*)\*(?!\*)/g, '')
+      .replace(/(?<!\*)\*(?!\*)/g, "")
       // Clean up spacing around asterisks
-      .replace(/\s+\*\*/g, ' **')
-      .replace(/\*\*\s+/g, '** ');
-    
+      .replace(/\s+\*\*/g, " **")
+      .replace(/\*\*\s+/g, "** ");
+
     // Step 2: Remove placeholder text like "[BAD]"
-    cleaned = cleaned.replace(/\[BAD\]|\[PLACEHOLDER\]|\[TODO\]|\[MISSING\]/gi, '');
-    
+    cleaned = cleaned.replace(
+      /\[BAD\]|\[PLACEHOLDER\]|\[TODO\]|\[MISSING\]/gi,
+      "",
+    );
+
     // Step 3: Check for exact complete duplication with multiple split points
     for (let offset = -20; offset <= 20; offset++) {
       const splitPoint = Math.floor(cleaned.length / 2) + offset;
       if (splitPoint < 100 || splitPoint > cleaned.length - 100) continue;
-      
+
       const firstPart = cleaned.substring(0, splitPoint).trim();
       const secondPart = cleaned.substring(splitPoint).trim();
-      
+
       // Normalize both parts for comparison
-      const normalizedFirst = firstPart.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
-      const normalizedSecond = secondPart.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
-      
+      const normalizedFirst = firstPart
+        .toLowerCase()
+        .replace(/[^\w\s]/g, "")
+        .replace(/\s+/g, " ");
+      const normalizedSecond = secondPart
+        .toLowerCase()
+        .replace(/[^\w\s]/g, "")
+        .replace(/\s+/g, " ");
+
       // Check for exact duplication
       if (normalizedFirst.length > 50 && normalizedSecond.length > 50) {
         if (normalizedFirst === normalizedSecond) {
-          console.log('EXACT COMPLETE DUPLICATION DETECTED at offset', offset, '- Using first part only');
+          console.log(
+            "EXACT COMPLETE DUPLICATION DETECTED at offset",
+            offset,
+            "- Using first part only",
+          );
           cleaned = firstPart;
           break;
         }
-        
-        // Check if second part starts with first part  
-        if (normalizedSecond.startsWith(normalizedFirst.substring(0, Math.min(normalizedFirst.length, 300)))) {
-          console.log('SUBSTRING DUPLICATION DETECTED at offset', offset, '- Using first part only');
+
+        // Check if second part starts with first part
+        if (
+          normalizedSecond.startsWith(
+            normalizedFirst.substring(0, Math.min(normalizedFirst.length, 300)),
+          )
+        ) {
+          console.log(
+            "SUBSTRING DUPLICATION DETECTED at offset",
+            offset,
+            "- Using first part only",
+          );
           cleaned = firstPart;
           break;
         }
       }
     }
-    
+
     // Step 4: Remove exact consecutive duplicates with aggressive regex
     const originalLength = cleaned.length;
-    cleaned = cleaned.replace(/(.{30,}?[.!?])\s*\1+/gi, '$1');
+    cleaned = cleaned.replace(/(.{30,}?[.!?])\s*\1+/gi, "$1");
     if (cleaned.length !== originalLength) {
-      console.log('REGEX DUPLICATES REMOVED');
+      console.log("REGEX DUPLICATES REMOVED");
     }
-    
+
     // Step 5: Sentence-level deduplication
     const sentenceParts = cleaned.split(/([.!?]+)/);
     const rebuiltContent: string[] = [];
     const seenNormalized = new Set<string>();
-    
+
     for (let i = 0; i < sentenceParts.length; i += 2) {
       const sentence = sentenceParts[i]?.trim();
-      const punctuation = sentenceParts[i + 1] || '';
-      
+      const punctuation = sentenceParts[i + 1] || "";
+
       if (!sentence || sentence.length < 15) {
         if (sentence) rebuiltContent.push(sentence + punctuation);
         continue;
       }
-      
+
       // Aggressive normalization
-      const normalized = sentence.toLowerCase()
-        .replace(/[^\w\s]/g, '')
-        .replace(/\s+/g, ' ')
-        .replace(/\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this)\b/g, '')
+      const normalized = sentence
+        .toLowerCase()
+        .replace(/[^\w\s]/g, "")
+        .replace(/\s+/g, " ")
+        .replace(
+          /\b(the|a|an|and|or|but|in|on|at|to|for|of|with|by|is|are|was|were|that|this)\b/g,
+          "",
+        )
         .trim();
-      
+
       if (!seenNormalized.has(normalized)) {
         seenNormalized.add(normalized);
         rebuiltContent.push(sentence + punctuation);
       } else {
-        console.log('Sentence duplicate removed:', sentence.substring(0, 50) + '...');
+        console.log(
+          "Sentence duplicate removed:",
+          sentence.substring(0, 50) + "...",
+        );
       }
     }
-    
-    const result = rebuiltContent.join('').trim();
-    
+
+    const result = rebuiltContent.join("").trim();
+
     // Step 6: Final cleanup
     const finalResult = result
       // Remove any remaining formatting artifacts
-      .replace(/\s{2,}/g, ' ')
+      .replace(/\s{2,}/g, " ")
       // Clean up punctuation spacing
-      .replace(/\s+([.!?])/g, '$1')
+      .replace(/\s+([.!?])/g, "$1")
       // Remove any remaining standalone asterisks
-      .replace(/(?<!\*)\*(?!\*)/g, '')
+      .replace(/(?<!\*)\*(?!\*)/g, "")
       // Clean up empty bold markers
-      .replace(/\*\*\s*\*\*/g, '')
+      .replace(/\*\*\s*\*\*/g, "")
       .trim();
-    
-    console.log('Deduplication output length:', finalResult.length, 'reduction:', Math.round((1 - finalResult.length / content.length) * 100) + '%');
+
+    console.log(
+      "Deduplication output length:",
+      finalResult.length,
+      "reduction:",
+      Math.round((1 - finalResult.length / content.length) * 100) + "%",
+    );
     return finalResult;
   }
 
   private formatCitationSection(sources: any[]): string {
-    if (sources.length === 0) return '';
-    
+    if (sources.length === 0) return "";
+
     // Filter and clean sources to only show meaningful titles
     const cleanedSources = sources
-      .filter(source => {
-        const title = source.title || '';
+      .filter((source) => {
+        const title = source.title || "";
         // Filter out sources with document ID patterns as titles
-        return !title.match(/^document-[0-9]+-[0-9]+/) && 
-               !title.includes('.json') && 
-               title.length > 5;
+        return (
+          !title.match(/^document-[0-9]+-[0-9]+/) &&
+          !title.includes(".json") &&
+          title.length > 5
+        );
       })
       .slice(0, 5); // Limit to top 5 most relevant sources
-    
+
     if (cleanedSources.length === 0) {
       return `
 
 **Note**: All medical guidance should be verified with current NICE guidelines, NHS protocols, and your local care home policies. In emergencies, always call 999 and follow your facility's emergency procedures.`;
     }
-    
-    const citations = cleanedSources.map((source, index) => {
-      const sourceNumber = index + 1;
-      let title = source.title || 'Medical Guideline';
-      
-      // Clean up the title further
-      title = title.replace(/document-[0-9]+-[0-9]+/g, '').trim();
-      title = title.replace(/\.json$/g, '').trim();
-      
-      // Provide meaningful fallback titles based on type
-      if (!title || title.length < 3) {
-        if (source.type === 'NICE') title = 'NICE Clinical Guideline';
-        else if (source.type === 'NHS') title = 'NHS Clinical Guidance';
-        else if (source.type === 'CQC') title = 'CQC Quality Standards';
-        else title = 'Clinical Reference Document';
-      }
-      
-      const type = source.type || 'Document';
-      const url = source.url ? ` Available at: ${source.url}` : '';
-      
-      return `[${sourceNumber}] ${title} (${type})${url}`;
-    }).join('\n');
-    
+
+    const citations = cleanedSources
+      .map((source, index) => {
+        const sourceNumber = index + 1;
+        let title = source.title || "Medical Guideline";
+
+        // Clean up the title further
+        title = title.replace(/document-[0-9]+-[0-9]+/g, "").trim();
+        title = title.replace(/\.json$/g, "").trim();
+
+        // Provide meaningful fallback titles based on type
+        if (!title || title.length < 3) {
+          if (source.type === "NICE") title = "NICE Clinical Guideline";
+          else if (source.type === "NHS") title = "NHS Clinical Guidance";
+          else if (source.type === "CQC") title = "CQC Quality Standards";
+          else title = "Clinical Reference Document";
+        }
+
+        const type = source.type || "Document";
+        const url = source.url ? ` Available at: ${source.url}` : "";
+
+        return `[${sourceNumber}] ${title} (${type})${url}`;
+      })
+      .join("\n");
+
     return `## References
 
 ${citations}
@@ -1456,43 +1769,73 @@ ${citations}
 
   private cleanupFinalResponse(content: string): string {
     if (!content) return content;
-    
-    console.log('Applying comprehensive final response cleanup...');
-    
+
+    console.log("Applying comprehensive final response cleanup...");
+
     let cleaned = content;
-    
+
     // Step 1: Remove document reference patterns
-    cleaned = cleaned.replace(/\(document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g, '');
-    cleaned = cleaned.replace(/\(source: document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g, '');
-    cleaned = cleaned.replace(/\[document-[0-9]+-[0-9]+(\.[a-z]+)?\]/g, '');
-    
+    cleaned = cleaned.replace(/\(document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g, "");
+    cleaned = cleaned.replace(
+      /\(source: document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g,
+      "",
+    );
+    cleaned = cleaned.replace(/\[document-[0-9]+-[0-9]+(\.[a-z]+)?\]/g, "");
+
     // Step 2: Remove placeholder text
-    cleaned = cleaned.replace(/\[BAD\]/gi, '');
-    cleaned = cleaned.replace(/\[PLACEHOLDER\]/gi, '');
-    cleaned = cleaned.replace(/\[TODO\]/gi, '');
-    cleaned = cleaned.replace(/\[MISSING\]/gi, '');
-    cleaned = cleaned.replace(/\[citation needed\]/gi, '');
-    cleaned = cleaned.replace(/\[source required\]/gi, '');
-    
+    cleaned = cleaned.replace(/\[BAD\]/gi, "");
+    cleaned = cleaned.replace(/\[PLACEHOLDER\]/gi, "");
+    cleaned = cleaned.replace(/\[TODO\]/gi, "");
+    cleaned = cleaned.replace(/\[MISSING\]/gi, "");
+    cleaned = cleaned.replace(/\[citation needed\]/gi, "");
+    cleaned = cleaned.replace(/\[source required\]/gi, "");
+
     // Step 3: Fix markdown headers and formatting
-    cleaned = cleaned.replace(/^### /gm, '## ');
-    cleaned = cleaned.replace(/^#### /gm, '### ');
-    cleaned = cleaned.replace(/^##### /gm, '### ');
-    
+    cleaned = cleaned.replace(/^### /gm, "## ");
+    cleaned = cleaned.replace(/^#### /gm, "### ");
+    cleaned = cleaned.replace(/^##### /gm, "### ");
+
     // Fix headers with colons that might not be caught
-    cleaned = cleaned.replace(/^## ([^:]+):\s*$/gm, '## $1');
-    cleaned = cleaned.replace(/^### ([^:]+):\s*$/gm, '### $1');
-    
+    cleaned = cleaned.replace(/^## ([^:]+):\s*$/gm, "## $1");
+    cleaned = cleaned.replace(/^### ([^:]+):\s*$/gm, "### $1");
+
     // Step 4: Comprehensive word duplication cleanup
     const medicalTerms = [
-      'Infections', 'Retinopathy', 'Medication', 'Diabetes', 'Treatment', 'Management', 
-      'Care', 'Patient', 'Blood', 'Sugar', 'Insulin', 'Glucose', 'Symptoms', 
-      'Complications', 'Diagnosis', 'Therapy', 'Prevention', 'Monitoring',
-      'Hypoglycemia', 'Hyperglycemia', 'Neuropathy', 'Nephropathy',
-      'Mild', 'Moderate', 'Severe', 'Acute', 'Chronic', 'Emergency',
-      'Critical', 'Important', 'Guidelines', 'Protocol', 'Assessment'
+      "Infections",
+      "Retinopathy",
+      "Medication",
+      "Diabetes",
+      "Treatment",
+      "Management",
+      "Care",
+      "Patient",
+      "Blood",
+      "Sugar",
+      "Insulin",
+      "Glucose",
+      "Symptoms",
+      "Complications",
+      "Diagnosis",
+      "Therapy",
+      "Prevention",
+      "Monitoring",
+      "Hypoglycemia",
+      "Hyperglycemia",
+      "Neuropathy",
+      "Nephropathy",
+      "Mild",
+      "Moderate",
+      "Severe",
+      "Acute",
+      "Chronic",
+      "Emergency",
+      "Critical",
+      "Important",
+      "Guidelines",
+      "Protocol",
+      "Assessment",
     ];
-    
+
     for (const term of medicalTerms) {
       // Fix various duplication patterns
       const patterns = [
@@ -1505,59 +1848,64 @@ ${citations}
         `${term}*${term}`,
         `*${term}*${term}*`,
         `**${term}*${term}**`,
-        `**${term}**${term}**`
+        `**${term}**${term}**`,
       ];
-      
+
       for (const pattern of patterns) {
         cleaned = cleaned.split(pattern).join(`**${term}**`);
       }
-      
+
       // Handle cases where colon follows
       cleaned = cleaned.split(`**${term}**:**`).join(`**${term}**:`);
     }
-    
+
     // Step 5: Fix general asterisk and bold formatting issues
-    cleaned = cleaned.replace(/\*{3,}/g, '**'); // Multiple asterisks to double
-    cleaned = cleaned.replace(/\*\*\*([^*]+)\*\*\*/g, '**$1**'); // Triple to double
-    cleaned = cleaned.replace(/\*([^*]+)\*\*/g, '**$1**'); // Mixed asterisks
-    cleaned = cleaned.replace(/\*\*([^*]+)\*/g, '**$1**'); // Mixed asterisks reverse
-    
+    cleaned = cleaned.replace(/\*{3,}/g, "**"); // Multiple asterisks to double
+    cleaned = cleaned.replace(/\*\*\*([^*]+)\*\*\*/g, "**$1**"); // Triple to double
+    cleaned = cleaned.replace(/\*([^*]+)\*\*/g, "**$1**"); // Mixed asterisks
+    cleaned = cleaned.replace(/\*\*([^*]+)\*/g, "**$1**"); // Mixed asterisks reverse
+
     // Convert single asterisk emphasis to proper bold for important terms
-    cleaned = cleaned.replace(/\*([A-Z][^*]*[a-z][^*]*)\*/g, '**$1**'); // Capitalize terms
-    cleaned = cleaned.replace(/\*([^*]*(?:diet|nutrition|diabetes|blood|sugar|weight|energy|fluid)[^*]*)\*/gi, '**$1**'); // Medical terms
-    
+    cleaned = cleaned.replace(/\*([A-Z][^*]*[a-z][^*]*)\*/g, "**$1**"); // Capitalize terms
+    cleaned = cleaned.replace(
+      /\*([^*]*(?:diet|nutrition|diabetes|blood|sugar|weight|energy|fluid)[^*]*)\*/gi,
+      "**$1**",
+    ); // Medical terms
+
     // Step 6: Remove standalone asterisks and empty bold markers
-    cleaned = cleaned.replace(/\b\*\b/g, '');
-    cleaned = cleaned.replace(/\*\*\s*\*\*/g, '');
-    cleaned = cleaned.replace(/\*\*\*\*/g, '');
-    
+    cleaned = cleaned.replace(/\b\*\b/g, "");
+    cleaned = cleaned.replace(/\*\*\s*\*\*/g, "");
+    cleaned = cleaned.replace(/\*\*\*\*/g, "");
+
     // Step 7: Clean up spacing and formatting
-    cleaned = cleaned.replace(/\s{2,}/g, ' '); // Multiple spaces to single
-    cleaned = cleaned.replace(/\s+([.!?])/g, '$1'); // Space before punctuation
-    cleaned = cleaned.replace(/\n{3,}/g, '\n\n'); // Multiple line breaks
-    cleaned = cleaned.replace(/\s+$/gm, ''); // Trailing spaces on lines
-    
+    cleaned = cleaned.replace(/\s{2,}/g, " "); // Multiple spaces to single
+    cleaned = cleaned.replace(/\s+([.!?])/g, "$1"); // Space before punctuation
+    cleaned = cleaned.replace(/\n{3,}/g, "\n\n"); // Multiple line breaks
+    cleaned = cleaned.replace(/\s+$/gm, ""); // Trailing spaces on lines
+
     // Step 8: Fix hanging punctuation after removed references
-    cleaned = cleaned.replace(/\s+([.!?])/g, '$1');
-    cleaned = cleaned.replace(/\.{2,}/g, '.'); // Multiple periods
-    
+    cleaned = cleaned.replace(/\s+([.!?])/g, "$1");
+    cleaned = cleaned.replace(/\.{2,}/g, "."); // Multiple periods
+
     // Step 9: Clean up any remaining formatting artifacts
-    cleaned = cleaned.replace(/:\s*:/g, ':'); // Double colons
-    cleaned = cleaned.replace(/\*\s*\*/g, ''); // Spaced asterisks
-    
+    cleaned = cleaned.replace(/:\s*:/g, ":"); // Double colons
+    cleaned = cleaned.replace(/\*\s*\*/g, ""); // Spaced asterisks
+
     // Fix standalone "Information" lines and artifacts
-    cleaned = cleaned.replace(/^Information\s*$/gm, ''); // Remove standalone "Information"
-    cleaned = cleaned.replace(/^\s*Information\s*$/gm, ''); // Remove padded "Information"
-    cleaned = cleaned.replace(/^\s*�\s*$/gm, ''); // Remove standalone special characters
-    
+    cleaned = cleaned.replace(/^Information\s*$/gm, ""); // Remove standalone "Information"
+    cleaned = cleaned.replace(/^\s*Information\s*$/gm, ""); // Remove padded "Information"
+    cleaned = cleaned.replace(/^\s*�\s*$/gm, ""); // Remove standalone special characters
+
     // Fix inconsistent bullet point formatting
-    cleaned = cleaned.replace(/^([A-Z][^:]*):([^\n]*)/gm, '- **$1**:$2'); // Convert "Term: description" to bullet
-    cleaned = cleaned.replace(/^\s*-\s*([A-Z][^:]*):([^\n]*)/gm, '- **$1**:$2'); // Fix existing bullets
-    
+    cleaned = cleaned.replace(/^([A-Z][^:]*):([^\n]*)/gm, "- **$1**:$2"); // Convert "Term: description" to bullet
+    cleaned = cleaned.replace(/^\s*-\s*([A-Z][^:]*):([^\n]*)/gm, "- **$1**:$2"); // Fix existing bullets
+
     // Clean up multiple consecutive line breaks after cleanup
-    cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
-    
-    console.log('Comprehensive cleanup complete - removed duplications, document references, and formatting artifacts');
+    cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+
+    console.log(
+      "Comprehensive cleanup complete - removed duplications, document references, and formatting artifacts",
+    );
     return cleaned.trim();
   }
 
@@ -1567,7 +1915,7 @@ ${citations}
     rating: number,
     feedbackType?: string,
     comments?: string,
-    responseTime?: number
+    responseTime?: number,
   ): Promise<void> {
     try {
       await storage.createResponseFeedback({
@@ -1579,7 +1927,7 @@ ${citations}
         responseTime: responseTime || null,
       });
     } catch (error) {
-      console.error('Feedback collection error:', error);
+      console.error("Feedback collection error:", error);
     }
   }
 }
