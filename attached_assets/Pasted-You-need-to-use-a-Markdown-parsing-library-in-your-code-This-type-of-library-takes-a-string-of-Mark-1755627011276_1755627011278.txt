@@ -1,0 +1,56 @@
+You need to use a Markdown parsing library in your code. This type of library takes a string of Markdown text (with symbols like # and *) and converts it into HTML, which your application can then display correctly.
+
+The blue background on the heading is a CSS styling issue that you can fix after the Markdown is parsed correctly.
+
+How to Fix It: Step-by-Step
+Step 1: Parse the Markdown Text
+You need to add a library to your project that can convert Markdown to HTML. Here are examples for common languages:
+
+If you are using JavaScript (e.g., for a website or React app):
+You can use a library like marked. First, install it:
+
+Bash
+
+npm install marked
+Then, use it in your code to convert the text:
+
+JavaScript
+
+import { marked } from 'marked';
+
+const markdownText = "## Understanding **Insulin**";
+const htmlOutput = marked.parse(markdownText);
+
+// Now, render `htmlOutput` in your component instead of the original text.
+// For example, in React: <div dangerouslySetInnerHTML={{ __html: htmlOutput }} />
+If you are using Python (e.g., for a Django or Flask backend):
+You can use the markdown library. First, install it:
+
+Bash
+
+pip install markdown
+Then, use it in your Python code:
+
+Python
+
+import markdown
+
+markdown_text = "## Understanding **Insulin**"
+html_output = markdown.markdown(markdown_text)
+
+# Now, pass `html_output` to your template to be rendered.
+Step 2: Remove the Blue Container Style
+The blue container is caused by CSS rules applied to your heading elements (like <h2>). After you've completed Step 1, the text "Understanding Insulin" will become an <h2> HTML tag.
+
+To remove the blue box, find the relevant CSS file in your project and look for a style definition similar to this:
+
+CSS
+
+/* Find a style like this and remove or modify it */
+h2 {
+  background-color: lightblue; /* This creates the blue container */
+  color: #333;
+  padding: 10px;
+  border-radius: 8px;
+}
+By deleting or commenting out these CSS properties (especially background-color and padding), the blue container will disappear.
