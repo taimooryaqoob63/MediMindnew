@@ -66,8 +66,8 @@ export interface ProcessingOptions {
 
 export class EnhancedDocumentProcessor {
   private defaultOptions: ProcessingOptions = {
-    chunkSize: 800,
-    chunkOverlap: 100,
+    chunkSize: 1000, // tokens, not words
+    chunkOverlap: 200, // tokens overlap
     extractEntities: true,
     buildKnowledgeGraph: true,
     docType: 'learning',
@@ -197,11 +197,11 @@ export class EnhancedDocumentProcessor {
 
   // Adaptive chunk sizing based on document type
   private getAdaptiveChunkSize(docType: string, nodeType: string): { size: number; overlap: number } {
-    // Using consistent chunking parameters for better context preservation
-    return { size: 800, overlap: 100 };
+    // Using consistent chunking parameters for better context preservation (in tokens)
+    return { size: 1000, overlap: 200 };
   }
 
-  // Structure-aware chunking
+  // Structure-aware chunking with improved logic
   private async chunkDocumentStructured(
     structure: DoclingStructure,
     docType: string,
@@ -212,36 +212,63 @@ export class EnhancedDocumentProcessor {
     for (const section of structure.sections) {
       const sectionPath = [section.heading];
 
-      // Process paragraphs
+      // Process paragraphs with improved chunking
       for (const paragraph of section.paragraphs) {
-        const { size, overlap } = this.getAdaptiveChunkSize(docType, 'paragraph');
+        const { size: chunkSize, overlap } = this.getAdaptiveChunkSize(docType, 'paragraph');
+        const paragraphTokens = this.estimateTokenCount(paragraph);
         
-        if (paragraph.length > size) {
-          // Apply sliding window for long paragraphs
-          const words = paragraph.split(/\s+/);
-          for (let i = 0; i < words.length; i += size - overlap) {
-            const chunk = words.slice(i, i + size).join(' ');
-            if (chunk.trim()) {
+        if (paragraphTokens > chunkSize) {
+          // Split large paragraphs by sentences while preserving context
+          const sentences = this.splitIntoSentences(paragraph);
+          let currentChunk = '';
+          let currentTokens = 0;
+          
+          for (const sentence of sentences) {
+            const sentenceTokens = this.estimateTokenCount(sentence);
+            
+            if (currentTokens + sentenceTokens > chunkSize && currentChunk.trim()) {
+              // Add current chunk
               chunks.push({
-                content: chunk,
+                content: currentChunk.trim(),
                 metadata: {
                   sectionPath,
                   nodeType: 'paragraph',
                   page: structure.pageNumbers[paragraph.substring(0, 50)]
                 }
               });
+              
+              // Start new chunk with overlap
+              currentChunk = this.getOverlapText(currentChunk, overlap) + ' ' + sentence;
+              currentTokens = this.estimateTokenCount(currentChunk);
+            } else {
+              currentChunk += (currentChunk ? ' ' : '') + sentence;
+              currentTokens += sentenceTokens;
             }
           }
+          
+          // Add final chunk if it has content
+          if (currentChunk.trim()) {
+            chunks.push({
+              content: currentChunk.trim(),
+              metadata: {
+                sectionPath,
+                nodeType: 'paragraph',
+                page: structure.pageNumbers[paragraph.substring(0, 50)]
+              }
+            });
+          }
         } else {
-          // Keep short paragraphs as single chunks
-          chunks.push({
-            content: paragraph,
-            metadata: {
-              sectionPath,
-              nodeType: 'paragraph',
-              page: structure.pageNumbers[paragraph.substring(0, 50)]
-            }
-          });
+          // Keep short paragraphs as single chunks (only if they have meaningful content)
+          if (paragraphTokens >= 50) {
+            chunks.push({
+              content: paragraph,
+              metadata: {
+                sectionPath,
+                nodeType: 'paragraph',
+                page: structure.pageNumbers[paragraph.substring(0, 50)]
+              }
+            });
+          }
         }
       }
 
@@ -270,6 +297,35 @@ export class EnhancedDocumentProcessor {
     }
 
     return chunks;
+  }
+
+  private splitIntoSentences(text: string): string[] {
+    // Split by sentence boundaries while preserving structure
+    return text
+      .split(/([.!?]+\s+)/) // Split by sentence endings but keep the delimiters
+      .reduce((sentences: string[], part: string, index: number, array: string[]) => {
+        if (index % 2 === 0) {
+          // This is sentence content
+          const nextDelimiter = array[index + 1] || '';
+          sentences.push((part + nextDelimiter).trim());
+        }
+        return sentences;
+      }, [])
+      .filter(sentence => sentence.trim().length > 0);
+  }
+
+  private getOverlapText(text: string, overlapTokens: number): string {
+    const words = text.split(/\s+/);
+    const overlapWords = Math.min(Math.floor(overlapTokens * 0.75), words.length); // ~0.75 words per token
+    return words.slice(-overlapWords).join(' ');
+  }
+
+  private estimateTokenCount(text: string): number {
+    // More accurate token estimation: ~4 characters per token for English
+    // Account for word boundaries and punctuation
+    const words = text.split(/\s+/).length;
+    const chars = text.length;
+    return Math.ceil(Math.max(words * 0.75, chars / 4));
   }
 
   // Determine embedding model based on content type
