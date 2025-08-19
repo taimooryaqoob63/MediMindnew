@@ -6,6 +6,7 @@ import { vectorStore } from "../services/vectorStore";
 import { ragOrchestrator } from "../services/ragAgents";
 import { enhancedRagOrchestrator } from "../services/enhancedRagOrchestrator";
 import { superEnhancedRagOrchestrator } from "../services/superEnhancedRagOrchestrator";
+import { simplifiedRagOrchestrator } from "../services/simplifiedRagOrchestrator";
 import { enhancedDocumentProcessor } from "../services/enhancedDocumentProcessor";
 import { insertDocumentSchema, insertRagChatMessageSchema } from "@shared/schema";
 import multer from "multer";
@@ -862,13 +863,12 @@ export async function registerRAGRoutes(app: Express) {
         role: userObj.role
       });
 
-      // Process query with Super Enhanced RAG Orchestrator  
-      console.log(`🤖 [${requestId}] Starting super enhanced RAG processing...`);
-      const response = await superEnhancedRagOrchestrator.processQuery(
+      // Process query with Simplified RAG Orchestrator (focus on NICE guidelines and Oxford book)
+      console.log(`🤖 [${requestId}] Starting simplified RAG processing...`);
+      const response = await simplifiedRagOrchestrator.processQuery(
         message, 
         userObj, 
-        courseId, 
-        conversationHistory
+        courseId
       );
       
       console.log(`✅ [${requestId}] Enhanced RAG processing completed:`, {
