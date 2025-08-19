@@ -130,14 +130,23 @@ export class SimplifiedRagOrchestrator {
     analysis: SimplifiedQueryAnalysis
   ): Promise<RetrievalResult> {
     try {
-      // Use vector search to find relevant content
-      const searchResults = await vectorStore.searchSimilar(
-        query,
-        8, // Fewer results for better quality
-        analysis.isDiabetesRelated ? { 
-          source: 'NICE'  // Focus on NICE guidelines primarily
-        } : undefined
-      );
+      // Use vector search to find relevant content - bypassing reindexing issues
+      console.log(`🔍 Searching for: "${query.substring(0, 50)}..."`);
+      
+      let searchResults: any[] = [];
+      try {
+        searchResults = await vectorStore.searchSimilar(
+          query,
+          8, // Fewer results for better quality
+          analysis.isDiabetesRelated ? { 
+            source: 'NICE'  // Focus on NICE guidelines primarily
+          } : undefined
+        );
+        console.log(`✅ Vector search returned ${searchResults.length} results`);
+      } catch (error) {
+        console.warn('⚠️ Vector search failed, using fallback:', error.message);
+        searchResults = [];
+      }
 
       // Map results to our format
       const sources = searchResults.map((result: any) => ({
