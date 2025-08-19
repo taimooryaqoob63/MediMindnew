@@ -18,8 +18,8 @@ export interface ProcessingOptions {
 
 export class DocumentProcessor {
   private defaultOptions: ProcessingOptions = {
-    chunkSize: 1000,
-    chunkOverlap: 200,
+    chunkSize: 800,
+    chunkOverlap: 100,
     extractEntities: true,
     buildKnowledgeGraph: true,
   };

@@ -66,8 +66,8 @@ export interface ProcessingOptions {
 
 export class EnhancedDocumentProcessor {
   private defaultOptions: ProcessingOptions = {
-    chunkSize: 1000,
-    chunkOverlap: 200,
+    chunkSize: 800,
+    chunkOverlap: 100,
     extractEntities: true,
     buildKnowledgeGraph: true,
     docType: 'learning',
@@ -197,16 +197,8 @@ export class EnhancedDocumentProcessor {
 
   // Adaptive chunk sizing based on document type
   private getAdaptiveChunkSize(docType: string, nodeType: string): { size: number; overlap: number } {
-    switch (docType) {
-      case 'guideline':
-        return nodeType === 'table' ? { size: 800, overlap: 100 } : { size: 900, overlap: 150 };
-      case 'faq':
-        return { size: 1200, overlap: 150 };
-      case 'paper':
-        return { size: 1000, overlap: 200 };
-      default:
-        return { size: 800, overlap: 150 };
-    }
+    // Using consistent chunking parameters for better context preservation
+    return { size: 800, overlap: 100 };
   }
 
   // Structure-aware chunking
