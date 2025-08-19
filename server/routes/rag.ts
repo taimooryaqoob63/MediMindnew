@@ -902,9 +902,9 @@ export async function registerRAGRoutes(app: Express) {
         role: userObj.role
       });
 
-      // Process query with Simplified RAG Orchestrator (focus on NICE guidelines and Oxford book)
-      console.log(`🤖 [${requestId}] Starting simplified RAG processing...`);
-      const response = await simplifiedRagOrchestrator.processQuery(
+      // Process query with Enhanced RAG Orchestrator (includes improved deduplication and formatting)
+      console.log(`🤖 [${requestId}] Starting enhanced RAG processing...`);
+      const response = await enhancedRagOrchestrator.processQuery(
         message, 
         userObj, 
         courseId
