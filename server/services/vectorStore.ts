@@ -85,10 +85,10 @@ export class VectorStore {
         // Test the existing index
         const index = this.pinecone.index(this.config.indexName);
         const stats = await index.describeIndexStats();
-        console.log(`📊 Index stats - Total vectors: ${stats.totalRecordCount || 0}, Dimension: ${stats.dimension}`);
+        console.log(`📊 Index stats - Total records: ${stats.totalRecordCount || 0}, Dimension: ${stats.dimension}`);
         
         if (stats.totalRecordCount === 0) {
-          console.warn('⚠️  WARNING: Index exists but contains 0 vectors! This means the knowledge base is empty.');
+          console.warn('⚠️  WARNING: Index exists but contains 0 records! This means the knowledge base is empty.');
           console.warn('⚠️  RAG will not work without documents in the vector index.');
         }
       }
@@ -434,7 +434,7 @@ export class VectorStore {
     try {
       const stats = await this.getIndexStats();
       const isEmpty = stats?.totalRecordCount === 0;
-      console.log(`📊 Index status: ${stats?.totalRecordCount || 0} vectors stored`);
+      console.log(`📊 Index status: ${stats?.totalRecordCount || 0} records stored`);
       return isEmpty;
     } catch (error) {
       console.error('Error checking if index is empty:', error);
@@ -446,14 +446,14 @@ export class VectorStore {
     try {
       // Check if index has substantial content
       const stats = await this.getIndexStats();
-      const vectorCount = stats?.totalRecordCount || 0;
+      const recordCount = stats?.totalRecordCount || 0;
       
-      if (vectorCount > 50) { // If we have substantial vectors, skip re-indexing
-        console.log(`✅ Skipping re-indexing: ${vectorCount} vectors already exist in Pinecone`);
+      if (recordCount > 50) { // If we have substantial records, skip re-indexing
+        console.log(`✅ Skipping re-indexing: ${recordCount} records already exist in Pinecone`);
         return true;
       }
       
-      console.log(`🔄 Proceeding with re-indexing: only ${vectorCount} vectors found`);
+      console.log(`🔄 Proceeding with re-indexing: only ${recordCount} records found`);
       return false;
     } catch (error) {
       console.error('Error checking reindexing status:', error);

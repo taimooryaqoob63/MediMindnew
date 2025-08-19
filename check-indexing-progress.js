@@ -10,14 +10,14 @@ async function checkIndexingProgress() {
     // Get detailed index stats
     const stats = await index.describeIndexStats();
     console.log('\n📊 Current Index Statistics:', {
-      totalVectorCount: stats.totalVectorCount,
+      totalRecordCount: stats.totalRecordCount,
       dimension: stats.dimension,
       indexFullness: stats.indexFullness,
       namespaces: Object.keys(stats.namespaces || {}).length
     });
     
-    // Check if we have vectors from both our test data and the ongoing reindexing
-    if (stats.totalVectorCount > 0) {
+    // Check if we have records from both our test data and the ongoing reindexing
+    if (stats.totalRecordCount > 0) {
       console.log('\n✅ Index has vectors! Testing search functionality...');
       
       // Test search with a simple diabetes query
@@ -62,8 +62,8 @@ async function checkIndexingProgress() {
       
       // Check if there are any errors in the indexing process
       console.log('🔄 Checking if reindexing process is active...');
-      console.log('📊 From logs: Current batch processing appears to be at batch 23/824');
-      console.log('📊 This suggests about 2.8% completion of the reindexing process');
+      console.log('📊 From logs: Current batch processing appears to be ongoing');
+      console.log('📊 This suggests the reindexing process is still running');
     }
     
   } catch (error) {
