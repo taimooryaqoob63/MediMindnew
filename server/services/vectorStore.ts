@@ -85,9 +85,9 @@ export class VectorStore {
         // Test the existing index
         const index = this.pinecone.index(this.config.indexName);
         const stats = await index.describeIndexStats();
-        console.log(`📊 Index stats - Total vectors: ${stats.totalVectorCount || 0}, Dimension: ${stats.dimension}`);
+        console.log(`📊 Index stats - Total vectors: ${stats.totalRecordCount || 0}, Dimension: ${stats.dimension}`);
         
-        if (stats.totalVectorCount === 0) {
+        if (stats.totalRecordCount === 0) {
           console.warn('⚠️  WARNING: Index exists but contains 0 vectors! This means the knowledge base is empty.');
           console.warn('⚠️  RAG will not work without documents in the vector index.');
         }
@@ -97,9 +97,10 @@ export class VectorStore {
     } catch (error) {
       console.error('❌ Error initializing vector store:', error);
       
-      if (error.message?.includes('401') || error.message?.includes('authentication')) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('401') || errorMessage.includes('authentication')) {
         throw new Error('Authentication failed. Please verify your PINECONE_API_KEY is correct.');
-      } else if (error.message?.includes('quota') || error.message?.includes('limit')) {
+      } else if (errorMessage.includes('quota') || errorMessage.includes('limit')) {
         throw new Error('Pinecone quota exceeded. Please check your Pinecone dashboard.');
       } else {
         throw error;
@@ -275,7 +276,8 @@ export class VectorStore {
     } catch (error) {
       console.error('Error querying vectors:', error);
       // If filter caused the error, retry without filter
-      if (error.message?.includes('filter') && filter) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('filter') && filter) {
         console.warn('Retrying query without filter due to filter error');
         return this.queryVectors(queryEmbedding, topK);
       }
@@ -337,9 +339,10 @@ export class VectorStore {
       return results;
     } catch (error) {
       console.error('❌ Error in searchSimilar:', error);
+      const errorObj = error instanceof Error ? error : new Error(String(error));
       console.error('❌ Error details:', {
-        message: error.message,
-        stack: error.stack,
+        message: errorObj.message,
+        stack: errorObj.stack,
         query: query.substring(0, 100),
         topK,
         filter,
@@ -430,8 +433,8 @@ export class VectorStore {
   async isIndexEmpty(): Promise<boolean> {
     try {
       const stats = await this.getIndexStats();
-      const isEmpty = stats?.totalVectorCount === 0;
-      console.log(`📊 Index status: ${stats?.totalVectorCount || 0} vectors stored`);
+      const isEmpty = stats?.totalRecordCount === 0;
+      console.log(`📊 Index status: ${stats?.totalRecordCount || 0} vectors stored`);
       return isEmpty;
     } catch (error) {
       console.error('Error checking if index is empty:', error);
@@ -443,9 +446,9 @@ export class VectorStore {
     try {
       // Check if index has substantial content
       const stats = await this.getIndexStats();
-      const vectorCount = stats?.totalVectorCount || 0;
+      const vectorCount = stats?.totalRecordCount || 0;
       
-      if (vectorCount > 100) { // If we have substantial vectors, skip re-indexing
+      if (vectorCount > 50) { // If we have substantial vectors, skip re-indexing
         console.log(`✅ Skipping re-indexing: ${vectorCount} vectors already exist in Pinecone`);
         return true;
       }

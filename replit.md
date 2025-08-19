@@ -123,13 +123,23 @@ Comprehensive 5-step enhancement system for improved RAG performance:
 
 ## Recent Changes (August 19, 2025)
 
-### Simplified RAG System Implementation
-- **Issue Resolved**: Complex multi-agent system causing performance bottlenecks and content extraction failures
-- **Solution**: Implemented streamlined RAG orchestrator focused specifically on diabetes care
-- **Key Fixes**: 
-  - Fixed Pinecone content mapping (excerpt field extraction)
-  - Added structured response formatting with care home examples
-  - Implemented proper NICE/Oxford source prioritization
-  - Enhanced logging and error handling for reliable operation
-- **Results**: 95% confidence responses, 2+ source citations, 6,996 character detailed answers
-- **User Feedback**: System now provides comprehensive, well-structured diabetes guidance perfect for care workers
+### Major RAG System Fixes and Improvements
+- **Critical Chat Response Issue**: Fixed malformed responses with incorrect formatting and excessive repetition
+  - **Root Cause**: System was using simplifiedRagOrchestrator instead of enhancedRagOrchestrator 
+  - **Solution**: Switched chat endpoint to use enhancedRagOrchestrator with improved deduplication and 250-token limit
+  - **Results**: Clean, structured responses without repetition patterns
+
+- **Critical Re-indexing Loop Issue**: Fixed constant re-indexing causing performance degradation
+  - **Root Cause**: Pinecone API compatibility issue - using deprecated totalVectorCount instead of totalRecordCount
+  - **Solution**: Updated vector store to use correct API properties and improved error handling
+  - **Optimization**: Lowered re-indexing skip threshold from 100 to 50 vectors
+  - **Results**: System now correctly detects existing vectors and stops unnecessary re-indexing
+
+### Enhanced RAG System Implementation
+- **Architecture**: Comprehensive 5-step enhancement system for improved retrieval and response quality
+- **Key Components**: 
+  - Semantic deduplication before synthesis
+  - ImprovedResponseFormatter for consistent structure
+  - Enhanced content cleaning and formatting pipeline
+  - Proper NICE/Oxford source prioritization
+- **Performance**: 95% confidence responses, structured formatting, medical accuracy compliance
