@@ -236,5 +236,51 @@ export function cleanupResponse(content: string): string {
   cleaned = cleaned.replace(/\\"/g, '"');
   cleaned = cleaned.replace(/\\n/g, '\n');
   
+  // Fix numbered lists to ensure they start from 1 and are consecutive
+  cleaned = fixNumberedLists(cleaned);
+  
   return cleaned.trim();
+}
+
+/**
+ * Fix numbered lists to ensure proper sequential numbering starting from 1
+ */
+function fixNumberedLists(content: string): string {
+  const lines = content.split('\n');
+  const fixedLines: string[] = [];
+  let inNumberedList = false;
+  let listCounter = 0;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmedLine = line.trim();
+    
+    // Check if this line is a numbered list item
+    const numberedMatch = trimmedLine.match(/^(\s*)(\d+)\.\s+(.+)$/);
+    
+    if (numberedMatch) {
+      const [, indent, , content] = numberedMatch;
+      
+      if (!inNumberedList) {
+        // Starting a new numbered list
+        inNumberedList = true;
+        listCounter = 1;
+      } else {
+        listCounter++;
+      }
+      
+      // Replace with correct sequential number
+      fixedLines.push(`${indent}${listCounter}. ${content}`);
+    } else {
+      // Not a numbered list item
+      if (inNumberedList) {
+        // We were in a list but now we're not, so reset
+        inNumberedList = false;
+        listCounter = 0;
+      }
+      fixedLines.push(line);
+    }
+  }
+  
+  return fixedLines.join('\n');
 }
