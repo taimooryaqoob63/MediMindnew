@@ -782,11 +782,8 @@ export class EnhancedDocumentProcessor {
       conditions: ['diabetes', 'hypoglycemia', 'hyperglycemia', 'neuropathy', 'retinopathy'],
       measurements: ['HbA1c', 'blood glucose', 'blood pressure', 'BMI'],
       organizations: ['NICE', 'NHS', 'CQC', 'WHO'],
-      // Only use short, meaningful references as entities, not full text
-      guidelines: structure.references
-        .filter(ref => ref && ref.length < 50 && ref.length > 2) // Only short references
-        .map(ref => ref.trim())
-        .filter(ref => !ref.includes('http') && !ref.includes('(')) // Skip URLs and complex text
+      // Skip guidelines entirely to avoid regex issues - focus on medical terms only
+      guidelines: []
     };
 
     const extractedEntities = [];
@@ -816,7 +813,7 @@ export class EnhancedDocumentProcessor {
             });
           }
         } catch (error) {
-          console.warn(`Skipping problematic term "${term}" in category ${category}:`, error.message);
+          console.warn(`Skipping problematic term "${term}" in category ${category}:`, error instanceof Error ? error.message : 'Unknown error');
         }
       }
     }
