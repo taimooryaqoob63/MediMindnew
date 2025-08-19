@@ -22,9 +22,6 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
     cleaned = cleaned.replace(/\[BAD\]/gi, '');
     cleaned = cleaned.replace(/\[PLACEHOLDER\]/gi, '');
     
-    // Fix text duplication like "Type 1 DiabetesType 1 Diabetes"
-    cleaned = cleaned.replace(/(\b[A-Z][a-zA-Z ]+)\1/g, "$1");
-    
     // Clean up spacing and punctuation after removals
     cleaned = cleaned.replace(/\s{2,}/g, ' '); // Multiple spaces to single
     cleaned = cleaned.replace(/\s+([.!?])/g, '$1'); // Space before punctuation
@@ -415,7 +412,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
   };
 
   return (
-    <div className={`chat-markdown whitespace-pre-wrap ${className}`}>
+    <div className={`whitespace-pre-wrap ${className}`}>
       {parseMarkdown(cleanContent(content))}
     </div>
   );
