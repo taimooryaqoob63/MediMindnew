@@ -376,8 +376,8 @@ export async function registerRAGRoutes(app: Express) {
         await vectorStore.deleteAllVectors();
         vectorsCleared = true;
         console.log('✅ All vectors cleared from Pinecone');
-      } catch (error) {
-        console.log('Could not clear Pinecone vectors (may not be connected):', error.message);
+      } catch (error: unknown) {
+        console.log('Could not clear Pinecone vectors (may not be connected):', error instanceof Error ? error.message : 'Unknown error');
       }
       
       // Clear all document chunks from database
@@ -409,8 +409,8 @@ export async function registerRAGRoutes(app: Express) {
         await storage.clearEntityRelationships();
         await storage.clearEntities();
         console.log('✅ Knowledge graph and entities cleared');
-      } catch (error) {
-        console.log('Could not clear knowledge graph:', error.message);
+      } catch (error: unknown) {
+        console.log('Could not clear knowledge graph:', error instanceof Error ? error.message : 'Unknown error');
       }
       
       // Clear any cached chat messages related to RAG
@@ -419,8 +419,8 @@ export async function registerRAGRoutes(app: Express) {
         const chatMessages = await storage.getRagChatMessages(user.claims.sub);
         console.log(`Found ${chatMessages.length} chat messages to clear`);
         // Note: Individual chat message deletion would need to be implemented in storage if needed
-      } catch (error) {
-        console.log('Could not clear chat messages:', error.message);
+      } catch (error: unknown) {
+        console.log('Could not clear chat messages:', error instanceof Error ? error.message : 'Unknown error');
       }
       
       console.log('✅ Complete data cleanup finished');

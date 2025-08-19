@@ -94,7 +94,7 @@ export const documentChunks = pgTable("document_chunks", {
   vectorId: text("vector_id").unique(), // Pinecone vector ID
   
   // Smart chunking enhancements
-  parentChunkId: varchar("parent_chunk_id").references(() => documentChunks.id), // For hierarchical chunks
+  parentChunkId: varchar("parent_chunk_id"), // For hierarchical chunks
   chunkType: text("chunk_type").notNull().default("content"), // content, merged, table, figure, summary
   tokenCount: integer("token_count").notNull().default(0),
   sectionPath: text("section_path").array().notNull().default(sql`'{}'::text[]`), // hierarchical section path
@@ -385,26 +385,14 @@ export interface ChatResponse {
   cacheHit?: boolean;
   agentsUsed?: string[];
   responseTime?: number;
+  processingTimeMs?: number;
   streamable?: boolean;
   timestamp?: Date;
+  debugInfo?: {
+    error?: string;
+    stage?: string;
+    fallback?: boolean;
+  };
 }
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type UpsertUser = typeof users.$inferInsert;
-export type InsertCourse = z.infer<typeof insertCourseSchema>;
-export type InsertModule = z.infer<typeof insertModuleSchema>;
-export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
-export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
-export type InsertResource = z.infer<typeof insertResourceSchema>;
-export type InsertDocument = z.infer<typeof insertDocumentSchema>;
-export type InsertDocumentChunk = z.infer<typeof insertDocumentChunkSchema>;
-export type InsertEntity = z.infer<typeof insertEntitySchema>;
-export type InsertEntityRelationship = z.infer<typeof insertEntityRelationshipSchema>;
-export type InsertRagChatMessage = z.infer<typeof insertRagChatMessageSchema>;
-export type InsertProcessingJob = z.infer<typeof insertProcessingJobSchema>;
-export type InsertNotification = z.infer<typeof insertNotificationSchema>;
-export type InsertChatSummary = z.infer<typeof insertChatSummarySchema>;
-export type InsertQueryCache = z.infer<typeof insertQueryCacheSchema>;
-export type InsertResponseFeedback = z.infer<typeof insertResponseFeedbackSchema>;
-export type InsertRagAnalytics = z.infer<typeof insertRagAnalyticsSchema>;
-export type InsertIntentClassification = z.infer<typeof insertIntentClassificationSchema>;
+
