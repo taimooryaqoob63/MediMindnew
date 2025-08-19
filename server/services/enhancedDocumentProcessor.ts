@@ -376,8 +376,10 @@ export class EnhancedDocumentProcessor {
       }
     }
 
-    console.log(`🧠 Semantic chunking completed: ${chunks.length} chunks created`);
-    return chunks;
+    // Post-processing: merge small adjacent chunks for better context
+    const optimizedChunks = this.mergeSmallChunks(chunks, maxTokens);
+    console.log(`🧠 Semantic chunking completed: ${optimizedChunks.length} chunks created`);
+    return optimizedChunks;
   }
 
   private splitIntoSentences(text: string): string[] {
@@ -402,40 +404,67 @@ export class EnhancedDocumentProcessor {
   }
 
   private estimateTokenCount(text: string): number {
-    // More accurate token estimation: ~4 characters per token for English
-    // Account for word boundaries and punctuation
-    const words = text.split(/\s+/).length;
+    // Improved token estimation based on OpenAI's tokenizer patterns
+    // Average of ~3.5 characters per token for English text
     const chars = text.length;
-    return Math.ceil(Math.max(words * 0.75, chars / 4));
+    const words = text.split(/\s+/).filter(w => w.length > 0).length;
+    
+    // Use a weighted approach: combine character-based and word-based estimation
+    // Character-based: ~3.5 chars per token (more accurate for modern tokenizers)
+    // Word-based: ~1.3 tokens per word (accounts for subwords)
+    const charBasedTokens = chars / 3.5;
+    const wordBasedTokens = words * 1.3;
+    
+    // Use weighted average, favoring character-based for longer text
+    const weight = Math.min(chars / 1000, 0.8); // More weight to chars as text gets longer
+    const estimatedTokens = (charBasedTokens * weight) + (wordBasedTokens * (1 - weight));
+    
+    return Math.ceil(Math.max(estimatedTokens, words * 0.8)); // Ensure minimum of 0.8 tokens per word
   }
 
-  // Semantic chunking for individual paragraphs
+  // Enhanced semantic chunking for individual paragraphs
   private async semanticChunkParagraph(paragraph: string, maxTokens: number = 1000): Promise<string[]> {
     if (!paragraph.trim()) return [];
     
-    // If paragraph is short enough, return as single chunk
-    if (this.estimateTokenCount(paragraph) <= maxTokens) {
+    const targetSize = Math.max(maxTokens, 400); // Ensure minimum meaningful size
+    const paragraphTokens = this.estimateTokenCount(paragraph);
+    
+    // If paragraph is appropriately sized, return as single chunk
+    if (paragraphTokens >= 200 && paragraphTokens <= targetSize * 1.2) {
+      return [paragraph.trim()];
+    }
+    
+    // If paragraph is very small, check if we should combine it later
+    if (paragraphTokens < 200) {
+      // Still return it - the caller will handle small chunk aggregation
       return [paragraph.trim()];
     }
 
-    // Split into sentences for semantic grouping
+    // Split large paragraphs into sentences for better chunking
     const sentences = this.splitIntoSentences(paragraph);
     if (sentences.length === 0) {
       return paragraph.trim() ? [paragraph.trim()] : [];
     }
+    
+    if (sentences.length === 1) {
+      // Single very long sentence - split by clauses or force split
+      return this.splitLongSentence(sentences[0], targetSize);
+    }
 
-    return this.groupSentencesIntoChunks(sentences, maxTokens);
+    return this.groupSentencesIntoChunks(sentences, targetSize);
   }
 
-  // Group sentences into semantically coherent chunks
+  // Group sentences into semantically coherent chunks with improved logic
   private groupSentencesIntoChunks(sentences: string[], maxTokens: number = 1000): string[] {
     if (sentences.length === 0) return [];
+    
+    const targetChunkSize = Math.max(maxTokens, 300); // Minimum chunk size of 300 tokens
+    const minChunkSize = Math.max(200, Math.floor(targetChunkSize * 0.3)); // At least 30% of target
+    const maxOverlap = Math.min(100, Math.floor(targetChunkSize * 0.2)); // Max 20% overlap
     
     const chunks: string[] = [];
     let currentChunk = '';
     let currentTokens = 0;
-    const minChunkSize = 50; // Minimum tokens for a chunk
-    const overlap = 50; // Token overlap between chunks
 
     for (let i = 0; i < sentences.length; i++) {
       const sentence = sentences[i].trim();
@@ -443,34 +472,67 @@ export class EnhancedDocumentProcessor {
       
       const sentenceTokens = this.estimateTokenCount(sentence);
       
-      // If adding this sentence would exceed limit and we have enough content
-      if (currentTokens + sentenceTokens > maxTokens && currentTokens >= minChunkSize) {
+      // If single sentence is very large, handle it specially
+      if (sentenceTokens > targetChunkSize * 1.2) {
+        // Save current chunk if it has substantial content
+        if (currentTokens >= minChunkSize) {
+          chunks.push(currentChunk.trim());
+          currentChunk = '';
+          currentTokens = 0;
+        }
+        
+        // Split very long sentence and add as separate chunks
+        const subChunks = this.splitLongSentence(sentence, targetChunkSize);
+        chunks.push(...subChunks);
+        continue;
+      }
+      
+      // Check if adding this sentence would exceed limit
+      if (currentTokens + sentenceTokens > targetChunkSize && currentTokens >= minChunkSize) {
         chunks.push(currentChunk.trim());
         
-        // Start new chunk with some overlap for context
-        const overlapText = this.getLastSentences(currentChunk, overlap);
-        currentChunk = overlapText + (overlapText ? ' ' : '') + sentence;
-        currentTokens = this.estimateTokenCount(currentChunk);
+        // Start new chunk with overlap only if current chunk is substantial
+        if (currentTokens > maxOverlap * 2) {
+          const overlapText = this.getLastSentences(currentChunk, maxOverlap);
+          currentChunk = overlapText + (overlapText ? ' ' : '') + sentence;
+          currentTokens = this.estimateTokenCount(currentChunk);
+        } else {
+          // If current chunk is small, don't add overlap
+          currentChunk = sentence;
+          currentTokens = sentenceTokens;
+        }
       } else {
         currentChunk += (currentChunk ? ' ' : '') + sentence;
         currentTokens += sentenceTokens;
       }
     }
 
-    // Add final chunk
-    if (currentChunk.trim()) {
+    // Add final chunk if substantial
+    if (currentTokens >= minChunkSize) {
+      chunks.push(currentChunk.trim());
+    } else if (chunks.length > 0 && currentChunk.trim()) {
+      // Merge small final chunk with previous chunk if possible
+      const lastChunk = chunks[chunks.length - 1];
+      const combinedTokens = this.estimateTokenCount(lastChunk + ' ' + currentChunk);
+      if (combinedTokens <= targetChunkSize * 1.3) {
+        chunks[chunks.length - 1] = lastChunk + ' ' + currentChunk.trim();
+      } else {
+        chunks.push(currentChunk.trim());
+      }
+    } else if (currentChunk.trim()) {
+      // First chunk - always include if it has content
       chunks.push(currentChunk.trim());
     }
 
-    // Ensure we have at least one chunk if we had sentences
-    if (chunks.length === 0 && sentences.length > 0) {
-      const allText = sentences.join(' ').trim();
-      if (allText) {
-        chunks.push(allText);
-      }
-    }
+    // Final validation - ensure all chunks meet minimum requirements
+    const validChunks = chunks.filter(chunk => {
+      const tokens = this.estimateTokenCount(chunk);
+      return tokens >= 150 && chunk.trim().length > 50; // At least 150 tokens and 50 characters
+    });
 
-    return chunks;
+    console.log(`📊 Chunking stats: ${validChunks.length} chunks, avg tokens: ${Math.round(validChunks.reduce((sum, chunk) => sum + this.estimateTokenCount(chunk), 0) / validChunks.length)}`);
+    
+    return validChunks.length > 0 ? validChunks : (sentences.length > 0 ? [sentences.join(' ')] : []);
   }
 
   // Get last few sentences for overlap
@@ -492,24 +554,131 @@ export class EnhancedDocumentProcessor {
     return result;
   }
 
+  // Split very long sentences by natural break points
+  private splitLongSentence(sentence: string, maxTokens: number = 1000): string[] {
+    if (!sentence.trim()) return [];
+    
+    // Try to split by natural break points first
+    const breakPoints = /[,;:]\s+|\s+(?:and|but|or|however|therefore|moreover|furthermore|additionally|specifically|particularly)\s+/gi;
+    const parts = sentence.split(breakPoints).filter(part => part.trim().length > 10);
+    
+    if (parts.length > 1) {
+      // Group parts into appropriately sized chunks
+      const chunks: string[] = [];
+      let currentChunk = '';
+      let currentTokens = 0;
+      
+      for (const part of parts) {
+        const partTokens = this.estimateTokenCount(part);
+        
+        if (currentTokens + partTokens > maxTokens && currentChunk.trim()) {
+          chunks.push(currentChunk.trim());
+          currentChunk = part;
+          currentTokens = partTokens;
+        } else {
+          currentChunk += (currentChunk ? ' ' : '') + part;
+          currentTokens += partTokens;
+        }
+      }
+      
+      if (currentChunk.trim()) {
+        chunks.push(currentChunk.trim());
+      }
+      
+      return chunks.length > 0 ? chunks : [sentence.trim()];
+    }
+    
+    // No natural breaks - force split by words as last resort
+    return this.forceCreateChunks(sentence, maxTokens);
+  }
+  
   // Force chunk creation as absolute last resort
   private forceCreateChunks(content: string, maxTokens: number = 1000): string[] {
     if (!content.trim()) return [];
     
     const chunks: string[] = [];
-    const words = content.split(/\s+/);
-    const wordsPerToken = 0.75; // Approximate words per token
-    const wordsPerChunk = Math.floor(maxTokens * wordsPerToken);
+    const words = content.split(/\s+/).filter(w => w.length > 0);
+    const targetWordsPerChunk = Math.floor(maxTokens * 0.8); // More conservative estimate
     
-    for (let i = 0; i < words.length; i += wordsPerChunk) {
-      const chunkWords = words.slice(i, i + wordsPerChunk);
+    for (let i = 0; i < words.length; i += targetWordsPerChunk) {
+      const chunkWords = words.slice(i, i + targetWordsPerChunk);
       const chunk = chunkWords.join(' ').trim();
-      if (chunk) {
+      if (chunk && this.estimateTokenCount(chunk) >= 100) { // Ensure minimum size
         chunks.push(chunk);
       }
     }
     
-    return chunks;
+    return chunks.length > 0 ? chunks : (content.trim() ? [content.trim()] : []);
+  }
+
+  // Smart chunk merging to combine small adjacent chunks
+  private mergeSmallChunks(
+    chunks: Array<{ content: string; metadata: Partial<EnhancedMetadata> }>, 
+    maxTokens: number = 1000
+  ): Array<{ content: string; metadata: Partial<EnhancedMetadata> }> {
+    if (chunks.length <= 1) return chunks;
+    
+    const minChunkSize = 250; // Minimum desired chunk size
+    const maxMergedSize = Math.floor(maxTokens * 1.3); // Allow 30% over target for merged chunks
+    const optimized: Array<{ content: string; metadata: Partial<EnhancedMetadata> }> = [];
+    
+    let i = 0;
+    while (i < chunks.length) {
+      const currentChunk = chunks[i];
+      const currentTokens = this.estimateTokenCount(currentChunk.content);
+      
+      // If chunk is already good size, keep it
+      if (currentTokens >= minChunkSize) {
+        optimized.push(currentChunk);
+        i++;
+        continue;
+      }
+      
+      // Try to merge with next chunks
+      let mergedContent = currentChunk.content;
+      let mergedTokens = currentTokens;
+      let mergedMetadata = { ...currentChunk.metadata };
+      let chunksToMerge = 1;
+      
+      // Look ahead to find mergeable chunks
+      for (let j = i + 1; j < chunks.length && j < i + 3; j++) { // Max merge 3 chunks
+        const nextChunk = chunks[j];
+        const nextTokens = this.estimateTokenCount(nextChunk.content);
+        
+        // Check if we can merge without exceeding limits
+        if (mergedTokens + nextTokens <= maxMergedSize) {
+          // Check if chunks are from the same section (better semantic coherence)
+          const sameSectionPath = JSON.stringify(currentChunk.metadata.sectionPath || []) === 
+                                JSON.stringify(nextChunk.metadata.sectionPath || []);
+          
+          if (sameSectionPath || mergedTokens < minChunkSize * 0.7) { // Force merge if very small
+            mergedContent += '\n\n' + nextChunk.content;
+            mergedTokens += nextTokens;
+            chunksToMerge++;
+            
+            // Update metadata to reflect merged nature
+            if (nextChunk.metadata.sectionPath && !mergedMetadata.sectionPath?.includes(nextChunk.metadata.sectionPath[0])) {
+              mergedMetadata.sectionPath = [...(mergedMetadata.sectionPath || []), ...(nextChunk.metadata.sectionPath || [])];
+            }
+          } else {
+            break; // Don't merge if sections are different and we have enough content
+          }
+        } else {
+          break; // Would exceed size limit
+        }
+      }
+      
+      // Add the merged chunk
+      optimized.push({
+        content: mergedContent,
+        metadata: mergedMetadata
+      });
+      
+      i += chunksToMerge;
+    }
+    
+    console.log(`📊 Chunk optimization: ${chunks.length} → ${optimized.length} chunks (merged ${chunks.length - optimized.length})`);
+    return optimized;
   }
 
   // Determine embedding model based on content type
