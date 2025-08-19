@@ -258,8 +258,8 @@ export class EnhancedDocumentProcessor {
             });
           }
         } else {
-          // Keep short paragraphs as single chunks (only if they have meaningful content)
-          if (paragraphTokens >= 50) {
+          // Keep short paragraphs as single chunks (lowered threshold to be more inclusive)
+          if (paragraphTokens >= 20) {
             chunks.push({
               content: paragraph,
               metadata: {
@@ -296,6 +296,31 @@ export class EnhancedDocumentProcessor {
       }
     }
 
+    // Fallback: If no chunks were created, try basic chunking on the raw content
+    if (chunks.length === 0 && structure.sections.length > 0) {
+      console.warn('⚠️  Structure-aware chunking produced 0 chunks, falling back to basic chunking');
+      
+      // Combine all section content
+      const allContent = structure.sections
+        .flatMap(s => s.paragraphs)
+        .filter(p => p.trim().length > 0)
+        .join(' ');
+      
+      if (allContent.trim()) {
+        // Use basic chunking as fallback
+        const basicChunks = await this.basicChunkContent(allContent, maxTokens);
+        for (let i = 0; i < basicChunks.length; i++) {
+          chunks.push({
+            content: basicChunks[i],
+            metadata: {
+              sectionPath: ['Fallback Content'],
+              nodeType: 'paragraph'
+            }
+          });
+        }
+      }
+    }
+
     return chunks;
   }
 
@@ -326,6 +351,37 @@ export class EnhancedDocumentProcessor {
     const words = text.split(/\s+/).length;
     const chars = text.length;
     return Math.ceil(Math.max(words * 0.75, chars / 4));
+  }
+
+  private async basicChunkContent(content: string, maxTokens: number = 1000): Promise<string[]> {
+    const chunks: string[] = [];
+    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
+    let currentChunk = '';
+    let currentTokens = 0;
+    const overlap = 200;
+
+    for (const paragraph of paragraphs) {
+      const paragraphTokens = this.estimateTokenCount(paragraph);
+      
+      // If adding this paragraph would exceed the limit and we have content
+      if (currentTokens + paragraphTokens > maxTokens && currentChunk.trim()) {
+        chunks.push(currentChunk.trim());
+        // Start new chunk with overlap from previous
+        currentChunk = this.getOverlapText(currentChunk, overlap) + '\n\n' + paragraph;
+        currentTokens = this.estimateTokenCount(currentChunk);
+      } else {
+        currentChunk += (currentChunk ? '\n\n' : '') + paragraph;
+        currentTokens += paragraphTokens;
+      }
+    }
+
+    // Add final chunk if it has content
+    if (currentChunk.trim()) {
+      chunks.push(currentChunk.trim());
+    }
+
+    // Filter out very small chunks (minimum 10 tokens for fallback)
+    return chunks.filter(chunk => this.estimateTokenCount(chunk) >= 10);
   }
 
   // Determine embedding model based on content type
@@ -450,6 +506,28 @@ export class EnhancedDocumentProcessor {
       if (opts.buildKnowledgeGraph) {
         await this.updateJobProgress(job.id, 90, 'Building enhanced knowledge graph...');
         await this.buildEnhancedKnowledgeGraph(document.id, structure);
+      }
+
+      // Check if no chunks were created and log warning
+      if (totalChunks === 0) {
+        console.warn(`⚠️  Warning: Document "${document.title}" produced 0 chunks`);
+        console.warn(`   - Content length: ${content.length} characters`);
+        console.warn(`   - Sections found: ${structure.sections.length}`);
+        console.warn(`   - Total paragraphs: ${structure.sections.reduce((acc, s) => acc + s.paragraphs.length, 0)}`);
+        
+        // Add a notification for this issue
+        try {
+          await storage.createNotification({
+            userId: 'system', // or get from context
+            title: '⚠️ Document Processing Warning',
+            message: `Document "${document.title}" was processed but created 0 chunks. This may indicate the document has very short content or formatting issues.`,
+            type: 'warning',
+            read: false,
+            metadata: { documentId: document.id, filePath }
+          });
+        } catch (notifError) {
+          console.log('Could not create notification:', notifError);
+        }
       }
 
       // Mark job as completed
