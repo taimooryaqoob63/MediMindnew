@@ -150,7 +150,17 @@ Comprehensive 5-step enhancement system for improved RAG performance:
 - **Chat Response Formatting**: Fixed presentation issues per user feedback
   - **Issue**: Chat responses had emojis despite user preference for clean, simple formatting
   - **Issue**: Numbered lists starting from 2 instead of 1 due to content parsing issues
+  - **Issue**: Blue background containers on headings creating visual noise
   - **Solution**: Removed all emojis from response formatters (client and server-side)
   - **Solution**: Added `fixNumberedLists()` function to ensure proper sequential numbering starting from 1
-  - **Files Updated**: `client/src/lib/responseFormatter.ts`, `server/services/responseFormatter.ts`, `server/services/improvedResponseFormatter.ts`
-  - **Result**: Clean, professional formatting aligned with user preferences
+  - **Solution**: Eliminated blue background styling from markdown headings in both component and CSS
+  - **Solution**: Updated system prompts to remove emoji instructions for AI model
+  - **Files Updated**: 
+    - `client/src/lib/responseFormatter.ts`
+    - `server/services/responseFormatter.ts` 
+    - `server/services/improvedResponseFormatter.ts`
+    - `client/src/components/ui/markdown.tsx` - removed emoji alert processing
+    - `client/src/index.css` - removed blue background styling
+    - `server/services/ragAgents.ts` - removed emoji instructions from system prompt
+    - `server/services/humanEscalationService.ts` - cleaned escalation message formatting
+  - **Result**: Clean, professional formatting exactly matching user Word document preferences with simple headings, numbered lists, and no visual decorations

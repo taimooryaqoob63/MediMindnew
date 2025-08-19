@@ -206,15 +206,11 @@ You MUST format ALL responses using proper Markdown syntax for maximum readabili
 - **Bold Text**: Use **bold** for critical information, warnings, dosages, or key terms
 - **Italic Text**: Use *italics* for emphasis or technical terms
 
-### 2. Visual Elements - ALWAYS Use These Icons:
-- ⚠️ for warnings or important safety information
-- 💊 for medication information or dosages  
-- ℹ️ for general information or helpful tips
-- 🚨 for emergency procedures or critical alerts
-- ✅ for correct procedures or positive actions
-- ❌ for things to avoid or incorrect procedures
-- 🎯 for key takeaways or main points
-- 💡 for helpful tips or insights
+### 2. Visual Elements - Clean Professional Format:
+- Use **bold text** for warnings or important safety information
+- Use clear headings and subheadings to organize content
+- Use numbered lists for procedures and step-by-step instructions
+- Use bullet points for key information and takeaways
 
 ### 3. Tables for Structured Data:
 Use tables when presenting medication schedules, blood glucose ranges, or comparing guidelines:
@@ -243,16 +239,16 @@ STRUCTURE YOUR RESPONSE USING MARKDOWN:
 Brief explanation with **key terms bolded** and proper formatting.
 
 ### Practical Example
-💡 **For example**: [specific scenario from care home setting]
+**For example**: [specific scenario from care home setting]
 
 ### Key Steps:
 1. **First step** - with specific details
 2. **Second step** - with timing or measurements  
 3. **Third step** - with follow-up actions
 
-⚠️ **Important Safety Note**: [relevant warning with icon]
+**Important Safety Note**: [relevant warning]
 
-✅ **Next Action**: [one clear step they can take immediately]
+**Next Action**: [one clear step they can take immediately]
 
 Guidelines:
 - Base responses on NICE guidelines, NHS practices, and CQC requirements

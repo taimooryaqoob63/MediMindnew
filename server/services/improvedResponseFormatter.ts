@@ -23,17 +23,17 @@ export class ImprovedResponseFormatter {
     
     // Brief Explanation (Always first)
     if (components.explanation) {
-      formatted += `## 🩺 Quick Explanation\n\n${components.explanation}\n\n`;
+      formatted += `## Quick Explanation\n\n${components.explanation}\n\n`;
     }
     
     // Practical Example (Care home focused)
     if (components.example) {
-      formatted += `## 📍 In Your Care Home\n\n${components.example}\n\n`;
+      formatted += `## Practical Example\n\n${components.example}\n\n`;
     }
     
     // Clear Steps (Easy to follow)
     if (components.steps && components.steps.length > 0) {
-      formatted += `## ✅ What To Do\n\n`;
+      formatted += `## What To Do: A Step-by-Step Guide\n\n`;
       components.steps.forEach((step, index) => {
         formatted += `${index + 1}. ${step}\n`;
       });
@@ -42,12 +42,12 @@ export class ImprovedResponseFormatter {
     
     // Next Action (One clear thing to do)
     if (components.action) {
-      formatted += `## ➡️ Your Next Step\n\n**${components.action}**\n\n`;
+      formatted += `## Your Next Step\n\n**${components.action}**\n\n`;
     }
     
     // Emergency Info (If relevant)
     if (components.emergency) {
-      formatted += `## 🚨 Emergency Information\n\n⚠️ ${components.emergency}\n\n`;
+      formatted += `## Important Considerations\n\n${components.emergency}\n\n`;
     }
     
     // Add sources at the end
@@ -91,7 +91,7 @@ export class ImprovedResponseFormatter {
    * Check if content is already well-formatted
    */
   private static isWellFormatted(content: string): boolean {
-    const indicators = ['## 🩺', '## 📍', '## ✅', '## ➡️'];
+    const indicators = ['## Quick Explanation', '## Practical Example', '## What To Do', '## Important Considerations'];
     return indicators.some(indicator => content.includes(indicator));
   }
   

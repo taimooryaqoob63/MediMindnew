@@ -34,47 +34,47 @@ export class ResponseFormatter {
   }
 
   private static isAlreadyFormatted(content: string): boolean {
-    // Check if content already has our beautiful formatting
-    const indicators = ['🩺', '📍', '✅', '➡️', '## ', '### '];
+    // Check if content already has our formatting
+    const indicators = ['## ', '### '];
     return indicators.some(indicator => content.includes(indicator));
   }
 
   private static formatStructuredResponse(data: any): string {
     let formatted = '';
 
-    // 🩺 Brief Explanation
+    // Brief Explanation
     if (data['Brief explanation'] || data.briefExplanation || data.explanation) {
       const explanation = data['Brief explanation'] || data.briefExplanation || data.explanation;
-      formatted += `## 🩺 Brief Explanation\n\n${explanation}\n\n`;
+      formatted += `## Brief Explanation\n\n${explanation}\n\n`;
     }
 
-    // 📍 Practical Example
+    // Practical Example
     if (data['Practical example'] || data.practicalExample || data.example) {
       const example = data['Practical example'] || data.practicalExample || data.example;
-      formatted += `## 📍 Practical Example (Care Home Setting)\n\n${example}\n\n`;
+      formatted += `## Practical Example\n\n${example}\n\n`;
     }
 
-    // ✅ Key Steps
+    // Key Steps
     if (data['Key steps in bullet points'] || data.keySteps || data.steps) {
       const steps = data['Key steps in bullet points'] || data.keySteps || data.steps;
-      formatted += `## ✅ Key Steps\n\n`;
+      formatted += `## What To Do: A Step-by-Step Guide\n\n`;
       
       if (Array.isArray(steps)) {
-        steps.forEach(step => {
+        steps.forEach((step, index) => {
           const cleanStep = step.replace(/^[-•]\s*/, '');
-          formatted += `• ${cleanStep}\n`;
+          formatted += `${index + 1}. ${cleanStep}\n`;
         });
       } else if (typeof steps === 'string') {
         const stepLines = steps.split('\n').filter(line => line.trim());
-        stepLines.forEach(step => {
+        stepLines.forEach((step, index) => {
           const cleanStep = step.replace(/^[-•]\s*/, '');
-          formatted += `• ${cleanStep}\n`;
+          formatted += `${index + 1}. ${cleanStep}\n`;
         });
       }
       formatted += '\n';
     }
 
-    // ➡️ One Clear Action
+    // One Clear Action
     if (data['One clear action'] || data.nextStep || data.action) {
       const action = data['One clear action'] || data.nextStep || data.action;
       let actionText = '';
@@ -86,7 +86,7 @@ export class ResponseFormatter {
       }
       
       if (actionText) {
-        formatted += `## ➡️ One Clear Action\n\n🔎 **Next Step**: ${actionText}\n\n`;
+        formatted += `## Important Considerations\n\n**${actionText}**\n\n`;
       }
     }
 

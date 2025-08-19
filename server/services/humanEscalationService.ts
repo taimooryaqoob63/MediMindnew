@@ -176,7 +176,7 @@ export class HumanEscalationService {
 
     if (urgencyLevel === 'critical' || urgencyLevel === 'high') {
       escalationMessage = `
-🚨 **Clinical Review Required**
+**Clinical Review Required**
 
 While I've provided information below, this query requires immediate review by a qualified healthcare professional due to its urgency and clinical nature.
 
