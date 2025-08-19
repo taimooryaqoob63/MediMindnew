@@ -430,10 +430,31 @@ export class VectorStore {
   async isIndexEmpty(): Promise<boolean> {
     try {
       const stats = await this.getIndexStats();
-      return stats?.totalVectorCount === 0;
+      const isEmpty = stats?.totalVectorCount === 0;
+      console.log(`📊 Index status: ${stats?.totalVectorCount || 0} vectors stored`);
+      return isEmpty;
     } catch (error) {
       console.error('Error checking if index is empty:', error);
       return true; // Assume empty on error
+    }
+  }
+
+  async shouldSkipReindexing(): Promise<boolean> {
+    try {
+      // Check if index has substantial content
+      const stats = await this.getIndexStats();
+      const vectorCount = stats?.totalVectorCount || 0;
+      
+      if (vectorCount > 100) { // If we have substantial vectors, skip re-indexing
+        console.log(`✅ Skipping re-indexing: ${vectorCount} vectors already exist in Pinecone`);
+        return true;
+      }
+      
+      console.log(`🔄 Proceeding with re-indexing: only ${vectorCount} vectors found`);
+      return false;
+    } catch (error) {
+      console.error('Error checking reindexing status:', error);
+      return false; // Proceed with reindexing on error
     }
   }
 }
@@ -451,6 +472,16 @@ export async function reindexAllChunks() {
     
     // Initialize vector store first
     await vectorStore.initialize();
+    
+    // Check if we should skip re-indexing
+    const shouldSkip = await vectorStore.shouldSkipReindexing();
+    if (shouldSkip) {
+      return { 
+        success: true, 
+        message: 'Re-indexing skipped - vectors already exist',
+        skipped: true 
+      };
+    }
     
     // Import storage here to avoid circular dependency
     const { storage } = await import('../storage');

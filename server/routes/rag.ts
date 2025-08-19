@@ -489,6 +489,45 @@ export async function registerRAGRoutes(app: Express) {
     }
   });
 
+  // Check vector store status (admin endpoint)
+  app.get("/api/rag/vector-status", async (req, res) => {
+    try {
+      if (!process.env.PINECONE_API_KEY) {
+        return res.status(400).json({ 
+          message: "Pinecone API key required for RAG functionality" 
+        });
+      }
+
+      console.log('📊 Checking vector store status...');
+      
+      // Initialize vector store
+      await vectorStore.initialize();
+      
+      // Get detailed stats
+      const stats = await vectorStore.getIndexStats();
+      const isEmpty = await vectorStore.isIndexEmpty();
+      const shouldSkip = await vectorStore.shouldSkipReindexing();
+      
+      res.json({
+        message: "Vector store status retrieved",
+        status: {
+          totalVectors: stats?.totalVectorCount || 0,
+          dimension: stats?.dimension || 0,
+          isEmpty: isEmpty,
+          shouldSkipReindexing: shouldSkip,
+          indexName: process.env.PINECONE_INDEX_NAME || 'quickstart',
+          lastChecked: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error("Vector status check error:", error);
+      res.status(500).json({ 
+        message: "Failed to check vector store status",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Re-index all existing document chunks into vector store (admin endpoint)
   app.post("/api/rag/reindex-chunks", async (req, res) => {
     try {
