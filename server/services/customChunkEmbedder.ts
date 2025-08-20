@@ -92,9 +92,9 @@ export class CustomChunkEmbedder {
     console.log(`🔤 Embedding chunk: "${chunk.title}" (${textToEmbed.length} characters)`);
 
     try {
-      // Create embedding using text-embedding-3-large
+      // Create embedding using text-embedding-3-small (1536 dimensions to match Pinecone index)
       const embedding = await openai.embeddings.create({
-        model: 'text-embedding-3-large',
+        model: 'text-embedding-3-small',
         input: textToEmbed,
       });
 
@@ -210,7 +210,7 @@ export class CustomChunkEmbedder {
 
       // Create embedding for query
       const queryEmbedding = await openai.embeddings.create({
-        model: 'text-embedding-3-large',
+        model: 'text-embedding-3-small',
         input: query,
       });
 

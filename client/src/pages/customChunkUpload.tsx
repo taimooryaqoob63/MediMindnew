@@ -175,7 +175,7 @@ export default function CustomChunkUpload() {
       if (response.ok) {
         toast({
           title: "Embedding Successful",
-          description: `${result.processedChunks}/${result.totalChunks} chunks embedded successfully using text-embedding-3-large.`
+          description: `${result.processedChunks}/${result.totalChunks} chunks embedded successfully using text-embedding-3-small.`
         });
 
         if (result.errors && result.errors.length > 0) {
@@ -252,7 +252,7 @@ export default function CustomChunkUpload() {
         <div>
           <h1 className="text-3xl font-bold">Custom Chunk Embedding</h1>
           <p className="text-muted-foreground">
-            Embed structured chunks using text-embedding-3-large and store them in Pinecone
+            Embed structured chunks using text-embedding-3-small and store them in Pinecone
           </p>
         </div>
       </div>
@@ -317,7 +317,7 @@ export default function CustomChunkUpload() {
           </CardTitle>
           <CardDescription>
             Create and embed chunks with title, description, content, source, and tags.
-            Each chunk will be embedded using text-embedding-3-large.
+            Each chunk will be embedded using text-embedding-3-small.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
