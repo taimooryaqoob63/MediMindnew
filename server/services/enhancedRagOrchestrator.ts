@@ -93,6 +93,7 @@ export class EnhancedRagOrchestrator {
     conversationHistory?: string[],
   ): Promise<ChatResponse> {
     const startTime = Date.now();
+    console.log(`🎯 [ORCHESTRATOR] processQuery called with query: "${query.substring(0, 50)}..." for user: ${user.id}`);
 
     try {
       // Step 1: Enhanced emergency and intent detection
