@@ -322,10 +322,28 @@ export class EnhancedHybridSearch {
       const allResults: VectorResult[] = [];
 
       for (const searchQuery of queries) {
-        const results = await vectorStore.query(searchQuery, topK, filters);
+        // Query default namespace
+        const defaultResults = await vectorStore.query(searchQuery, topK, filters);
+        
+        // Query custom chunk namespaces directly
+        const customNamespaces = ['page_1_sentences_1-3', 'page_1_sentences_4-6', 'page_2_sentences_1-3'];
+        const customResults: any[] = [];
+        
+        for (const namespace of customNamespaces) {
+          try {
+            const embedding = await vectorStore.createEmbedding(searchQuery);
+            const namespaceResults = await vectorStore.queryVectors(embedding, Math.ceil(topK/2), filters, namespace);
+            customResults.push(...namespaceResults);
+          } catch (error) {
+            // Namespace might not exist
+          }
+        }
+        
+        // Combine results
+        const combinedResults = [...defaultResults, ...customResults];
         
         // Convert to VectorResult format
-        const vectorResults = results.map((result: any, index: number) => ({
+        const vectorResults = combinedResults.map((result: any, index: number) => ({
           id: result.id,
           score: result.score * (queries.length > 1 && searchQuery !== query ? 0.8 : 1.0), // Reduce score for expanded queries
           metadata: result.metadata || {}
