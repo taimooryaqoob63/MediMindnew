@@ -275,21 +275,87 @@ export class EnhancedRetrievalWithReranking {
   ): Promise<RerankerResult[]> {
     if (!this.openai) {
       console.log('⚠️ No OpenAI key available for reranking');
-      return [];
+      return this.fallbackReranking(query, chunks);
     }
 
     console.log(`🤖 Performing LLM reranking for ${chunks.length} chunks`);
     const rerankerResults: RerankerResult[] = [];
 
-    // Process chunks in batches for efficiency
-    const batchSize = 5;
+    // Process chunks in smaller batches for better reliability
+    const batchSize = 3; // Reduced from 5 to 3
+    const maxBatches = Math.ceil(chunks.length / batchSize);
+    
     for (let i = 0; i < chunks.length; i += batchSize) {
+      const batchIndex = Math.floor(i / batchSize) + 1;
+      console.log(`Processing batch ${batchIndex}/${maxBatches}...`);
+      
       const batch = chunks.slice(i, i + batchSize);
-      const batchResults = await this.rerankerBatch(query, batch, queryType);
-      rerankerResults.push(...batchResults);
+      try {
+        const batchResults = await this.rerankerBatch(query, batch, queryType);
+        rerankerResults.push(...batchResults);
+      } catch (error) {
+        console.log(`⚠️ Batch ${batchIndex} failed, using fallback for this batch`);
+        const fallbackResults = this.fallbackReranking(query, batch);
+        rerankerResults.push(...fallbackResults);
+      }
     }
 
     return rerankerResults;
+  }
+
+  /**
+   * Fallback reranking using simple text matching when LLM fails
+   */
+  private fallbackReranking(query: string, chunks: DocumentChunk[]): RerankerResult[] {
+    console.log('🔧 Using fallback reranking method');
+    return chunks.map(chunk => {
+      const relevanceScore = this.calculateSimpleRelevance(query, chunk.content);
+      return {
+        chunkId: chunk.id,
+        relevanceScore,
+        accuracyScore: Math.max(6, relevanceScore),
+        completenessScore: Math.max(5, relevanceScore),
+        overallScore: this.calculateOverallScore(relevanceScore, Math.max(6, relevanceScore), Math.max(5, relevanceScore)),
+        reasoning: 'Keyword-based fallback scoring',
+        shouldMerge: false,
+        mergePartners: [],
+        conflictFlags: []
+      };
+    });
+  }
+
+  /**
+   * Simple relevance calculation based on keyword matching
+   */
+  private calculateSimpleRelevance(query: string, content: string): number {
+    const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    const contentWords = content.toLowerCase().split(/\s+/);
+    
+    if (queryWords.length === 0) return 5;
+    
+    let matches = 0;
+    let totalScore = 0;
+    
+    for (const queryWord of queryWords) {
+      if (contentWords.some(cw => cw.includes(queryWord) || queryWord.includes(cw))) {
+        matches++;
+        // Higher score for exact matches
+        if (contentWords.includes(queryWord)) {
+          totalScore += 2;
+        } else {
+          totalScore += 1;
+        }
+      }
+    }
+    
+    // Base score of 3, then add relevance
+    const relevanceRatio = matches / queryWords.length;
+    return Math.min(10, Math.max(3, 3 + (totalScore * relevanceRatio * 2)));
+  }
+
+  private calculateOverallScore(relevance: number, accuracy: number, completeness: number): number {
+    // Weighted average: relevance 50%, accuracy 30%, completeness 20%
+    return Math.round((relevance * 0.5 + accuracy * 0.3 + completeness * 0.2) * 10) / 10;
   }
 
   private async rerankerBatch(
@@ -299,52 +365,43 @@ export class EnhancedRetrievalWithReranking {
   ): Promise<RerankerResult[]> {
     if (!this.openai) return [];
 
-    const chunksText = chunks.map((chunk, index) => 
+    // Limit chunk content size to prevent context length issues
+    const truncatedChunks = chunks.map(chunk => ({
+      ...chunk,
+      content: chunk.content.length > 1000 ? chunk.content.substring(0, 1000) + '...' : chunk.content
+    }));
+
+    const chunksText = truncatedChunks.map((chunk, index) => 
       `[CHUNK ${index + 1} ID: ${chunk.id}]\n${chunk.content}\n`
     ).join('\n---\n');
 
-    const prompt = `You are an expert medical information reranker. Evaluate these document chunks for answering the query: "${query}"
+    // Simplified prompt to reduce processing time
+    const prompt = `Rate these medical chunks for query: "${query}"
 
-Query Type: ${queryType}
-Context: Healthcare training for diabetes care workers
+Score each chunk (0-10) for relevance only.
 
-For each chunk, provide scores (0-10) for:
-1. RELEVANCE: How directly related is the content to the query?
-2. ACCURACY: How accurate and evidence-based is the information?
-3. COMPLETENESS: How complete is the information for answering the query?
-
-Also identify:
-- Should this chunk be merged with others? (yes/no)
-- Any potential conflicts or concerns
-- Merge partners (by chunk number if applicable)
-
-Chunks to evaluate:
+Chunks:
 ${chunksText}
 
-Respond with a JSON array, one object per chunk:
-[
-  {
-    "chunkId": "chunk_id_here",
-    "relevanceScore": 8,
-    "accuracyScore": 9,
-    "completenessScore": 7,
-    "reasoning": "Clear explanation of scores",
-    "shouldMerge": false,
-    "mergePartners": [],
-    "conflictFlags": ["potential_concern_if_any"]
-  }
-]`;
+JSON format:
+[{"chunkId": "id", "relevanceScore": 8, "reasoning": "brief"}]`;
 
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
+      // Add timeout wrapper
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Reranking timeout')), 15000) // 15 second timeout
+      );
+
+      const apiPromise = this.openai.chat.completions.create({
+        model: 'gpt-4o-mini', // Use faster model
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2,
-        max_tokens: 2000
+        temperature: 0.1, // Lower temperature for consistency
+        max_tokens: 1500 // Reduced token limit
       });
 
+      const response = await Promise.race([apiPromise, timeoutPromise]);
       const content = response.choices[0].message.content;
-      if (!content) return [];
+      if (!content) throw new Error('No content in response');
 
       // Clean JSON from markdown code blocks
       let cleanedContent = content.trim();
@@ -357,32 +414,37 @@ Respond with a JSON array, one object per chunk:
       const results = JSON.parse(cleanedContent.trim());
       return results.map((result: any) => ({
         chunkId: result.chunkId,
-        relevanceScore: result.relevanceScore || 0,
-        accuracyScore: result.accuracyScore || 0,
-        completenessScore: result.completenessScore || 0,
+        relevanceScore: result.relevanceScore || 5,
+        accuracyScore: Math.max(6, result.relevanceScore || 5), // Base accuracy on relevance
+        completenessScore: Math.max(5, result.relevanceScore || 5), // Base completeness on relevance
         overallScore: this.calculateOverallScore(
-          result.relevanceScore || 0,
-          result.accuracyScore || 0,
-          result.completenessScore || 0
+          result.relevanceScore || 5,
+          Math.max(6, result.relevanceScore || 5),
+          Math.max(5, result.relevanceScore || 5)
         ),
-        reasoning: result.reasoning || '',
-        shouldMerge: result.shouldMerge || false,
-        mergePartners: result.mergePartners || [],
-        conflictFlags: result.conflictFlags || []
-      }));
-    } catch (error) {
-      console.log('⚠️ LLM reranking failed:', error);
-      return chunks.map(chunk => ({
-        chunkId: chunk.id,
-        relevanceScore: 5,
-        accuracyScore: 5,
-        completenessScore: 5,
-        overallScore: 5,
-        reasoning: 'Fallback scoring due to reranker error',
-        shouldMerge: false,
+        reasoning: result.reasoning || 'AI reranked',
+        shouldMerge: false, // Disable merge logic for speed
         mergePartners: [],
         conflictFlags: []
       }));
+    } catch (error) {
+      console.log('⚠️ LLM reranking failed - using fallback:', error instanceof Error ? error.message : 'Unknown error');
+      
+      // Fast fallback using simple text matching
+      return chunks.map(chunk => {
+        const relevanceScore = this.calculateSimpleRelevance(query, chunk.content);
+        return {
+          chunkId: chunk.id,
+          relevanceScore,
+          accuracyScore: Math.max(6, relevanceScore),
+          completenessScore: Math.max(5, relevanceScore),
+          overallScore: this.calculateOverallScore(relevanceScore, Math.max(6, relevanceScore), Math.max(5, relevanceScore)),
+          reasoning: 'Fast keyword-based scoring',
+          shouldMerge: false,
+          mergePartners: [],
+          conflictFlags: []
+        };
+      });
     }
   }
 
@@ -483,10 +545,7 @@ Respond with a JSON array, one object per chunk:
 
   // === Helper Methods ===
 
-  private calculateOverallScore(relevance: number, accuracy: number, completeness: number): number {
-    // Weighted scoring: accuracy is most important for medical content
-    return (relevance * 0.3 + accuracy * 0.5 + completeness * 0.2);
-  }
+
 
   private async extractMedicalEntities(query: string): Promise<string[]> {
     // Basic medical entity extraction - could be enhanced with NER
