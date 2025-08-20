@@ -98,21 +98,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update module - Protected
-  app.put('/api/modules/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const moduleData = req.body;
-      const module = await storage.updateModule(req.params.id, moduleData);
-      if (!module) {
-        return res.status(404).json({ message: 'Module not found' });
-      }
-      res.json(module);
-    } catch (error) {
-      console.error('Module update error:', error);
-      res.status(500).json({ message: 'Failed to update module' });
-    }
-  });
-
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
@@ -131,6 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const courses = await storage.getCourses();
       res.json(courses);
     } catch (error) {
+      console.error("Error getting courses:", error);
       res.status(500).json({ message: "Failed to get courses" });
     }
   });
@@ -146,6 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(course);
     } catch (error) {
+      console.error("Error getting course:", error);
       res.status(500).json({ message: "Failed to get course" });
     }
   });
@@ -156,6 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const modules = await storage.getModulesByCourse(req.params.courseId);
       res.json(modules);
     } catch (error) {
+      console.error("Error getting modules:", error);
       res.status(500).json({ message: "Failed to get modules" });
     }
   });
@@ -169,6 +157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(module);
     } catch (error) {
+      console.error("Error getting module:", error);
       res.status(500).json({ message: "Failed to get module" });
     }
   });
@@ -195,7 +184,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update module - Protected route
   app.patch("/api/modules/:id", isAuthenticated, async (req, res) => {
     try {
-      const module = await storage.updateModule(req.params.id, req.body);
+      const validation = insertModuleSchema.partial().safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({
+          message: "Invalid module data",
+          errors: validation.error.issues
+        });
+      }
+
+      const module = await storage.updateModule(req.params.id, validation.data);
       if (!module) {
         return res.status(404).json({ message: "Module not found" });
       }
@@ -227,6 +224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progress = await storage.getUserProgress(userId, req.params.courseId);
       res.json(progress);
     } catch (error) {
+      console.error("Error getting progress:", error);
       res.status(500).json({ message: "Failed to get progress" });
     }
   });
@@ -243,6 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progress = await storage.updateUserProgress(progressData);
       res.json(progress);
     } catch (error) {
+      console.error("Error updating progress:", error);
       res.status(500).json({ message: "Failed to update progress" });
     }
   });
@@ -318,6 +317,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const resources = await storage.getResources();
       res.json(resources);
     } catch (error) {
+      console.error("Error getting resources:", error);
       res.status(500).json({ message: "Failed to get resources" });
     }
   });
@@ -329,6 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const notifications = await storage.getNotifications(userId);
       res.json(notifications);
     } catch (error) {
+      console.error("Error getting notifications:", error);
       res.status(500).json({ message: "Failed to get notifications" });
     }
   });
@@ -339,6 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const unreadNotifications = await storage.getUnreadNotifications(userId);
       res.json(unreadNotifications);
     } catch (error) {
+      console.error("Error getting unread notifications:", error);
       res.status(500).json({ message: "Failed to get unread notifications" });
     }
   });
@@ -353,6 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(404).json({ message: "Notification not found" });
       }
     } catch (error) {
+      console.error("Error marking notification as read:", error);
       res.status(500).json({ message: "Failed to mark notification as read" });
     }
   });
@@ -367,6 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(500).json({ message: "Failed to mark notifications as read" });
       }
     } catch (error) {
+      console.error("Error marking all notifications as read:", error);
       res.status(500).json({ message: "Failed to mark all notifications as read" });
     }
   });

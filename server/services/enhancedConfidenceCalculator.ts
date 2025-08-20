@@ -73,8 +73,6 @@ export class EnhancedConfidenceCalculator {
     query: string,
     responseContent: string
   ): ConfidenceExplanation {
-    console.log(`📊 Calculating enhanced confidence for response (${sources.length} sources, ${kgFacts.length} KG facts)`);
-
     // Calculate individual confidence features
     const features = this.calculateConfidenceFeatures(
       sources,
@@ -109,8 +107,6 @@ export class EnhancedConfidenceCalculator {
       escalationType: escalationRequired ? escalationType : undefined,
       evidencePacket
     };
-
-    console.log(`✅ Confidence calculated: ${result.score}% (${result.level}), escalation: ${escalationRequired}`);
 
     return result;
   }
