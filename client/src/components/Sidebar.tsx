@@ -24,7 +24,7 @@ export default function Sidebar({
   isMobile
 }: SidebarProps) {
   const [, setLocation] = useLocation();
-  
+
   const isModuleCompleted = (moduleId: string) => {
     return progress.some(p => p.moduleId === moduleId && p.completed);
   };
@@ -140,6 +140,31 @@ export default function Sidebar({
               >
                 <Network className="mr-3 h-4 w-4 text-gray-500" />
                 <span className="text-left">Knowledge Graph</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Custom Chunks Navigation */}
+          <div className="border-t border-gray-200 pt-4">
+            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">
+              Management
+            </h3>
+            <div className="space-y-1">
+              <Button
+                variant="ghost"
+                className="w-full justify-start px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                onClick={() => setLocation("/document-management")}
+              >
+                <FileText className="mr-3 h-4 w-4 text-gray-500" />
+                <span className="text-left">Document Management</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                onClick={() => setLocation("/custom-chunks")}
+              >
+                <FileText className="mr-3 h-4 w-4 text-gray-500" />
+                <span className="text-left">Custom Chunks</span>
               </Button>
             </div>
           </div>

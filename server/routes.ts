@@ -5,6 +5,7 @@ import { getAITutorResponse } from "./services/openai";
 import { insertChatMessageSchema, insertModuleSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { registerRAGRoutes } from "./routes/rag";
+import { registerCustomChunkRoutes } from "./routes/customChunks";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
@@ -16,6 +17,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register RAG routes
   await registerRAGRoutes(app);
+
+  // Register custom chunk routes
+  await registerCustomChunkRoutes(app);
 
   // Configure multer for video uploads
   const storage_config = multer.diskStorage({
@@ -68,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const videoUrl = `/uploads/videos/${req.file.filename}`;
-      
+
       res.json({
         message: 'Video uploaded successfully',
         videoUrl,
@@ -248,7 +252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const courseId = req.params.courseId;
-      
+
       // Get both regular chat messages and RAG chat messages
       const [regularMessages, ragMessages] = await Promise.all([
         storage.getChatMessages(userId, courseId),
@@ -281,14 +285,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { message, courseId, context } = req.body;
       const userId = req.user.claims.sub;
-      
+
       if (!message || !courseId) {
         return res.status(400).json({ message: "Message and courseId are required" });
       }
 
       // Get AI response
       const aiResponse = await getAITutorResponse(message, context);
-      
+
       // Save chat message
       const chatMessage = await storage.createChatMessage({
         userId,
