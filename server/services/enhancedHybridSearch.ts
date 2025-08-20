@@ -473,7 +473,15 @@ Respond with JSON only:
         return results.slice(0, topK);
       }
 
-      const rankings = JSON.parse(response).rankings;
+      // Clean JSON from markdown code blocks
+      let cleanedResponse = response.trim();
+      if (cleanedResponse.startsWith('```json')) {
+        cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanedResponse.startsWith('```')) {
+        cleanedResponse = cleanedResponse.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      const rankings = JSON.parse(cleanedResponse.trim()).rankings;
       
       // Apply LLM scores with boosting
       const rerankedResults = results.map((result, index) => {

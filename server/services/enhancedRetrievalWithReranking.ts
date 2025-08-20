@@ -346,7 +346,15 @@ Respond with a JSON array, one object per chunk:
       const content = response.choices[0].message.content;
       if (!content) return [];
 
-      const results = JSON.parse(content);
+      // Clean JSON from markdown code blocks
+      let cleanedContent = content.trim();
+      if (cleanedContent.startsWith('```json')) {
+        cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      const results = JSON.parse(cleanedContent.trim());
       return results.map((result: any) => ({
         chunkId: result.chunkId,
         relevanceScore: result.relevanceScore || 0,
