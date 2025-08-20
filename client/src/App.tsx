@@ -9,6 +9,7 @@ import TrainingPage from "@/pages/training";
 import LandingPage from "@/pages/landing";
 import CourseManagement from "@/pages/courseManagement";
 import DocumentManagement from "@/pages/documentManagement";
+import CustomChunkUpload from "@/pages/customChunkUpload";
 import RAGAnalytics from "@/pages/ragAnalytics";
 import KnowledgeGraphPage from "@/pages/knowledgeGraph";
 
@@ -46,6 +47,7 @@ function Router() {
           <Route path="/training" component={TrainingPage} />
           <Route path="/manage" component={CourseManagementWrapper} />
           <Route path="/documents" component={DocumentManagementWrapper} />
+          <Route path="/custom-chunk-upload" component={() => <CustomChunkUpload />} />
           <Route path="/analytics" component={() => <RAGAnalytics />} />
           <Route path="/knowledge-graph" component={() => <KnowledgeGraphPage />} />
         </>

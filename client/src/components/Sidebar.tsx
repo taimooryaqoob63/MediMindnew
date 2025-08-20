@@ -1,4 +1,4 @@
-import { PlayCircle, Check, FileText, BarChart3, Network } from "lucide-react";
+import { PlayCircle, Check, FileText, BarChart3, Network, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
@@ -24,7 +24,7 @@ export default function Sidebar({
   isMobile
 }: SidebarProps) {
   const [, setLocation] = useLocation();
-  
+
   const isModuleCompleted = (moduleId: string) => {
     return progress.some(p => p.moduleId === moduleId && p.completed);
   };
