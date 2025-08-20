@@ -396,23 +396,113 @@ export class EnhancedDocumentProcessor {
     return optimizedChunks;
   }
 
+  // Clean document content by removing headers, footers, metadata, and navigation
+  private cleanDocumentContent(content: string): string {
+    if (!content) return '';
+    
+    let cleaned = content;
+    
+    // Remove common document headers and metadata
+    const headerPatterns = [
+      /^.*?copyright.*?(?=\n|$)/gim,
+      /^.*?clarity informatics.*?(?=\n|$)/gim,
+      /^.*?\(trading agreement\).*?(?=\n|$)/gim,
+      /^.*?clinical knowledge summaries.*?(?=\n|$)/gim,
+      /^.*?all rights reserved.*?(?=\n|$)/gim,
+      /^.*?\(CKS\).*?copyright.*?(?=\n|$)/gim,
+      /^.*?the content.*?site.*?copyright.*?(?=\n|$)/gim
+    ];
+    
+    for (const pattern of headerPatterns) {
+      cleaned = cleaned.replace(pattern, '');
+    }
+    
+    // Remove navigation breadcrumbs and links
+    cleaned = cleaned.replace(/\(\/?[a-zA-Z\/-]+\/?\)/g, ''); // Remove navigation paths like (/topics/diabetes-type-2/references/)
+    
+    // Clean up incomplete references and brackets
+    cleaned = cleaned.replace(/\[\w+,\s*$/gm, ''); // Remove incomplete references like "[Zeitler," at end of lines
+    cleaned = cleaned.replace(/\[\w+,\s*\d*\s*$/gm, ''); // Remove incomplete year references
+    
+    // Fix broken parentheses - remove orphaned closing parens at start of text
+    cleaned = cleaned.replace(/^\s*\)/, '');
+    
+    // Remove excessive whitespace and normalize
+    cleaned = cleaned.replace(/\n\s*\n\s*\n/g, '\n\n'); // Max 2 consecutive newlines
+    cleaned = cleaned.replace(/^\s+|\s+$/gm, ''); // Trim lines
+    cleaned = cleaned.replace(/\s{2,}/g, ' '); // Multiple spaces to single
+    
+    return cleaned.trim();
+  }
+
   private splitIntoSentences(text: string): string[] {
     if (!text || typeof text !== 'string') {
       return [];
     }
     
-    // Split by sentence boundaries while preserving structure
-    return text
-      .split(/([.!?]+\s+)/) // Split by sentence endings but keep the delimiters
-      .reduce((sentences: string[], part: string, index: number, array: string[]) => {
-        if (index % 2 === 0) {
-          // This is sentence content
-          const nextDelimiter = array[index + 1] || '';
-          sentences.push((part + nextDelimiter).trim());
+    // More sophisticated sentence splitting that handles medical/academic text better
+    let sentences: string[] = [];
+    
+    // First pass: split on clear sentence boundaries, but be careful with abbreviations and references
+    const roughSentences = text.split(/(?<![A-Z][a-z]\.|Dr\.|Mr\.|Ms\.|etc\.|vs\.)[\.\!\?]+\s+(?=[A-Z])/g);
+    
+    for (let sentence of roughSentences) {
+      sentence = sentence.trim();
+      if (!sentence) continue;
+      
+      // Skip if it's just metadata or header content
+      if (this.isMetadataContent(sentence)) continue;
+      
+      // Ensure sentence has meaningful content (not just punctuation or very short)
+      if (sentence.length > 15 && !/^[\s\W]*$/.test(sentence)) {
+        // Clean up the sentence
+        sentence = this.cleanSentence(sentence);
+        if (sentence && sentence.length > 10) {
+          sentences.push(sentence);
         }
-        return sentences;
-      }, [])
-      .filter(sentence => sentence && sentence.trim().length > 0);
+      }
+    }
+    
+    return sentences;
+  }
+  
+  private isMetadataContent(text: string): boolean {
+    const metadataPatterns = [
+      /^\s*copyright/i,
+      /^\s*all rights reserved/i,
+      /clarity informatics/i,
+      /trading agreement/i,
+      /clinical knowledge summaries/i,
+      /^\s*\(CKS\)/i
+    ];
+    
+    return metadataPatterns.some(pattern => pattern.test(text));
+  }
+  
+  private cleanSentence(sentence: string): string {
+    // Clean individual sentences
+    let cleaned = sentence;
+    
+    // Fix incomplete parentheses
+    const openParens = (cleaned.match(/\(/g) || []).length;
+    const closeParens = (cleaned.match(/\)/g) || []).length;
+    
+    // If we have unmatched parens, try to fix
+    if (openParens > closeParens) {
+      // Find the last incomplete parenthetical and remove it if it looks incomplete
+      const lastOpenParen = cleaned.lastIndexOf('(');
+      if (lastOpenParen > cleaned.length - 50) { // If opening paren is near the end, likely incomplete
+        cleaned = cleaned.substring(0, lastOpenParen).trim();
+      }
+    } else if (closeParens > openParens) {
+      // Remove orphaned closing parens at the beginning
+      cleaned = cleaned.replace(/^\s*\)+/, '');
+    }
+    
+    // Remove incomplete references at the end
+    cleaned = cleaned.replace(/\[\w+,?\s*$/g, '');
+    
+    return cleaned.trim();
   }
 
   private getOverlapText(text: string, overlapTokens: number): string {
@@ -476,9 +566,9 @@ export class EnhancedDocumentProcessor {
   private groupSentencesIntoChunks(sentences: string[], maxTokens: number = 1000): string[] {
     if (sentences.length === 0) return [];
     
-    const targetChunkSize = Math.max(maxTokens, 300); // Minimum chunk size of 300 tokens
-    const minChunkSize = Math.max(200, Math.floor(targetChunkSize * 0.3)); // At least 30% of target
-    const maxOverlap = Math.min(100, Math.floor(targetChunkSize * 0.2)); // Max 20% overlap
+    const targetChunkSize = Math.max(maxTokens, 400); // Increased minimum chunk size
+    const minChunkSize = Math.max(250, Math.floor(targetChunkSize * 0.4)); // Higher minimum for better context
+    const maxOverlap = Math.min(100, Math.floor(targetChunkSize * 0.15)); // Reduced overlap
     
     const chunks: string[] = [];
     let currentChunk = '';
@@ -488,34 +578,49 @@ export class EnhancedDocumentProcessor {
       const sentence = sentences[i].trim();
       if (!sentence) continue;
       
+      // Skip very short or incomplete sentences
+      if (sentence.length < 20 || this.isIncompleteContent(sentence)) {
+        continue;
+      }
+      
       const sentenceTokens = this.estimateTokenCount(sentence);
       
       // If single sentence is very large, handle it specially
       if (sentenceTokens > targetChunkSize * 1.2) {
         // Save current chunk if it has substantial content
         if (currentTokens >= minChunkSize) {
-          chunks.push(currentChunk.trim());
+          // Ensure chunk ends properly
+          const cleanChunk = this.ensureProperChunkEnding(currentChunk.trim());
+          if (cleanChunk && cleanChunk.length > 50) {
+            chunks.push(cleanChunk);
+          }
           currentChunk = '';
           currentTokens = 0;
         }
         
         // Split very long sentence and add as separate chunks
-        const subChunks = this.splitLongSentence(sentence, targetChunkSize);
+        const subChunks = this.splitLongSentence(sentence, targetChunkSize)
+          .map(chunk => this.ensureProperChunkEnding(chunk))
+          .filter(chunk => chunk && chunk.length > 50);
         chunks.push(...subChunks);
         continue;
       }
       
       // Check if adding this sentence would exceed limit
       if (currentTokens + sentenceTokens > targetChunkSize && currentTokens >= minChunkSize) {
-        chunks.push(currentChunk.trim());
+        // Ensure current chunk ends properly before saving
+        const cleanChunk = this.ensureProperChunkEnding(currentChunk.trim());
+        if (cleanChunk && cleanChunk.length > 50) {
+          chunks.push(cleanChunk);
+        }
         
-        // Start new chunk with overlap only if current chunk is substantial
-        if (currentTokens > maxOverlap * 2) {
+        // Start new chunk with minimal overlap for continuity
+        if (currentTokens > maxOverlap * 3) {
           const overlapText = this.getLastSentences(currentChunk, maxOverlap);
           currentChunk = overlapText + (overlapText ? ' ' : '') + sentence;
           currentTokens = this.estimateTokenCount(currentChunk);
         } else {
-          // If current chunk is small, don't add overlap
+          // If current chunk is small, start fresh
           currentChunk = sentence;
           currentTokens = sentenceTokens;
         }
@@ -525,32 +630,46 @@ export class EnhancedDocumentProcessor {
       }
     }
 
-    // Add final chunk if substantial
+    // Add final chunk if substantial and properly formed
     if (currentTokens >= minChunkSize) {
-      chunks.push(currentChunk.trim());
+      const cleanChunk = this.ensureProperChunkEnding(currentChunk.trim());
+      if (cleanChunk && cleanChunk.length > 50) {
+        chunks.push(cleanChunk);
+      }
     } else if (chunks.length > 0 && currentChunk.trim()) {
       // Merge small final chunk with previous chunk if possible
       const lastChunk = chunks[chunks.length - 1];
-      const combinedTokens = this.estimateTokenCount(lastChunk + ' ' + currentChunk);
+      const combinedContent = lastChunk + ' ' + currentChunk.trim();
+      const combinedTokens = this.estimateTokenCount(combinedContent);
       if (combinedTokens <= targetChunkSize * 1.3) {
-        chunks[chunks.length - 1] = lastChunk + ' ' + currentChunk.trim();
+        const cleanCombined = this.ensureProperChunkEnding(combinedContent);
+        if (cleanCombined) {
+          chunks[chunks.length - 1] = cleanCombined;
+        }
       } else {
-        chunks.push(currentChunk.trim());
+        const cleanChunk = this.ensureProperChunkEnding(currentChunk.trim());
+        if (cleanChunk && cleanChunk.length > 50) {
+          chunks.push(cleanChunk);
+        }
       }
     } else if (currentChunk.trim()) {
-      // First chunk - always include if it has content
-      chunks.push(currentChunk.trim());
+      // First chunk - include if it has meaningful content
+      const cleanChunk = this.ensureProperChunkEnding(currentChunk.trim());
+      if (cleanChunk && cleanChunk.length > 50) {
+        chunks.push(cleanChunk);
+      }
     }
 
-    // Final validation - ensure all chunks meet minimum requirements
+    // Final validation - ensure all chunks are meaningful and well-formed
     const validChunks = chunks.filter(chunk => {
       const tokens = this.estimateTokenCount(chunk);
-      return tokens >= 150 && chunk.trim().length > 50; // At least 150 tokens and 50 characters
+      const hasGoodContent = this.hasValidContent(chunk);
+      return tokens >= 200 && chunk.trim().length > 75 && hasGoodContent; // Higher standards for quality
     });
 
-    console.log(`📊 Chunking stats: ${validChunks.length} chunks, avg tokens: ${Math.round(validChunks.reduce((sum, chunk) => sum + this.estimateTokenCount(chunk), 0) / validChunks.length)}`);
+    // Logging removed for production
     
-    return validChunks.length > 0 ? validChunks : (sentences.length > 0 ? [sentences.join(' ')] : []);
+    return validChunks.length > 0 ? validChunks : (sentences.length > 0 ? [this.ensureProperChunkEnding(sentences.join(' '))] : []);
   }
 
   // Get last few sentences for overlap
@@ -570,6 +689,65 @@ export class EnhancedDocumentProcessor {
     }
     
     return result;
+  }
+  
+  // Check if content is incomplete or low-quality
+  private isIncompleteContent(text: string): boolean {
+    const incompletePatterns = [
+      /^\s*\)/, // Starts with closing parenthesis
+      /\[\w+,\s*$/, // Ends with incomplete reference
+      /^\s*[a-z]/, // Starts with lowercase (likely continuation)
+      /^\s*(and|or|but|however|therefore|thus|hence)\s/i, // Starts with conjunction
+      /copyright|rights reserved/i // Contains copyright text
+    ];
+    
+    return incompletePatterns.some(pattern => pattern.test(text)) || text.trim().length < 20;
+  }
+  
+  // Ensure chunk endings are proper and complete
+  private ensureProperChunkEnding(chunk: string): string {
+    if (!chunk) return '';
+    
+    let cleaned = chunk.trim();
+    
+    // Remove incomplete references at the end
+    cleaned = cleaned.replace(/\s*\[\w+,?\s*$/, '');
+    
+    // If chunk ends with incomplete parentheses, try to balance or remove
+    const openParens = (cleaned.match(/\(/g) || []).length;
+    const closeParens = (cleaned.match(/\)/g) || []).length;
+    
+    if (openParens > closeParens) {
+      // Find the last unmatched opening paren and remove everything from there if it's near the end
+      const lastOpenParen = cleaned.lastIndexOf('(');
+      if (lastOpenParen > cleaned.length - 100) { // If within last 100 chars
+        cleaned = cleaned.substring(0, lastOpenParen).trim();
+      }
+    }
+    
+    // Ensure chunk ends with proper punctuation
+    if (!/[.!?]\s*$/.test(cleaned) && cleaned.length > 0) {
+      // Add period if it doesn't end with punctuation
+      cleaned += '.';
+    }
+    
+    return cleaned;
+  }
+  
+  // Validate that content is meaningful and not just metadata
+  private hasValidContent(text: string): boolean {
+    if (!text || text.trim().length < 50) return false;
+    
+    // Check if it's mostly metadata or copyright text
+    const metadataRatio = (text.match(/copyright|rights reserved|clarity informatics|CKS|trading agreement/gi) || []).length;
+    const totalWords = text.split(/\s+/).length;
+    
+    if (metadataRatio / totalWords > 0.3) return false; // Too much metadata
+    
+    // Check if it has actual medical/educational content
+    const medicalTerms = (text.match(/diabetes|insulin|glucose|blood|treatment|patient|medication|condition|disease|symptom|diagnosis/gi) || []).length;
+    
+    return medicalTerms > 0 || totalWords > 30; // Either has medical terms or is substantial text
   }
 
   // Split very long sentences by natural break points
@@ -900,8 +1078,10 @@ export class EnhancedDocumentProcessor {
           throw new Error(`Unsupported file type: ${ext}`);
       }
 
-      console.log(`📊 Extracted ${content.length} characters from ${path.basename(filePath)}`);
-      return content;
+      // Clean extracted content to remove headers, footers, and metadata
+      const cleanedContent = this.cleanDocumentContent(content);
+      console.log(`📊 Extracted ${content.length} characters, cleaned to ${cleanedContent.length} characters from ${path.basename(filePath)}`);
+      return cleanedContent;
     } catch (error) {
       console.error(`❌ Failed to extract text from ${filePath}:`, error);
       throw new Error(`Text extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
