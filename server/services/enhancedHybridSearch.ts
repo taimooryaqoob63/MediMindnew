@@ -635,17 +635,33 @@ Respond with JSON only:
 
   private async loadDocumentsFromStorage(): Promise<void> {
     try {
-      console.log('📚 Loading documents into enhanced hybrid search index...');
+      console.log('📚 Loading document chunks into enhanced hybrid search index...');
       
-      // Load documents from storage and add to index
-      const documents = await storage.getDocuments() || [];
-      for (const doc of documents) {
-        await this.addDocument(doc.id, doc.title, doc.content, doc.metadata as Record<string, any>);
+      // Load document chunks from storage and add to index
+      const chunks = await storage.getAllDocumentChunks() || [];
+      for (const chunk of chunks) {
+        // Get the parent document for additional metadata
+        const parentDoc = await storage.getDocument(chunk.documentId);
+        const combinedMetadata = {
+          ...(chunk.metadata || {}),
+          documentTitle: parentDoc?.title,
+          documentType: parentDoc?.documentType,
+          category: parentDoc?.category,
+          source: parentDoc?.source,
+          chunkIndex: chunk.chunkIndex,
+          chunkType: chunk.chunkType,
+          tokenCount: chunk.tokenCount,
+          publishedAt: parentDoc?.createdAt
+        };
+        
+        // Use chunk content and enhanced metadata
+        const chunkTitle = `${parentDoc?.title || 'Document'} - Chunk ${chunk.chunkIndex + 1}`;
+        await this.addDocument(chunk.id, chunkTitle, chunk.content, combinedMetadata);
       }
       
-      console.log(`✅ Loaded ${documents.length} documents into enhanced index`);
+      console.log(`✅ Loaded ${chunks.length} document chunks into enhanced index`);
     } catch (error) {
-      console.error('Error loading documents into enhanced search index:', error);
+      console.error('Error loading document chunks into enhanced search index:', error);
     }
   }
 

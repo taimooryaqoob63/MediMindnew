@@ -123,7 +123,7 @@ export const RAG_CONFIG: {
 } = {
   retrieval: {
     topK: 8,
-    minScore: 0.5, // Lowered from 0.75 to be more permissive
+    minScore: 0.2, // Lowered from 0.5 to be more permissive for better document retrieval
     hybridSearchEnabled: true,
     bm25Weight: 0.3,
     embeddingWeight: 0.7,
