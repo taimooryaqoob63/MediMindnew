@@ -1,0 +1,21 @@
+Diabetes - type 2:
+When should I suspect hypoglycaemia in a
+person with type 2 diabetes?
+Last revised in March 2025
+The content on the NICE Clinical Knowledge Summaries site (CKS) is the copyright ofClarity Informatics Limited (trading
+as Agilio Software Primary Care) (https://agiliosoftware.com/primary-care/). By using CKS, you agree to the licence set
+out in theCKS End User Licence Agreement (https://www.nice.org.uk/terms-and-conditions/cks-end-user-licence-
+agreement).Hypoglycaemia (low blood glucose) is generally defined as blood glucose levels less
+than 3.5 mmol/L.
+It is the main adverse effect of insulin treatment and may occur in some people
+taking sulfonylureas (/topics/diabetes-type-2/prescribing-
+information/sulfonylureas/), and should be avoided wherever possible.
+See the section on Hypoglycaemia (/topics/insulin-therapy-in-type-2-
+diabetes/management/insulin-therapy-type-2-diabetes/#hypoglycaemia) in the
+CKS topic on [SECTION-INSULIN] Insulin therapy in type 2 diabetes (/topics/insulin-therapy-in-type-2-
+diabetes/) for more information on the prevention, diagnosis, and management of
+hypoglycaemia.
+Basis for recommendation
+Show
+©NICE (National Institute for Health and Care Excellence)2025. All rights reserved. Subject toNotice of rights
+(https://www.nice.org.uk/terms-and-conditions#notice-of-rights).

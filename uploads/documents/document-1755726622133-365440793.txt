@@ -1,0 +1,653 @@
+Diabetes - type 1:
+Scenario: Management of children and young
+people wi th type 1 diabetes
+Last revised in December 2024
+From age 12 months to 17 years.
+W hat initial care and support should I offer a child or y
+with type 1 diabetes?
+Ensure that children and young people with type 1 diabetes are offered an ongoing
+integrated package of care (/topics/diabetes-type-1/management/management-
+children-young-people/#care-plan) provided by a multidisciplinary paediatric
+diabetes team.
+Ensure that the child or young person and/or their family/carers are involved in
+making decisions about their care. 
+Ensure that they are offered a continuing programme of education.
+This should be tailored to the child/young person and include some core elements
+(/topics/diabetes-type-1/management/management-children-young-people/#care-
+plan).
+Encourage children and young people with type 1 diabetes and/or their
+family/carers to:
+Have the following immunizations recommended by the Department of Health (if
+applicable):
+Annual immunization against influenza (if aged over 6 months).
+Immunization against pneumococcal infection.
+Wear or carry something that identifies them as having type 1 diabetes, for example:
+A MedicAlert® bracelet, necklace, or watch (available from www.medicalert.org.uk
+(http://www.medicalert.org.uk/)).
+Diabetes ID Card (available from www.diabetes.co.uk
+(https://www.diabetes.co.uk/diabetic-products/medipal-card.html)).
+Discuss any concerns or questions with their diabetes specialist team.
+Provide information and advice on:
+Means and frequency of communicating with the paediatric diabetes team.
+Encourage children and young people with type 1 diabetes and/or their
+family/carers to attend clinic 4 times a year as regular contact is associated with
+optimal blood glucose control.
+Ensure that the child or young person and/or their family/carers know how to
+contact the diabetes team during working hours and out of hours, as available.
+Government disability benefits — Benefits calculators (https://www.gov.uk/benefits-
+calculators) are available at www.gov.uk (https://www.gov.uk/).
+Manage lifestyle issues,such as diet, exercise, and smoking. See the section on
+Lifestyle management (/topics/diabetes-type-1/management/management-children-
+young-people/#lifestyle-management) for further information.
+
+Provide up-to-date information on diabetes support groups (local and national),
+including information on how to contact them and the benefits of membership.
+For example, the Diabetes UK website (www.diabetes.org.uk
+(https://www.diabetes.org.uk/)) has lots of information on Living with diabetes
+(https://www.diabetes.org.uk/guide-to-diabetes) and a support helpline
+(https://www.diabetes.org.uk/how_we_help/helpline) for people with diabetes and
+their family/carers. 
+Provide this information at the time of diagnosis and periodically thereafter. Written
+information should also be available from the diabetes team.
+Care plan for children and young people with type 1 diabetes
+At the time of diagnosis, children and young people with type 1 diabetes and/or their
+family/carers should be offered an integrated package of care provided by a
+multidisciplinary paediatric diabetes team. 
+To optimize the effectiveness of care and reduce the risk of complications, the
+diabetes team should include members with appropriate training in clinical,
+educational, dietetic, lifestyle, mental health, and foot care aspects of diabetes for
+children and young people.
+The child or young person may be offered home-based or inpatient management,
+depending on clinical need and family circumstances and wishes. 
+Home-based care with support from the local paediatric diabetes team (including
+24-hour telephone access) is safe and as effective as inpatient initial
+management.
+Initial inpatient management may be offered to children younger than 2 years of
+age; children and young people with social or emotional factors that would make
+home-based management inappropriate; and children and young people who live
+far away from the hospital.
+They should also be offered a continuing programme of education. This should:
+Include the following core elements:
+[SECTION-INSULIN] Insulin therapy, including its aims, how it works, its mode of delivery, and dosage
+adjustment.
+Blood glucose monitoring, including targets for blood glucose control (blood
+glucose and HbA1c levels).
+The effects of diet, physical activity, and intercurrent illness on blood glucose
+control.
+Managing intercurrent illness ('sick-day rules', including monitoring of blood
+ketones).
+Detecting and managing hypoglycaemia, hyperglycaemia, and ketosis.
+Be tailored to the child/young person and/or their family/carers, taking account of
+issues such as:
+Emotional wellbeing.
+Age and maturity.
+Cultural considerations.
+Existing knowledge.
+Current and future social circumstances.
+Life goals.
+Basis for recommendation
+Show
+
+[SECTION-INSULIN] Insulin therapy for  children and young people with type
+[SECTION-INSULIN] Insulin therapy should only be initiated and managed by healthcare professionals with
+the relevant expertise and training. 
+See the CKS topic on [SECTION-INSULIN] Insulin therapy in type 1 diabetes (/topics/insulin-therapy-in-type-
+1-diabetes/) for detailed information on insulin therapy, including available insulin
+preparations, recommended regimens, information on injection technique and injection
+sites, storage of insulin, adverse effects, safety issues, and general information on
+lifestyle and cultural aspects of insulin treatment (such as driving whilst on insulin
+treatment, fasting, shift work, holiday and travel, and insurance).
+W hat is the target HbA1c for children and young people
+diabetes?
+Explain to children and young people with type 1 diabetes and/or their family/carers
+that an HbA1c target level of 48 mmol/mol (6.5%) or lower is ideal to minimize the risk
+of long-term complications (/topics/diabetes-type-1/background-
+information/complications/) of type 1 diabetes. 
+Explain the benefits of safely achieving and maintaining the lowest attainable HbA1c.
+If the child or young person has an HbA1c level above the ideal target, explain that
+any reduction in HbA1c level reduces the risk of long-term complications.
+Agree an individualized lowest achievable HbA1c target with each child or young
+person with type 1 diabetes and/or their family/carers, taking into account factors
+such as daily activities, individual life goals, complications, comorbidities, and the
+risk of hypoglycaemia (generally defined as blood glucose levels less than 3.5
+mmol/L).
+Support them to safely achieve and maintain their individually agreed HbA1c target
+level.
+Ensure that children and young people with type 1 diabetes are offered
+measurement of their HbA1c level 4 times a year. More frequent testing may be
+appropriate if there is concern about suboptimal blood glucose control.
+Basis for recommendation
+Show
+W hat shou ld I advise on self-monitoring of blood gluco
+Self-monitoring of blood glucose refers to home blood glucose testing for people with
+diabetes to determine the amount of glucose in the blood at any given time. 
+Continuous glucose monitoring is a way of measuring glucose levels continuously
+throughout the day and night via a tiny electrode inserted under the skin. 
+Continuous glucose monitoring systems provide continuous measurements (every 1–
+5 minutes) of glucose concentrations in the interstitial fluid, which correlate
+with blood glucose levels. It can provide both retrospective and real-time information
+to detect hypoglycaemic and hyperglycaemic episodes, predict impending
+hypoglycaemia, and detect wide fluctuations in glucose levels (glycaemic variability).
+All children and young people with type 1 diabetes should be offered real-time
+continuous glucose monitoring (rtCGM) — intermittently scanned continuous glucose
+monitoring (isCGM) should be offered to children and young people with type 1
+diabetes aged 4 years and over who are unable to use rtCGM or who express a clear
+
+preference for isCGM. If the person cannot use or does not want rtCGM or isCGM,
+capillary blood glucose monitoring should be offered. 
+CGM should be provided by a team with expertise in its use, as part of supporting
+people to self-manage their diabetes.
+Advise children and young people with type 1 diabetes who are using CGM (and their
+families and carers) that they will still need to take capillary blood glucose
+measurements (although they can do this less often). Explain that this is because:
+They will need to use capillary blood glucose measurements to check the
+accuracy of their CGM device
+They will need capillary blood glucose monitoring as a back-up (for example,
+when their blood glucose levels are changing quickly or if the device stops
+working).  
+The child or young person's use of CGM should be monitored and reviewed as part
+of reviewing their diabetes care plan.  
+All people with type 1 diabetes will need a blood glucose monitor, lancets (which fit into
+a finger-pricking device), and testing strips (on which the blood is collected for testing
+in the machine) to monitor capillary blood glucose.
+See the section on Target glucose self-monitoring levels (/topics/diabetes-type-
+1/management/management-children-young-people/#target-glucose-self-
+monitoring-levels) for information on blood glucose self-monitoring target levels.
+Self-monitoring skills should be taught at the time of diagnosis and at the start of
+insulin therapy, and should be reviewed at least annually. The review should include
+checking that the person knows:
+How to use their blood glucose monitoring meter — this can be done by asking them
+to demonstrate their technique.
+When to test — for example before breakfast and 2 hours after meals, during periods
+of illness, before driving, and if they feel hypoglycaemic. 
+How to assess and respond to test results, including how to:
+Interpret trends in blood glucose levels as well as individual readings — this is
+important for adjusting insulin doses.
+Identify the causes of high and low blood glucose values.
+W hat are the target blood glucose self-mo nitoring levels for children a
+people with type 1 diabetes?
+Advise children and young people who are using capillary blood glucose monitoring to
+monitor their blood glucose levels to routinely perform at least 5 capillary blood
+glucose tests per day.  
+Advise the child or young people and/or their family/carers that more frequent testing
+is often needed (for example with physical activity and during intercurrent illness),
+and ensure they have enough test strips for this. 
+Offer a choice of equipment for monitoring capillary blood glucose so that they can
+optimize their blood glucose control in response to adjustment of insulin, diet, and
+exercise. 
+The optimal targets for glucose self-monitoring in children and young people with
+type 1 diabetes are: 
+Fasting plasma glucose level of 4–7 mmol/L on waking.
+Plasma glucose level of 4–7 mmol/L before meals at other times of the day.
+Plasma glucose level of 5–9 mmol/L after meals.
+For young people of driving age, plasma glucose level of at least 5 mmol/L when
+driving.
+
+Explain that achieving and maintaining blood glucose levels towards the lower end of
+the target optimal ranges will help them to achieve the lowest attainable HbA1c.
+Ensure that children and young people do not experience problematic hypoglycaemia
+or undue emotional distress when achieving, or attempting to achieve, blood glucose
+targets. 
+Be aware that there may be conflict between the child or young person and their
+family members or carers about blood glucose targets and that an agreed
+compromise may be needed.
+Explain that blood glucose levels should be interpreted in the context of the 'whole
+child', which includes the social, emotional, and physical environment. 
+Basis for recommendation
+Show
+How shou ld I manage lifestyle issues in children and yo
+type 1 diabetes?
+See the sections on Diet (/topics/diabetes-type-1/management/management-
+children-young-people/#diet), Exercise (/topics/diabetes-type-
+1/management/management-children-young-people/#exercise-physical-
+activity), Alcohol (/topics/diabetes-type-1/management/management-children-
+young-people/#alcohol-intake), and Smoking and substance misuse
+(/topics/diabetes-type-1/management/management-children-young-
+people/#smoking-substance-misuse) for information on managing these lifestyle
+issues.
+Detailed information on managing other lifestyle and cultural issues, such as driving,
+fasting, holiday and travel, and shift work, are covered in the section on Additional
+information and advice (/topics/insulin-therapy-in-type-1-
+diabetes/management/insulin-therapy-type-1-diabetes/#lifestyle-cultural-issues) in the
+CKS topic on [SECTION-INSULIN] Insulin therapy in type 1 diabetes (/topics/insulin-therapy-in-type-1-
+diabetes/).
+Advice on diet
+Support children and young people with type 1 diabetes and/or their family/carers to
+develop a good working knowledge of nutrition and how it affects their diabetes.
+Explain how healthy eating, including eating foods with a low glycaemic index (GI), at
+least five portions of fruit and vegetables a day, and appropriate types and amounts
+of fats, can reduce their risk of cardiovascular disease (CVD).
+Explain that a low GI diet may also help to improve blood glucose control and reduce
+the risk of hyperglycaemic episodes.
+Support the child or young person and their family/carers to adjust their food choices
+accordingly, or consider referring them to a paediatric dietitian.
+Offer level 3 carbohydrate-counting education (carbohydrate counting with
+adjustment of insulin dosage according to an insulin:carbohydrate ratio) to
+children and young people who are using a multiple daily insulin injection regimen
+or continuous subcutaneous insulin infusion (CSII or insulin pump) therapy. Repeat
+the offer at intervals thereafter.
+See the section on [SECTION-INSULIN] Insulin regimens (/topics/insulin-therapy-in-type-1-
+diabetes/management/insulin-therapy-type-1-diabetes/#recommended-insulin-
+regimen) in the CKS topic on [SECTION-INSULIN] Insulin therapy in type 1 diabetes (/topics/insulin-
+therapy-in-type-1-diabetes/) for information on insulin treatment regimens.
+
+Explain that children and young people with type 1 diabetes have the same basic
+nutritional needs as other children and young people so their food should provide
+sufficient energy and nutrients for optimal growth and development.
+If necessary, offer the child or young person dietetic support to help optimize body
+weight.
+Take into account social and cultural considerationswhen providing advice on dietary
+management to children and young people with type 1 diabetes.
+Advice on exercise and physical activity
+Advise children and young people with type 1 diabetes and/or their family/carers that
+regular exercise may lower glucose levels, as exercise increases the amount of
+glucose used by the muscles for energy.
+Explain that:
+They can take part in all forms of exercise, provided appropriate attention is given
+to diet and changes in insulin.
+Changes in daily exercise patterns may require insulin dose and/or carbohydrate
+intake to be altered.
+Offer advice on the effects of exercise on blood glucose levels, and advise on
+strategies for avoiding hypo- or hyperglycaemia during or after physical activity. For
+example:
+Additional carbohydrate should be consumed as appropriate to avoid
+hypoglycaemia.
+Carbohydrate-based foods should be readily available during and after exercise.
+Additional carbohydrate should be consumed if plasma glucose levels are less
+than 7 mmol/L before exercise is undertaken.
+See the section on Managing hypoglycaemia (/topics/insulin-therapy-in-type-1-
+diabetes/management/insulin-therapy-type-1-diabetes/#managing-an-episode-
+of-hypoglycaemia) in the CKS topic on [SECTION-INSULIN] Insulin therapy in type 1 diabetes
+(/topics/insulin-therapy-in-type-1-diabetes/) for information on managing a
+hypoglycaemic episode.
+Encourage them to monitor blood glucose levels before and after exercise so that
+they can:
+Identify when changes in insulin or food intake are necessary.
+Learn the blood glucose response to different exercise conditions.
+Be aware of exercise-induced hypoglycaemia (which may occur several hours
+after prolonged exercise).
+Also advise that:
+Regular exercise can reduce the risk of cardiovascular disease in the long term.
+Exercise can help with weight management (when combined with a healthy diet). See
+the CKS topic on Obesity (/topics/obesity/) for more information.
+They should seek advice from their diabetes team if they wish to participate in a
+sport that may have particular risks for people with diabetes. Additional information
+may be available from local and/or national support groups and organizations, such
+as Diabetes UK (www.diabetes.org.uk (https://www.diabetes.org.uk/)).
+The current UK Chief Medical Officers' Physical Activity Guidelines
+(https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attac
+hment_data/file/832868/uk-chief-medical-officers-physical-activity-
+guidelines.pdf) state that:
+Toddlers (1–2 years) should:
+
+Spend at least 180 minutes per day in a variety of physical activities at any
+intensity, including active and outdoor play, spread throughout the day.
+Children aged 3–4 years should:
+Spend at least 180 minutes per day in a variety of physical activities spread
+throughout the day, including active and outdoor play. The 180 minutes should
+include at least 60 minutes of moderate-to-vigorous intensity physical activity.
+Children and young people aged 5–18 years should:
+Engage in moderate-to-vigorous intensity physical activity for an average of at
+least 60 minutes per day across the week. This can include all forms of activity,
+such as physical education, active travel, after-school activities, play, and sports.
+Engage in a variety of types and intensities of physical activity across the week to
+develop movement skills, muscular fitness, and bone strength.
+Aim to minimize the amount of time spent being sedentary. When physically
+possible, they should break up long periods of not moving with at least light
+physical activity.
+Advice on alcohol intake
+Remind young people and/or their family/carers that the legal drinking age in the UK is
+18 years.
+Advise young people with type 1 diabetes who drink:
+To avoid drinking alcohol on an empty stomach as the alcohol will be absorbed
+faster. They should:
+Eat a snack that contains carbohydrate (such as a sandwich or crisps) before and
+after drinking alcohol. Extra insulin is not required.
+Measure their blood glucose regularly, and maintain their blood glucose with
+appropriate carbohydrate intake.
+That alcohol may exacerbate or prolong the hypoglycaemic effect of insulin,
+including nocturnal hypoglycaemia.
+Signs of hypoglycaemia may become less clear, and delayed hypoglycaemia may
+occur (which can be hours after alcohol consumption).
+See the section on Hypoglycaemia (/topics/insulin-therapy-in-type-1-
+diabetes/management/insulin-therapy-type-1-diabetes/#managing-
+hypoglycaemia) in the CKS topic on [SECTION-INSULIN] Insulin therapy in type 1 diabetes
+(/topics/insulin-therapy-in-type-1-diabetes/) for detailed information on
+hypoglycaemia.
+To always wear some form of diabetes identification (as the reduced awareness
+of hypoglycemia may be confused with alcohol intoxication). Examples of diabetes
+identification include:
+A MedicAlert® bracelet, necklace, or watch (available from www.medicalert.org.uk
+(http://www.medicalert.org.uk/)).
+Diabetes ID Card (available from www.diabetes.co.uk
+(https://www.diabetes.co.uk/diabetic-products/medipal-card.html)).
+Give information on the recommended maximum alcohol intake.
+The Chief Medical Officers' guideline
+(http://assets.publishing.service.gov.uk/government/uploads/system/uploads/attach
+ment_data/file/545739/GDG_report-Jan2016.pdf) for both men and women states
+that:
+It is safest not to regularly drink more than 14 units of alcohol per week, to keep
+health risks from drinking alcohol to a low level.
+People who drink as much as 14 units of alcohol per week should spread this
+evenly over 3 days or more. One or two heavy drinking sessions increases
+
+the risk of death from long-term illnesses and from accidents and injuries.
+The risk of developing a range of illnesses (such as cancers of the mouth, throat,
+and breast) increases with any amount of alcohol consumed on a regular basis.
+If people wish to cut down the amount of alcohol they are drinking, a good way to
+help achieve this is to have several drink-free days each week.
+For women who are pregnant or planning a pregnancy, the safest approach is not
+to drink alcohol at all, to keep risks to the baby to a minimum.
+See the section on Unit of alcohol (/topics/alcohol-problem-drinking/background-
+information/definition/#unit-of-alcohol) in the CKS topic on Alcohol - problem
+drinking (/topics/alcohol-problem-drinking/) for more information on alcohol units.
+Information on Alcohol and diabetes (https://www.diabetes.org.uk/Guide-to-
+diabetes/Enjoy-food/what-to-drink-with-diabetes/Alcohol-and-diabetes) and Type 1
+diabetes and drinking (https://www.diabetes.org.uk/guide-to-diabetes/young-
+adults/type-1-drinking) are also available on the Diabetes UK website
+(www.diabetes.org.uk (https://www.diabetes.org.uk/)).
+Advice on smo king and substance mis use
+Explain about general health problems associated with smoking, particularly the risks
+of developing vascular complications.
+Encourage children and young people with type 1 diabetes not to start smoking.
+Offer smoking cessation programmes to those who smoke. See the CKS topic on
+Smoking cessation (/topics/smoking-cessation/) for more information.
+Explain about the general dangers of substance misuse and the possible effects on
+blood glucose control.
+Information, advice, and support on substance misuse are available on the Talk to
+Frank website (www.talktofrank.com (http://www.talktofrank.com/)).
+Basis for recommendation
+Show
+How shou ld I manage a child or young person hypoglyc
+See the section on Hypoglycaemia (/topics/insulin-therapy-in-type-1-
+diabetes/management/insulin-therapy-type-1-diabetes/#managing-hypoglycaemia) in
+the CKS topic on [SECTION-INSULIN] Insulin therapy in type 1 diabetes (/topics/insulin-therapy-in-type-1-
+diabetes/) for information on how to manage hypoglycaemia.
+How shou ld I manage a child or young person with diab
+ketoa cidos is?
+If diabetic ketoacidosis (DKA) is suspected (/topics/diabetes-type-1/diagnosis/when-
+to-suspect-diabetic-ketoacidosis/) in a child or young person, arrange immediate
+admission to a hospital with acute paediatric facilities, for confirmation of the diagnosis
+and emergency treatment with intravenous insulin and fluids. 
+After a child or young person has recovered from an episode of DKA:
+Discuss with them and/or their family/carers the factors (/topics/diabetes-type-
+1/diagnosis/when-to-suspect-diabetic-ketoacidosis/) that may have led to the
+episode.
+If DKA is recurrent, consider the possibility of non-adherence to treatment
+or intentional insulin omission in order to lose weight (diabulimia (/topics/diabetes-
+
+type-1/background-information/complications/)).
+Assess the emotional and psychological wellbeing of children and young people
+with type 1 diabetes who present with frequent episodes of DKA. 
+Give general information on DKA, including information on how to reduce the risk of
+future episodes.
+Encourage the child or young person and/or their family/carers to attend diabetes
+clinic regularly (4 times per year) as this is associated with good glucose control.
+Information on DKA for people with type 1 diabetes and their family/carers is
+available on the Diabetes UK website (www.diabetes.org.uk
+(https://www.diabetes.org.uk/guide-to-
+diabetes/complications/diabetic_ketoacidosis)).
+Ensure that the child or young person and/or their family/carer have appropriate
+information on how to manage diabetes during a period of illness ('sick-day rules'
+(/topics/diabetes-type-1/management/management-children-young-people/#sick-
+day-rules)). 
+Basis for recommendation
+Show
+How shou ld I manage a child or young person with type
+du ring a period of illness?
+Consider the need for admission or specialist advice. The decision will depend on
+clinical judgement, taking into account the person's age, any underlying illness
+or complications, and the presence of hyperglycaemia (random plasma glucose more
+than 11 mmol/L) and ketosis.
+Arrange immediate hospital admission if: 
+There is an immediate risk of diabetic ketoacidosis (/topics/diabetes-type-
+1/diagnosis/when-to-suspect-diabetic-ketoacidosis/) (DKA). 
+There is moderate ketonaemia (1.5–2.9 mmol/L) with or without hyperglycaemia
+and the person cannot eat or drink, as there is a risk of DKA. 
+The child or young person does not improve rapidly with insulin treatment. 
+Consider arranging hospital admission or seeking urgent specialist advice
+(depending on clinical judgement) if: 
+The underlying condition is unclear. 
+The child or young person is dehydrated or at risk of dehydration. 
+Vomiting persists beyond 2 hours (particularly in young children). 
+The child is: 
+Becoming exhausted, confused, or dehydrated; is hyperventilating; or has
+severe abdominal pain. 
+Younger than 3 years of age or has a co-existing medical condition.
+The child or young person and/or their family/carers are unable to keep the blood
+glucose level above 3.5 mmol/L. 
+The child or young person is on continuous subcutaneous insulin pump therapy. 
+The child or young person and/or their family/carers are exhausted, for example
+due to repeated night-time waking. 
+Language problems make it difficult to communicate with the family.
+If the child or young person can be managed in primary care:
+Assess and manage the intercurrent illness.
+
+Assess how well blood glucose has been monitored and managed with diet and
+insulin.
+Warn the person and/or their family/carers that illness may affect blood glucose
+control:
+Some illnesses (especially if associated with fever) can raise blood glucose levels.
+In contrast, illnesses associated with vomiting and diarrhoea (such as
+gastroenteritis) can lower blood glucose levels, possibly leading to hypoglycaemia
+(blood glucose levels less than 3.5 mmol/L).
+Ensure that the child or young person has:
+Written 'sick-day rules' (/topics/diabetes-type-1/management/management-
+children-young-people/#sick-day-rules) and contact details of the healthcare
+team.
+Easily digestible food and sugary drinks (to provide energy and to prevent further
+ketosis).
+Oral rehydration salt sachets (to prevent dehydration, particularly in young
+children).
+Additional supplies of insulin.
+Glucose tablets or oral gel (to prevent hypoglycaemia).
+A glucagon kit (if appropriate).
+W hat are the 'sick-day rules' for children and young people with type 1
+During a period of illness that does not require admission, remind the child or young
+person and/or their family/carers to adhere to the 'sick-day rules' that should have
+been provided by their diabetes team. They should:
+Never stop or omit insulin.
+The dose of insulin may need to be altered during periods of illness; they should
+seek advice from their diabetes team if they are unsure of how to adjust insulin
+doses.
+Check blood glucose more frequently, for example every 1–2 hours including
+through the night.
+The insulin dose should be titrated according to the blood glucose results and the
+written 'sick-day rules'.
+Check for blood ketone levels regularly, for example every 3–4 hours including
+through the night, and sometimes every 1–2 hours depending on results. 
+Blood ketones should be checked regardless of blood glucose levels. Rarely,
+ketone levels may be elevated even if blood glucose levels are normal, for example
+in gastroenteritis
+If the blood ketone level is elevated (greater than 3 mmol/L), they should contact
+the GP or diabetes care team immediately.
+Advise that the blood ketone testing strips should not be used after the expiry date
+(as they will not provide a reliable result).
+Maintain their normal meal pattern (where possible) if appetite is reduced.
+Their normal meals could be replaced with carbohydrate-containing drinks (such
+as milk, milk shakes, fruit juices, and sugary drinks).
+Maintain adequate fluid intake to prevent dehydration.
+Water or sugar-free fluids are probably most appropriate in the majority of cases
+where blood glucose levels are normal or high.
+If blood glucose levels are low, drinks containing glucose are required (or the
+person should take carbohydrates if possible).
+Carbonated drinks should be avoided if possible.
+
+Seek urgent medical advice if they are violently sick, drowsy, or unable to keep
+fluids down.
+Intravenous fluids may be required.
+When feeling better, continue to monitor their blood glucose carefully until it
+returns to normal.
+This may take some time.
+Medical advice should be sought if blood glucose remains uncontrolled.
+Further patient information on managing diabetes during a period of illness is
+available on the Diabetes UK website (www.diabetes.org.uk
+(https://www.diabetes.org.uk/guide-to-diabetes/life-with-diabetes/illness)).
+Basis for recommendation
+Show
+How shou ld I mon itor  for complications in children and
+with type 1 diabetes?
+Children and young people with type 1 diabetes should have regular surveillance for
+the complications of type 1 diabetes. The reason for the surveillance as well as the
+significance of any abnormal findings should be discussed with the person and/or
+their family/carers. 
+Most children and young people with type 1 diabetes are managed in secondary care. 
+For a child or young person being managed in primary care, address the following at
+every review appointment: 
+Measure HbA1c to ensure adequate blood glucose control. Reiterate HbA1c
+(/topics/diabetes-type-1/management/management-children-young-people/#target-
+hba1c) and glucose self-monitoring (/topics/diabetes-type-
+1/management/management-children-young-people/#target-glucose-self-
+monitoring-levels) targets.
+Offer a review of injection sites and address any injection site problems. See the
+section on Managing injection site problems (/topics/insulin-therapy-in-type-1-
+diabetes/management/insulin-therapy-type-1-diabetes/#managing-injection-site-
+problems) in the CKS topic on [SECTION-INSULIN] Insulin therapy in type 1 diabetes (/topics/insulin-
+therapy-in-type-1-diabetes/) for more information.
+Measure height and weight and plot on an appropriate growth chart. Calculate body
+mass index (BMI).
+Check for normal growth and/or significant changes in weight because these may
+reflect changes in blood glucose control. 
+Check the smoking status of the child or young person. If applicable, offer smoking
+cessation advice. See the CKS topic on Smoking cessation (/topics/smoking-
+cessation/) for more information.
+Assess for psychological problems (such as depression, anxiety, and eating
+disorders) and social problems (such as alcohol, substance misuse, and relationship
+problems). 
+Alerting signs include difficulty with self-care and poor blood glucose control
+(including frequent episodes of diabetic ketoacidosis (/topics/diabetes-type-
+1/diagnosis/when-to-suspect-diabetic-ketoacidosis/)). See the section
+on Psychological and social problems (/topics/diabetes-type-
+1/management/management-children-young-people/#psychological-social-
+problems) for more information.
+
+Advise children and young people with type 1 diabetes and/or their family/carers that
+they should have:
+Regular dental examinations, for example every 3–6 months. 
+An eye examination by an optometrist every 2 years until the age of 12 years when
+they will be eligible for the annual diabetes eye screening (/topics/diabetes-type-
+1/management/management-children-young-people/#eye-disease).
+Their feet assessed for diabetic foot problems (/topics/diabetes-type-
+1/management/management-children-young-people/#diabetic-foot-problems).
+Once a year, offer monitoring for:
+Moderately increased albuminuria (albumin:creatinine ratio [ACR] 3–30 mg/mmol) to
+detect diabetic kidney disease (/topics/diabetes-type-1/management/management-
+children-young-people/#diabetic-kidney-disease) (in children aged 12 years and
+older).
+Hypertension (in children aged 12 years and older).
+Thyroid disease — this should be done at diagnosis and annually thereafter until
+transfer to adult services (/topics/diabetes-type-1/management/management-
+children-young-people/#transition-to-adult-care-services).
+Be aware of the following possible complications and associated conditions:
+Juvenille cataracts (rare).
+Necrobiosis lipoidica (a rare skin condition characterized by shiny, red-brown, or
+yellowish patches, usually on the shins).
+Coeliac disease (this should be screened for at diagnosis). See the CKS topic on
+Coeliac disease (/topics/coeliac-disease/) for more information.
+Addison's disease. See the section on [SECTION-DIAGNOSIS] Diagnosis (/topics/addisons-
+disease/diagnosis/) in the CKS topic on Addison's disease (/topics/addisons-
+disease/) for information on the clinical features of Addison's disease.
+Screening for psychological and social problems
+Children and young people with type 1 diabetes have a greater risk of emotional and
+behavioural difficulties than children without diabetes.
+When managing a child or young person with type 1 diabetes:
+If a behavioural or conduct disorder is suspected, offer timely access to appropriate
+mental health professionals. See the CKS topic on Conduct disorders in children and
+young people (/topics/conduct-disorders-in-children-young-people/) for more
+information.
+If there are family or relationship difficulties, offer specific family-based behavioural
+interventions, such as behavioural family systems therapy, if available.
+If there are concerns about psychological wellbeing, consider referral for a
+programme of behavioural intervention therapy or behavioural techniques in order to
+improve: 
+Health-related quality of life, for example counselling or cognitive behavioural
+therapy (CBT).
+Blood glucose control in children and young people with high HbA1c levels (HbA1c
+above 69 mmol/mol [8.5%]). 
+Adherence to diabetes treatment, for example motivational interviewing or
+multisystemic therapy (an intensive family- and community-based treatment
+programme that focuses on addressing all environmental systems that impact
+chronic and violent juvenile offenders).
+If anxiety, depression, or an eating disorder (such as anorexia, bulimia, or
+diabulimia (/topics/diabetes-type-1/background-information/complications/)) is
+
+suspected, refer promptly to child and adolescent mental health services (CAMHS). 
+If there is persistent suboptimal blood glucose control, offer screening for anxiety,
+depression, and/or eating disorders (which may present with suboptimal overall
+blood glucose control [both hyperglycaemia and hypoglycaemia] and/or
+symptoms of gastroparesis). 
+See the CKS topics on Generalized anxiety disorder (/topics/generalized-anxiety-
+disorder/), Depression in children (/topics/depression-in-children/), and Eating
+disorders (/topics/eating-disorders/) for more information on managing these
+conditions.
+Screening for eye disease
+Advise children and young people with type 1 diabetes and/or their family/carers that
+they should have an eye examination by an optometrist every 2 years until the age of 12
+years when they will be eligible for the annual NHS diabetic eye screening (DES)
+programme (https://www.gov.uk/guidance/diabetic-eye-screening-programme-
+overview).
+The NHS DES is offered once a year to anyone with diabetes who is aged 12 years or
+over. 
+The programme aims to reduce the risk of sight loss among people with diabetes by
+the early detection and treatment, if needed, of sight-threatening retinopathy.
+Explain to the child or young person and/or their family/carers that: 
+Monitoring for diabetic retinopathy begins at 12 years because diabetic retinopathy
+that needs treatment is extremely rare in children and young people younger than 12
+years of age. 
+Background retinopathy is often found through monitoring, and improving blood
+glucose control will reduce the risk of this progressing to significant diabetic
+retinopathy.
+Annual monitoring from 12 years of age is important because if significant diabetic
+retinopathy is found, early treatment will improve the outcome.
+Refer children to the local diabetic screening programme prior to their twelfth birthday
+to ensure that they are seen from 12 years of age.
+Screening for diabetic kidney disease
+From the age of 12 years, children with type 1 diabetes (with or without detected
+nephropathy) should receive annual screening for diabetic nephropathy.
+Use the first urine sample of the day ('early morning urine') to measure the
+albumin:creatinine ratio (ACR). If this is not possible, use a random sample but be
+aware that this is associated with an increased risk of false positive results.
+If the initial ACR is above 3 mg/mmol but below 30 mg/mmol, confirm the result by
+repeating the test on two further occasions using first urine samples of the day
+before starting further investigations and therapy.
+If the initial ACR is 30 mg/mmol or more (proteinuria), arrange further investigations.
+See the CKS topic on Chronic kidney disease (/topics/chronic-kidney-disease/) for
+more information.
+Explain to the child or young person and/or their family/carers that:
+Monitoring for moderately increased albuminuria (ACR 3–30 mg/mmol) to detect
+diabetic kidney disease begins at 12 years of age because diabetic kidney disease is
+extremely rare in younger children.
+Using the first urine sample of the day ('early morning urine') to screen for
+moderately increased albuminuria reduces the risk of false positive results.
+
+The content on the NICE Clinical Knowledge Summaries site (CKS) is the copyright ofClarity Informatics Limited (trading
+as Agilio Software Primary Care) (https://agiliosoftware.com/primary-care/). By using CKS, you agree to the licence set
+out in theCKS End User Licence Agreement (https://www.nice.org.uk/terms-and-conditions/cks-end-user-licence-
+agreement).If moderately increased albuminuria is detected, improving blood glucose control will
+reduce the risk of this progressing to significant diabetic kidney disease.
+Annual monitoring from 12 years is important because if diabetic kidney disease is
+found, early treatment will improve the outcome. 
+Screening for diabetic foot problems
+For children with diabetes who are younger than 12 years of age, give basic foot care
+advice.
+For young people with diabetes aged between 12–17 years, ensure that the paediatric
+care team or the transitional care team assesses their feet as part of their annual
+assessment, and provide information on foot care. 
+If a diabetic foot problem is found or suspected, the young person should be referred
+to an appropriate specialist.
+Basis for recommendation
+Show
+How shou ld I suppor t the transition from paediatric to 
+services?
+Explain to young people with type 1 diabetes who are preparing for transition to adult
+services thatsome aspects of diabetes care will change at transition, for example
+clinic time and location, diabetes specialist team, and self-monitoring blood glucose
+targets.
+Detailed information on the transition to adult clinics for young people with type 1
+diabetes and their family/carers is available on the Diabetes UK website
+(www.diabetes.org.uk (https://www.diabetes.org.uk/Guide-to-diabetes/Teens/Me-and-
+my-diabetes/Transition-to-adult-clinics/)).
+Basis for recommendation
+Show
+©NICE (National Institute for Health and Care Excellence)2025. All rights reserved. Subject toNotice of rights
+(https://www.nice.org.uk/terms-and-conditions#notice-of-rights).
