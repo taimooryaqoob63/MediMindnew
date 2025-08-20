@@ -97,10 +97,12 @@ export class EnhancedRagOrchestrator {
 
     try {
       // Step 1: Enhanced emergency and intent detection
+      console.log(`🔍 [ORCHESTRATOR] Step 1: Starting intent analysis...`);
       const intentAnalysis = await nlpIntentDetector.analyzeIntent(
         query,
         conversationHistory?.join("\n"),
       );
+      console.log(`✅ [ORCHESTRATOR] Step 1: Intent analysis completed`);
       const emergencyCheck = {
         isEmergency: intentAnalysis.isEmergency,
         keywords: intentAnalysis.entities,
@@ -108,8 +110,10 @@ export class EnhancedRagOrchestrator {
       };
 
       // Step 2: Check cache
+      console.log(`💾 [ORCHESTRATOR] Step 2: Checking cache for query...`);
       const cacheResult = await this.checkQueryCache(query);
       if (cacheResult) {
+        console.log(`🎯 [ORCHESTRATOR] Step 2: Cache hit! Returning cached result`);
         await this.logAnalytics({
           eventType: "cache_hit",
           userId: user.id,
@@ -127,12 +131,17 @@ export class EnhancedRagOrchestrator {
         }
         return cacheResult;
       }
+      console.log(`❌ [ORCHESTRATOR] Step 2: No cache hit, proceeding with retrieval...`);
 
       // Step 3: Intent analysis
+      console.log(`🔍 [ORCHESTRATOR] Step 3: Starting detailed query analysis...`);
       const analysis = await this.analyzeQueryWithIntent(query, user);
+      console.log(`✅ [ORCHESTRATOR] Step 3: Query analysis completed`);
 
       // Step 4: Agent context
+      console.log(`👥 [ORCHESTRATOR] Step 4: Getting agent context...`);
       const agentContext = await this.getAgentContext(user.id, courseId);
+      console.log(`✅ [ORCHESTRATOR] Step 4: Agent context retrieved`);
 
       // Step 5: Enhanced retrieval with smart chunking and reranking
       console.log(`🔍 [ORCHESTRATOR] Calling enhanced retrieval for query: "${query}"`);
