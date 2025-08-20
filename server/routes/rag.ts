@@ -9,10 +9,11 @@ import { enhancedRetrievalWithReranking } from "../services/enhancedRetrievalWit
 import { superEnhancedRagOrchestrator } from "../services/superEnhancedRagOrchestrator";
 import { simplifiedRagOrchestrator } from "../services/simplifiedRagOrchestrator";
 import { enhancedDocumentProcessor } from "../services/enhancedDocumentProcessor";
-import { insertDocumentSchema, insertRagChatMessageSchema } from "@shared/schema";
+import { insertDocumentSchema, insertRagChatMessageSchema, queryCache } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
+import { db } from "../db";
 
 // Enhanced deduplication function to eliminate repetitive sentences
 // Clean up document references and format markdown properly
@@ -1525,17 +1526,12 @@ export async function registerRAGRoutes(app: Express) {
     }
   });
 
-  // Smart Chunking API Routes
-  const { smartChunkingRoutes } = await import('./smartChunking.js');
-  app.use('/api/smart-chunking', smartChunkingRoutes);
-}
   // Clear query cache
   app.post("/api/rag/clear-cache", isAuthenticated, async (req, res) => {
     try {
       console.log('🗑️ Clearing query cache...');
       
       // Get all cached queries and delete them
-      // Note: You'll need to add a method to storage to clear query cache
       const result = await db.delete(queryCache);
       
       console.log('✅ Query cache cleared successfully');
@@ -1552,3 +1548,8 @@ export async function registerRAGRoutes(app: Express) {
       });
     }
   });
+
+  // Smart Chunking API Routes
+  const { smartChunkingRoutes } = await import('./smartChunking.js');
+  app.use('/api/smart-chunking', smartChunkingRoutes);
+}
