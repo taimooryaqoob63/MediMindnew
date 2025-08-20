@@ -516,8 +516,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createQueryCache(cache: InsertQueryCache): Promise<QueryCache> {
-    const [created] = await this.db.insert(queryCache).values(cache).returning();
-    return created;
+    try {
+      const [created] = await this.db.insert(queryCache).values(cache).returning();
+      return created;
+    } catch (error: any) {
+      // Handle duplicate key error by updating existing record
+      if (error.code === '23505' && error.constraint === 'query_cache_query_hash_unique') {
+        const [updated] = await this.db
+          .update(queryCache)
+          .set({
+            response: cache.response,
+            sources: cache.sources,
+            confidence: cache.confidence,
+            hitCount: 1, // Reset hit count on update
+            lastAccessed: new Date()
+          })
+          .where(eq(queryCache.queryHash, cache.queryHash))
+          .returning();
+        return updated;
+      }
+      throw error; // Re-throw if not a duplicate key error
+    }
   }
 
   async updateQueryCacheHit(id: string): Promise<void> {

@@ -1,0 +1,92 @@
+Failed to track query performance: NeonDbError: invalid input syntax for type integer: "68.05555555555556"
+    at execute (file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonHttpPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-http/session.ts:68:18)
+    at async DatabaseStorage.createQueryRefinement (/home/runner/workspace/server/storage.ts:590:22)
+    at async EnhancedRetrievalWithReranking.trackQueryPerformance (/home/runner/workspace/server/services/enhancedRetrievalWithReranking.ts:747:9)
+    at async EnhancedRetrievalWithReranking.performEnhancedRetrieval (/home/runner/workspace/server/services/enhancedRetrievalWithReranking.ts:185:5)
+    at async EnhancedRagOrchestrator.processQuery (/home/runner/workspace/server/services/enhancedRagOrchestrator.ts:149:9)
+    at async <anonymous> (/home/runner/workspace/server/routes/rag.ts:907:24) {
+  severity: 'ERROR',
+  code: '22P02',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: "unnamed portal parameter $4 = '...'",
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'numutils.c',
+  line: '617',
+  routine: 'pg_strtoint32_safe',
+  sourceError: undefined
+}
+🔍 [ORCHESTRATOR] Enhanced retrieval returned 9 chunks
+✅ [ORCHESTRATOR] Got chunks from enhanced retrieval:
+  Chunk 0: c48c3515-0f3f-4ebf-b948-231f0a894866 - Diabetes - type 2:
+What is it?
+Last revised in March 2025
+Di...
+  Chunk 1: 4aa83112-7738-43ea-bfb6-5400f5f05335 - Diabetes - type 2:
+What are the risk factors?
+Last revised i...
+Applying deduplication to individual agent response...
+Applying basic semantic deduplication...
+Basic deduplication: 20 -> 20 sentences
+Applying robust semantic deduplication before synthesis...
+Starting semantic deduplication for 1 agent response(s)...
+Returning single, deduplicated agent response.
+Cache storage error: NeonDbError: duplicate key value violates unique constraint "query_cache_query_hash_unique"
+    at execute (file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1556:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonHttpPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-http/session.ts:68:18)
+    at async DatabaseStorage.createQueryCache (/home/runner/workspace/server/storage.ts:519:23)
+    at async EnhancedRagOrchestrator.cacheResponse (/home/runner/workspace/server/services/enhancedRagOrchestrator.ts:1556:7)
+    at async EnhancedRagOrchestrator.processQuery (/home/runner/workspace/server/services/enhancedRagOrchestrator.ts:284:9)
+    at async <anonymous> (/home/runner/workspace/server/routes/rag.ts:907:24) {
+  severity: 'ERROR',
+  code: '23505',
+  detail: 'Key (query_hash)=(d4f1b2eebc8b479f17d3f09a5f1fd6d92b4127ca3679284180fde0ccfc95b5ac) already exists.',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'query_cache',
+  column: undefined,
+  dataType: undefined,
+  constraint: 'query_cache_query_hash_unique',
+  file: 'nbtinsert.c',
+  line: '666',
+  routine: '_bt_check_unique',
+  sourceError: undefined
+}
+Applying comprehensive final response cleanup...
+Comprehensive cleanup complete - removed duplications, document references, and formatting artifacts
+✅ [1755729958880] Enhanced RAG processing completed: {
+  hasContent: true,
+  confidence: 100,
+  sourcesCount: 9,
+  agentsUsed: 1,
+  usedRAG: true,
+  responseTime: 94937
+}
+🔄 [1755729958880] Applying final deduplication...
+Simple safety deduplication - Original length: 3167
+No obvious duplication found - content appears clean
+💾 [1755729958880] Storing chat message in database...
+💾 [1755729958880] Chat message stored successfully: {
+  messageId: '675596d9-2bde-477a-bdac-af194057686d',
+  timestamp: 2025-08-20T22:47:33.873Z
+}
+📤 [1755729958880] Sending final response: {
+  hasContent: true,
+  confidence: 100,
+  sourcesCount: 9,
+  messageId: '675596d9-2bde-477a-bdac-af194057686d',
+  contentLength: 3167

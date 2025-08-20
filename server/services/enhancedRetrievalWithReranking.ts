@@ -737,8 +737,8 @@ Provide a comprehensive answer with proper citations:`;
           userId,
           originalQuery: query,
           refinedQuery: query, // Would be enhanced with actual refinement
-          originalConfidence: confidence,
-          refinedConfidence: confidence,
+          originalConfidence: Math.round(confidence), // Convert to integer
+          refinedConfidence: Math.round(confidence), // Convert to integer
           chunkFragmentation: resultCount < 3,
           action: confidence < 50 ? 'escalate' : 'reformulate',
           automaticRefinement: false
