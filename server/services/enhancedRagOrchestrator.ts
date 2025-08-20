@@ -521,6 +521,10 @@ Provide JSON response with:
 }`;
 
     try {
+      if (!this.openai) {
+        throw new Error("OpenAI service not initialized");
+      }
+
       const response = await this.openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: prompt }],
@@ -529,9 +533,13 @@ Provide JSON response with:
         max_tokens: 500,
       });
 
+      if (!response.choices || response.choices.length === 0) {
+        throw new Error("No response choices received from OpenAI");
+      }
+
       const analysisText = response.choices[0]?.message?.content;
       if (!analysisText) {
-        throw new Error("No analysis received");
+        throw new Error("No analysis content received");
       }
 
       // Clean up any markdown formatting if present
@@ -539,7 +547,20 @@ Provide JSON response with:
         .replace(/```json\n?/g, "")
         .replace(/```\n?/g, "")
         .trim();
-      const analysis = JSON.parse(cleanedText);
+      
+      // Validate JSON before parsing
+      let analysis;
+      try {
+        analysis = JSON.parse(cleanedText);
+      } catch (parseError) {
+        console.error("JSON parsing failed:", parseError, "Raw text:", cleanedText);
+        throw new Error("Invalid JSON response from OpenAI");
+      }
+
+      // Validate required fields
+      if (!analysis || typeof analysis !== 'object') {
+        throw new Error("Invalid analysis structure");
+      }
 
       await storage.createIntentClassification({
         query,
@@ -1289,20 +1310,14 @@ FINAL CHECK: Review your response. Zero repetition allowed. Every sentence must 
         });
       });
 
-      console.log(
-        `Processing ${allSentences.length} sentences for semantic deduplication`,
-      );
+      // Processing sentences for semantic deduplication
 
       if (allSentences.length === 0) {
-        console.log("No sentences to process, returning original responses");
         return agentResponses;
       }
 
       // If we only have a few sentences, apply basic deduplication
       if (allSentences.length < 3) {
-        console.log(
-          "Too few sentences for embedding-based deduplication, using basic approach",
-        );
         return this.basicSemanticDeduplication(agentResponses);
       }
 
@@ -1328,15 +1343,6 @@ FINAL CHECK: Review your response. Zero repetition allowed. Every sentence must 
           if (similarity > similarityThreshold) {
             // Keep the first occurrence, mark the second as duplicate
             duplicateIndices.add(j);
-            console.log(
-              `Semantic duplicate found (similarity: ${similarity.toFixed(3)}):`,
-            );
-            console.log(
-              `  Original: "${allSentences[i].text.substring(0, 100)}..."`,
-            );
-            console.log(
-              `  Duplicate: "${allSentences[j].text.substring(0, 100)}..."`,
-            );
           }
         }
       }
@@ -1363,16 +1369,13 @@ FINAL CHECK: Review your response. Zero repetition allowed. Every sentence must 
         };
       });
 
-      console.log(
-        `Semantic deduplication complete. Removed ${duplicateIndices.size} duplicate sentences.`,
-      );
+      // Semantic deduplication complete
       return processedResponses.filter(
         (response) => response.content.trim().length > 0,
       );
     } catch (error) {
       console.error("Semantic deduplication error:", error);
       // Fallback to basic deduplication if embeddings fail
-      console.log("Falling back to basic semantic deduplication...");
       return this.basicSemanticDeduplication(agentResponses);
     }
   }
@@ -1450,20 +1453,44 @@ FINAL CHECK: Review your response. Zero repetition allowed. Every sentence must 
       throw new Error("OpenAI not configured");
     }
 
+    if (!texts || texts.length === 0) {
+      return [];
+    }
+
     // Process in batches to avoid rate limits
     const batchSize = 50;
     const allEmbeddings: number[][] = [];
 
     for (let i = 0; i < texts.length; i += batchSize) {
-      const batch = texts.slice(i, i + batchSize);
+      const batch = texts.slice(i, i + batchSize).filter(text => text && text.trim().length > 0);
+      
+      if (batch.length === 0) continue;
 
-      const response = await this.openai.embeddings.create({
-        model: "text-embedding-3-small",
-        input: batch,
-      });
+      try {
+        const response = await this.openai.embeddings.create({
+          model: "text-embedding-3-small",
+          input: batch,
+        });
 
-      const batchEmbeddings = response.data.map((item) => item.embedding);
-      allEmbeddings.push(...batchEmbeddings);
+        if (!response.data || !Array.isArray(response.data)) {
+          console.error("Invalid embeddings response structure");
+          continue;
+        }
+
+        const batchEmbeddings = response.data
+          .filter(item => item && item.embedding)
+          .map((item) => item.embedding);
+        
+        allEmbeddings.push(...batchEmbeddings);
+        
+        // Add small delay to respect rate limits
+        if (i + batchSize < texts.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      } catch (error) {
+        console.error(`Embeddings batch ${i}-${i + batchSize} failed:`, error);
+        // Continue with other batches rather than failing completely
+      }
     }
 
     return allEmbeddings;

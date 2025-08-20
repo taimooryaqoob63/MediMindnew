@@ -98,16 +98,25 @@ export class EnhancedDocumentProcessor {
     // Check if similar document already exists
     // In production, this would use Hamming distance comparison
     try {
+      if (!simHash || typeof simHash !== 'string') {
+        return null;
+      }
+
       const existingDocs = await storage.getDocuments();
+      if (!Array.isArray(existingDocs)) {
+        return null;
+      }
+
       for (const doc of existingDocs) {
-        if (doc.metadata && typeof doc.metadata === 'object' && 'simHash' in doc.metadata) {
-          if (doc.metadata.simHash === simHash) {
-            return doc.id;
-          }
+        if (doc?.metadata && 
+            typeof doc.metadata === 'object' && 
+            'simHash' in doc.metadata &&
+            doc.metadata.simHash === simHash) {
+          return doc.id;
         }
       }
     } catch (error) {
-      console.log('Duplicate check not available:', error);
+      console.error('Duplicate check failed:', error);
     }
     return null;
   }
@@ -378,11 +387,15 @@ export class EnhancedDocumentProcessor {
 
     // Post-processing: merge small adjacent chunks for better context
     const optimizedChunks = this.mergeSmallChunks(chunks, maxTokens);
-    console.log(`🧠 Semantic chunking completed: ${optimizedChunks.length} chunks created`);
+    // Semantic chunking completed
     return optimizedChunks;
   }
 
   private splitIntoSentences(text: string): string[] {
+    if (!text || typeof text !== 'string') {
+      return [];
+    }
+    
     // Split by sentence boundaries while preserving structure
     return text
       .split(/([.!?]+\s+)/) // Split by sentence endings but keep the delimiters
@@ -394,7 +407,7 @@ export class EnhancedDocumentProcessor {
         }
         return sentences;
       }, [])
-      .filter(sentence => sentence.trim().length > 0);
+      .filter(sentence => sentence && sentence.trim().length > 0);
   }
 
   private getOverlapText(text: string, overlapTokens: number): string {
@@ -988,7 +1001,7 @@ export class EnhancedDocumentProcessor {
   }
 
   private async buildEnhancedKnowledgeGraph(documentId: string, structure: DoclingStructure): Promise<void> {
-    console.log(`Building enhanced knowledge graph for document ${documentId}`);
+    // Building enhanced knowledge graph for document
     
     // Enhanced medical relationships with stronger ontological grounding
     const enhancedRelationships = [
