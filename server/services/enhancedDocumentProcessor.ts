@@ -298,20 +298,26 @@ export class EnhancedDocumentProcessor {
     docType: string,
     maxTokens: number = 1000
   ): Promise<Array<{ content: string; metadata: Partial<EnhancedMetadata> }>> {
+    console.log(`🔍 DEBUG: Starting chunkDocumentStructured with ${structure.sections.length} sections`);
     const chunks: Array<{ content: string; metadata: Partial<EnhancedMetadata> }> = [];
 
     for (const section of structure.sections) {
       const sectionPath = [section.heading];
+      console.log(`📝 DEBUG: Processing section: ${section.heading} with ${section.paragraphs.length} paragraphs`);
 
       // Process paragraphs with semantic chunking
       for (const paragraph of section.paragraphs) {
         if (!paragraph.trim()) continue;
 
+        console.log(`📄 DEBUG: Processing paragraph: "${paragraph.substring(0, 100)}..."`);
         // Always create chunks from paragraphs - semantic grouping
         const semanticChunks = await this.semanticChunkParagraph(paragraph, maxTokens);
+        console.log(`📊 DEBUG: semanticChunkParagraph returned ${semanticChunks.length} chunks`);
         
-        for (const chunk of semanticChunks) {
+        for (let i = 0; i < semanticChunks.length; i++) {
+          const chunk = semanticChunks[i];
           if (chunk.trim()) { // Only check if content exists
+            console.log(`✅ DEBUG: Adding chunk ${i+1}: "${chunk.substring(0, 80)}..."`);
             chunks.push({
               content: chunk.trim(),
               metadata: {
@@ -320,6 +326,8 @@ export class EnhancedDocumentProcessor {
                 page: structure.pageNumbers[paragraph.substring(0, 50)]
               }
             });
+          } else {
+            console.log(`🚫 DEBUG: Skipping empty chunk ${i+1}`);
           }
         }
       }
@@ -576,13 +584,16 @@ export class EnhancedDocumentProcessor {
 
   // Enhanced semantic chunking for individual paragraphs
   private async semanticChunkParagraph(paragraph: string, maxTokens: number = 1000): Promise<string[]> {
+    console.log(`🔍 DEBUG: semanticChunkParagraph called with: "${paragraph.substring(0, 100)}..."`);
     if (!paragraph.trim()) return [];
     
     const targetSize = Math.max(maxTokens, 400); // Ensure minimum meaningful size
     const paragraphTokens = this.estimateTokenCount(paragraph);
+    console.log(`📊 DEBUG: Paragraph has ${paragraphTokens} tokens, target size: ${targetSize}`);
     
     // If paragraph is appropriately sized, return as single chunk
     if (paragraphTokens >= 200 && paragraphTokens <= targetSize * 1.2) {
+      console.log(`✅ DEBUG: Returning paragraph as single chunk (good size)`);
       return [paragraph.trim()];
     }
     
@@ -593,8 +604,11 @@ export class EnhancedDocumentProcessor {
     }
 
     // Split large paragraphs into sentences for better chunking
+    console.log(`📝 DEBUG: Splitting paragraph into sentences...`);
     const sentences = this.splitIntoSentences(paragraph);
+    console.log(`📊 DEBUG: splitIntoSentences returned ${sentences.length} sentences`);
     if (sentences.length === 0) {
+      console.log(`⚠️ DEBUG: No valid sentences found, returning original paragraph`);
       return paragraph.trim() ? [paragraph.trim()] : [];
     }
     
