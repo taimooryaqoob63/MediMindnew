@@ -109,9 +109,9 @@ export class EnhancedRagOrchestrator {
         urgencyLevel: intentAnalysis.urgencyLevel,
       };
 
-      // Step 2: Check cache
-      console.log(`💾 [ORCHESTRATOR] Step 2: Checking cache for query...`);
-      const cacheResult = await this.checkQueryCache(query);
+      // Step 2: Check cache (TEMPORARILY DISABLED FOR DEBUGGING)
+      console.log(`💾 [ORCHESTRATOR] Step 2: Cache check DISABLED for debugging - forcing fresh retrieval`);
+      const cacheResult = null; // await this.checkQueryCache(query);
       if (cacheResult) {
         console.log(`🎯 [ORCHESTRATOR] Step 2: Cache hit! Returning cached result`);
         await this.logAnalytics({
