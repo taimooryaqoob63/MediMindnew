@@ -470,48 +470,18 @@ export class EnhancedDocumentProcessor {
       return [];
     }
     
-    // STRICT sentence splitting - only accept complete, proper sentences
-    let sentences: string[] = [];
+    console.log(`🔍 DEBUG: Input text: "${text}"`);
     
-    // Split text by periods to get potential sentences
-    const roughSentences = text.split(/\. +/g);
-    
-    for (let i = 0; i < roughSentences.length; i++) {
-      let sentence = roughSentences[i].trim();
-      if (!sentence) continue;
-      
-      // Add back the period except for the last sentence if it already has ending punctuation
-      if (i < roughSentences.length - 1 || !/[.!?]$/.test(sentence)) {
-        sentence += '.';
-      }
-      
-      // CRITICAL: Sentence must start with capital letter (complete sentence)
-      if (!/^[A-Z]/.test(sentence)) {
-        console.log(`🚫 Rejecting lowercase start: "${sentence.substring(0, 50)}..."`);
-        continue;
-      }
-      
-      // Skip metadata or header content  
-      if (this.isMetadataContent(sentence)) {
-        console.log(`🚫 Rejecting metadata: "${sentence.substring(0, 50)}..."`);
-        continue;
-      }
-      
-      // Must be substantial content (at least 40 characters)
-      if (sentence.length > 40 && !/^[\s\W]*$/.test(sentence)) {
-        const cleaned = this.cleanSentence(sentence);
-        if (cleaned && cleaned.length > 40 && /^[A-Z]/.test(cleaned)) {
-          console.log(`✅ Accepting sentence: "${cleaned.substring(0, 50)}..."`);
-          sentences.push(cleaned);
-        } else {
-          console.log(`🚫 Rejecting after cleaning: "${cleaned}"`);
-        }
-      } else {
-        console.log(`🚫 Rejecting short sentence: "${sentence}"`);
-      }
+    // SIMPLE approach: Don't split at all - return the whole text as one chunk
+    // This preserves all medical content without fragmentation
+    const cleaned = this.cleanSentence(text.trim());
+    if (cleaned && cleaned.length > 10) {
+      console.log(`✅ Returning whole text as single sentence: "${cleaned.substring(0, 100)}..."`);
+      return [cleaned];
     }
     
-    return sentences;
+    console.log(`🚫 Text too short or empty after cleaning`);
+    return [];
   }
   
   private isMetadataContent(text: string): boolean {
