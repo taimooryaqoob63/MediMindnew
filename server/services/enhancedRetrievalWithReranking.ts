@@ -790,16 +790,20 @@ Provide a comprehensive answer with proper citations:`;
     confidence: number
   ): Promise<void> {
     try {
+      // Validate and sanitize confidence value
+      const safeConfidence = isNaN(confidence) || confidence == null ? 0 : Math.round(Math.max(0, Math.min(100, confidence)));
+      const safeResultCount = isNaN(resultCount) || resultCount == null ? 0 : Math.max(0, resultCount);
+      
       // Track performance for feedback loop optimization
-      if (confidence < 70 || resultCount < 3) {
+      if (safeConfidence < 70 || safeResultCount < 3) {
         const refinement: InsertQueryRefinement = {
           userId,
           originalQuery: query,
           refinedQuery: query, // Would be enhanced with actual refinement
-          originalConfidence: Math.round(confidence), // Convert to integer
-          refinedConfidence: Math.round(confidence), // Convert to integer
-          chunkFragmentation: resultCount < 3,
-          action: confidence < 50 ? 'escalate' : 'reformulate',
+          originalConfidence: safeConfidence,
+          refinedConfidence: safeConfidence,
+          chunkFragmentation: safeResultCount < 3,
+          action: safeConfidence < 50 ? 'escalate' : 'reformulate',
           automaticRefinement: false
         };
 
