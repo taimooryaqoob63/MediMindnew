@@ -123,6 +123,11 @@ export class EnhancedDocumentProcessor {
 
   // Improved document structure parsing - much more inclusive
   private async parseWithDoclingStructure(content: string, filePath: string): Promise<DoclingStructure> {
+    if (!content || typeof content !== 'string') {
+      throw new Error('Invalid content provided for parsing');
+    }
+
+    console.log(`📋 Parsing document structure for ${path.basename(filePath)}`);
     const lines = content.split('\n');
     const sections: DoclingStructure['sections'] = [];
     const references: string[] = [];
@@ -726,11 +731,16 @@ export class EnhancedDocumentProcessor {
     try {
       // Step 1: Extract text content
       await this.updateJobProgress(job.id, 5, 'Extracting text content...');
+      console.log(`🔍 Processing file: ${filePath}`);
       const content = await this.extractTextContent(filePath);
       
-      if (!content.trim()) {
-        throw new Error('No text content extracted from document');
+      if (!content || !content.trim()) {
+        const error = 'No text content extracted from document - file may be empty, corrupted, or unsupported format';
+        console.error(`❌ ${error}`);
+        throw new Error(error);
       }
+      
+      console.log(`✅ Successfully extracted ${content.length} characters of content`);
 
       // Step 2: Document-level deduplication
       if (opts.enableDeduplication) {
@@ -818,16 +828,21 @@ export class EnhancedDocumentProcessor {
         await this.buildEnhancedKnowledgeGraph(document.id, structure);
       }
 
-      // Check if no chunks were created and log warning
+      // Check if no chunks were created and provide detailed diagnostics
       if (totalChunks === 0) {
-        console.warn(`⚠️  Warning: Document "${document.title}" produced 0 chunks`);
-        console.warn(`   - Content length: ${content.length} characters`);
-        console.warn(`   - Sections found: ${structure.sections.length}`);
-        console.warn(`   - Total paragraphs: ${structure.sections.reduce((acc, s) => acc + s.paragraphs.length, 0)}`);
+        console.error(`❌ CRITICAL: Document "${document.title}" produced 0 chunks`);
+        console.error(`   📊 Content length: ${content.length} characters`);
+        console.error(`   📑 Sections found: ${structure.sections.length}`);
+        console.error(`   📝 Total paragraphs: ${structure.sections.reduce((acc, s) => acc + s.paragraphs.length, 0)}`);
+        console.error(`   🔗 Document ID: ${document.id}`);
+        console.error(`   📁 File: ${filePath}`);
         
-        // Log warning - don't create system notifications as there's no system user
-        console.log(`⚠️ Document "${document.title}" processed with 0 chunks - content may be too short or have formatting issues`);
-        console.log(`   Document ID: ${document.id}, File: ${filePath}`);
+        // Log sample content for debugging
+        const sampleContent = content.substring(0, 500).replace(/\n/g, '\\n');
+        console.error(`   📋 Sample content: "${sampleContent}..."`); 
+        
+        // This is an error condition that should be addressed
+        throw new Error(`Document processing failed: 0 chunks created from ${content.length} characters of content`);
       }
 
       // Mark job as completed
@@ -849,51 +864,134 @@ export class EnhancedDocumentProcessor {
   }
 
   private async extractTextContent(filePath: string): Promise<string> {
+    if (!filePath) {
+      throw new Error('File path is required');
+    }
+
+    // Check if file exists
+    try {
+      await fs.access(filePath);
+    } catch (error) {
+      throw new Error(`File not found: ${filePath}`);
+    }
+
     const ext = path.extname(filePath).toLowerCase();
+    console.log(`📄 Extracting text from ${path.basename(filePath)} (${ext})`);
     
     try {
+      let content = '';
       switch (ext) {
         case '.pdf':
-          return await this.extractPdfText(filePath);
+          content = await this.extractPdfText(filePath);
+          break;
         case '.docx':
-          return await this.extractDocxText(filePath);
+          content = await this.extractDocxText(filePath);
+          break;
         case '.html':
-          return await this.extractHtmlText(filePath);
+          content = await this.extractHtmlText(filePath);
+          break;
         case '.txt':
-          return await fs.readFile(filePath, 'utf-8');
+          content = await fs.readFile(filePath, 'utf-8');
+          break;
         case '.json':
-          return await this.extractJsonText(filePath);
+          content = await this.extractJsonText(filePath);
+          break;
         default:
           throw new Error(`Unsupported file type: ${ext}`);
       }
+
+      console.log(`📊 Extracted ${content.length} characters from ${path.basename(filePath)}`);
+      return content;
     } catch (error) {
-      console.error(`Error extracting text from ${filePath}:`, error);
-      throw error;
+      console.error(`❌ Failed to extract text from ${filePath}:`, error);
+      throw new Error(`Text extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
   private async extractPdfText(filePath: string): Promise<string> {
-    const buffer = await fs.readFile(filePath);
-    const data = await pdf(buffer);
-    return data.text;
+    try {
+      const buffer = await fs.readFile(filePath);
+      if (buffer.length === 0) {
+        throw new Error('PDF file is empty');
+      }
+      
+      const data = await pdf(buffer);
+      if (!data || !data.text) {
+        throw new Error('No text content found in PDF');
+      }
+      
+      return data.text.trim();
+    } catch (error) {
+      console.error('PDF extraction error:', error);
+      throw new Error(`PDF processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   private async extractDocxText(filePath: string): Promise<string> {
-    const buffer = await fs.readFile(filePath);
-    const result = await mammoth.extractRawText({ buffer });
-    return result.value;
+    try {
+      const buffer = await fs.readFile(filePath);
+      if (buffer.length === 0) {
+        throw new Error('DOCX file is empty');
+      }
+      
+      const result = await mammoth.extractRawText({ buffer });
+      if (!result || !result.value) {
+        throw new Error('No text content found in DOCX');
+      }
+      
+      return result.value.trim();
+    } catch (error) {
+      console.error('DOCX extraction error:', error);
+      throw new Error(`DOCX processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   private async extractHtmlText(filePath: string): Promise<string> {
-    const html = await fs.readFile(filePath, 'utf-8');
-    const dom = new JSDOM(html);
-    return dom.window.document.body.textContent || '';
+    try {
+      const html = await fs.readFile(filePath, 'utf-8');
+      if (!html.trim()) {
+        throw new Error('HTML file is empty');
+      }
+      
+      const dom = new JSDOM(html);
+      const document = dom.window.document;
+      const textContent = document.body?.textContent || '';
+      
+      if (!textContent.trim()) {
+        throw new Error('No text content found in HTML');
+      }
+      
+      return textContent.trim();
+    } catch (error) {
+      console.error('HTML extraction error:', error);
+      throw new Error(`HTML processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   private async extractJsonText(filePath: string): Promise<string> {
-    const jsonContent = await fs.readFile(filePath, 'utf-8');
-    const jsonData = JSON.parse(jsonContent);
-    return JSON.stringify(jsonData, null, 2);
+    try {
+      const jsonContent = await fs.readFile(filePath, 'utf-8');
+      if (!jsonContent.trim()) {
+        throw new Error('JSON file is empty');
+      }
+      
+      let jsonData;
+      try {
+        jsonData = JSON.parse(jsonContent);
+      } catch (parseError) {
+        throw new Error(`Invalid JSON format: ${parseError instanceof Error ? parseError.message : 'Parse error'}`);
+      }
+      
+      const formattedJson = JSON.stringify(jsonData, null, 2);
+      if (!formattedJson.trim()) {
+        throw new Error('JSON contains no extractable content');
+      }
+      
+      return formattedJson;
+    } catch (error) {
+      console.error('JSON extraction error:', error);
+      throw new Error(`JSON processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   private async processEnhancedChunk(
