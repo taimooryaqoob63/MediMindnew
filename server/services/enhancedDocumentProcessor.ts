@@ -243,33 +243,20 @@ export class EnhancedDocumentProcessor {
       sections.push(currentSection);
     }
 
-    // If no sections were created, create one with all content as paragraphs
-    if (sections.length === 0) {
-      const allText = content.trim();
-      if (allText) {
-        // Split content into sentences and group them into paragraphs
-        const sentences = this.splitIntoSentences(allText);
-        const paragraphs: string[] = [];
-        let currentPara = '';
-        
-        for (const sentence of sentences) {
-          if (currentPara.length + sentence.length > 500) { // Max paragraph length
-            if (currentPara.trim()) paragraphs.push(currentPara.trim());
-            currentPara = sentence;
-          } else {
-            currentPara += (currentPara ? ' ' : '') + sentence;
-          }
-        }
-        if (currentPara.trim()) paragraphs.push(currentPara.trim());
-
-        sections.push({
-          heading: 'Document Content',
-          level: 1,
-          paragraphs: paragraphs,
-          tables: [],
-          figures: []
-        });
-      }
+    // ALWAYS use simple approach - don't try to parse complex sections
+    // This fixes the fragmentation issue by keeping all content together
+    const allText = content.trim();
+    if (allText) {
+      console.log(`🔧 DEBUG: Using simple parsing approach for: "${allText.substring(0, 100)}..."`);
+      
+      sections.length = 0; // Clear any existing sections
+      sections.push({
+        heading: 'Medical Content',
+        level: 1,
+        paragraphs: [allText], // Keep ALL content as one paragraph to prevent fragmentation
+        tables: [],
+        figures: []
+      });
     }
 
     console.log(`📄 Document parsing completed: ${sections.length} sections, ${sections.reduce((acc, s) => acc + s.paragraphs.length, 0)} paragraphs`);
