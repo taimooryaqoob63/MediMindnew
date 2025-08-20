@@ -812,19 +812,9 @@ export class EnhancedDocumentProcessor {
         console.warn(`   - Sections found: ${structure.sections.length}`);
         console.warn(`   - Total paragraphs: ${structure.sections.reduce((acc, s) => acc + s.paragraphs.length, 0)}`);
         
-        // Add a notification for this issue
-        try {
-          await storage.createNotification({
-            userId: 'system', // or get from context
-            title: '⚠️ Document Processing Warning',
-            message: `Document "${document.title}" was processed but created 0 chunks. This may indicate the document has very short content or formatting issues.`,
-            type: 'warning',
-            read: false,
-            metadata: { documentId: document.id, filePath }
-          });
-        } catch (notifError) {
-          console.log('Could not create notification:', notifError);
-        }
+        // Log warning - don't create system notifications as there's no system user
+        console.log(`⚠️ Document "${document.title}" processed with 0 chunks - content may be too short or have formatting issues`);
+        console.log(`   Document ID: ${document.id}, File: ${filePath}`);
       }
 
       // Mark job as completed

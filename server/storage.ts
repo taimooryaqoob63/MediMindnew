@@ -149,7 +149,11 @@ export class DatabaseStorage implements IStorage {
         .onConflictDoUpdate({
           target: users.id,
           set: {
-            ...userData,
+            email: userData.email,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            profileImageUrl: userData.profileImageUrl,
+            role: userData.role,
             updatedAt: new Date(),
           },
         })
@@ -303,7 +307,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(documentChunks.documentId, documentId));
   }
 
-  async getAllDocumentChunks(): Promise<SelectDocumentChunk[]> {
+  async getAllDocumentChunks(): Promise<DocumentChunk[]> {
     return await this.db.select().from(documentChunks);
   }
 
@@ -557,6 +561,38 @@ export class DatabaseStorage implements IStorage {
       return await this.db.select().from(intentClassification).where(eq(intentClassification.query, query));
     }
     return await this.db.select().from(intentClassification);
+  }
+
+  // Chunking Analytics
+  async createChunkingAnalytics(analytics: InsertChunkingAnalytics): Promise<ChunkingAnalytics> {
+    const [result] = await this.db.insert(chunkingAnalytics).values(analytics).returning();
+    return result;
+  }
+
+  async getChunkingAnalytics(documentId?: string): Promise<ChunkingAnalytics[]> {
+    if (documentId) {
+      return await this.db.select().from(chunkingAnalytics).where(eq(chunkingAnalytics.documentId, documentId));
+    }
+    return await this.db.select().from(chunkingAnalytics);
+  }
+
+  async updateChunkingAnalytics(id: string, updates: Partial<InsertChunkingAnalytics>): Promise<ChunkingAnalytics | undefined> {
+    const [updated] = await this.db
+      .update(chunkingAnalytics)
+      .set(updates)
+      .where(eq(chunkingAnalytics.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  // Query Refinements
+  async createQueryRefinement(refinement: InsertQueryRefinement): Promise<QueryRefinement> {
+    const [result] = await this.db.insert(queryRefinements).values(refinement).returning();
+    return result;
+  }
+
+  async getQueryRefinements(userId: string): Promise<QueryRefinement[]> {
+    return await this.db.select().from(queryRefinements).where(eq(queryRefinements.userId, userId));
   }
 }
 
@@ -875,7 +911,16 @@ export class MemStorage implements IStorage {
   async upsertUser(user: UpsertUser): Promise<User> {
     const existingUser = this.users.get(user.id!);
     if (existingUser) {
-      const updated = { ...existingUser, ...user, updatedAt: new Date() };
+      const updated: User = {
+        ...existingUser,
+        email: user.email ?? existingUser.email,
+        firstName: user.firstName ?? existingUser.firstName,
+        lastName: user.lastName ?? existingUser.lastName,
+        profileImageUrl: user.profileImageUrl ?? existingUser.profileImageUrl,
+        role: user.role ?? existingUser.role,
+        createdAt: existingUser.createdAt,
+        updatedAt: new Date()
+      };
       this.users.set(user.id!, updated);
       return updated;
     } else {
@@ -886,7 +931,7 @@ export class MemStorage implements IStorage {
         lastName: user.lastName ?? null,
         profileImageUrl: user.profileImageUrl ?? null,
         role: user.role ?? "care_worker",
-        createdAt: new Date(),
+        createdAt: user.createdAt ? (typeof user.createdAt === 'string' ? new Date(user.createdAt) : user.createdAt) : new Date(),
         updatedAt: new Date()
       };
       this.users.set(user.id!, newUser);
@@ -932,7 +977,7 @@ export class MemStorage implements IStorage {
     return [];
   }
 
-  async getAllDocumentChunks(): Promise<SelectDocumentChunk[]> {
+  async getAllDocumentChunks(): Promise<DocumentChunk[]> {
     return [];
   }
 
@@ -947,7 +992,18 @@ export class MemStorage implements IStorage {
       id,
       metadata: chunk.metadata ?? null,
       vectorId: chunk.vectorId ?? null,
-      createdAt: new Date()
+      parentChunkId: chunk.parentChunkId ?? null,
+      chunkType: chunk.chunkType ?? 'content',
+      tokenCount: chunk.tokenCount ?? 0,
+      sectionPath: chunk.sectionPath ?? [],
+      kgEntityIds: chunk.kgEntityIds ?? [],
+      confidenceScore: chunk.confidenceScore ?? 100,
+      semanticDensity: chunk.semanticDensity ?? 50,
+      completeness: chunk.completeness ?? 100,
+      isAggregated: chunk.isAggregated ?? false,
+      sourceChunkIds: chunk.sourceChunkIds ?? [],
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     return newChunk;
   }
@@ -1272,9 +1328,6 @@ export class MemStorage implements IStorage {
     return [];
   }
 
-  async getIntentClassifications(query?: string): Promise<IntentClassification[]> {
-    return [];
-  }
 }
 
 // Use DatabaseStorage for production with Replit Auth
