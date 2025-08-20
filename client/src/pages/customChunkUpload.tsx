@@ -430,7 +430,7 @@ export default function CustomChunkUpload() {
               disabled={isUploading}
               className="flex-1"
             >
-              {isUploading ? 'Embedding...' : `Embed ${chunks.length} Chunk${chunks.length !== 1 ? 's' : ''} with text-embedding-3-large`}
+              {isUploading ? 'Embedding...' : `Embed ${chunks.length} Chunk${chunks.length !== 1 ? 's' : ''} with text-embedding-3-small`}
             </Button>
           </div>
           
@@ -438,7 +438,7 @@ export default function CustomChunkUpload() {
             <div className="space-y-2">
               <Progress value={uploadProgress} className="w-full" />
               <p className="text-sm text-muted-foreground text-center">
-                Embedding chunks using text-embedding-3-large... {uploadProgress}%
+                Embedding chunks using text-embedding-3-small... {uploadProgress}%
               </p>
             </div>
           )}

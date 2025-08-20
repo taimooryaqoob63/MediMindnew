@@ -34,7 +34,7 @@ export class CustomChunkEmbedder {
     const errors: string[] = [];
     let processedChunks = 0;
 
-    console.log(`🚀 Starting to embed ${chunks.length} structured chunks with text-embedding-3-large`);
+    console.log(`🚀 Starting to embed ${chunks.length} structured chunks with text-embedding-3-small`);
 
     try {
       // Initialize vector store

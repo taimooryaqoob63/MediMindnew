@@ -47,8 +47,8 @@ export class StructuredChunkEmbedder {
       // Create embedding input (title + description + content only)
       const embeddingInput = this.createEmbeddingInput(chunk);
 
-      // Generate embedding using text-embedding-3-large
-      const embedding = await vectorStore.createEmbedding(embeddingInput, 'text-embedding-3-large');
+      // Generate embedding using text-embedding-3-small
+      const embedding = await vectorStore.createEmbedding(embeddingInput, 'text-embedding-3-small');
 
       // Prepare metadata according to your schema
       const metadata: ChunkMetadata = {
@@ -118,7 +118,7 @@ export class StructuredChunkEmbedder {
         ...metadata,
         namespace,
         type: 'structured_chunk',
-        embedding_model: 'text-embedding-3-large',
+        embedding_model: 'text-embedding-3-small',
         created_at: new Date().toISOString()
       };
 
@@ -145,7 +145,7 @@ export class StructuredChunkEmbedder {
       const namespace = source.toLowerCase().replace(/[^a-z0-9-]/g, '-');
       
       // Create embedding for query
-      const queryEmbedding = await vectorStore.createEmbedding(query, 'text-embedding-3-large');
+      const queryEmbedding = await vectorStore.createEmbedding(query, 'text-embedding-3-small');
       
       // Search with source filter
       const results = await vectorStore.queryVectors(
