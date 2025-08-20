@@ -134,6 +134,7 @@ export class EnhancedRagOrchestrator {
       const agentContext = await this.getAgentContext(user.id, courseId);
 
       // Step 5: Enhanced retrieval with smart chunking and reranking
+      console.log(`🔍 [ORCHESTRATOR] Calling enhanced retrieval for query: "${query}"`);
       const enhancedRetrieval =
         await enhancedRetrievalWithReranking.performEnhancedRetrieval(
           query,
@@ -146,6 +147,16 @@ export class EnhancedRagOrchestrator {
             minConfidence: 70,
           },
         );
+      
+      console.log(`🔍 [ORCHESTRATOR] Enhanced retrieval returned ${enhancedRetrieval.chunks.length} chunks`);
+      if (enhancedRetrieval.chunks.length === 0) {
+        console.log(`❌ [ORCHESTRATOR] No chunks returned from enhanced retrieval! This is the issue.`);
+      } else {
+        console.log(`✅ [ORCHESTRATOR] Got chunks from enhanced retrieval:`);
+        enhancedRetrieval.chunks.slice(0, 2).forEach((chunk, index) => {
+          console.log(`  Chunk ${index}: ${chunk.id} - ${chunk.content.substring(0, 60)}...`);
+        });
+      }
 
       // Step 6: Agent pruning
       const selectedAgents = this.pruneAgents(analysis);

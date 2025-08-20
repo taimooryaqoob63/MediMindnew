@@ -407,8 +407,8 @@ Respond with a JSON array, one object per chunk:
     const deduplicatedResults: RerankerResult[] = [];
 
     // Add best chunk from each merge group
-    for (const [groupKey, group] of mergeGroups) {
-      const bestChunk = group.reduce((best, current) => 
+    for (const [groupKey, group] of Array.from(mergeGroups.entries())) {
+      const bestChunk = group.reduce((best: RerankerResult, current: RerankerResult) => 
         current.overallScore > best.overallScore ? current : best
       );
       deduplicatedResults.push(bestChunk);
