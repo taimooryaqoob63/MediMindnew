@@ -148,22 +148,64 @@ export class ImprovedResponseFormatter {
   }
   
   /**
-   * Add simple sources - no fancy formatting
+   * Add detailed sources with proper references
    */
   private static addSimpleSources(sources: any[]): string {
     if (!sources || sources.length === 0) {
       return '';
     }
     
-    // Just show we have medical sources - keep it minimal
-    const hasNice = sources.some(s => s.title?.toLowerCase().includes('nice') || s.source?.includes('NICE'));
-    const hasOxford = sources.some(s => s.title?.toLowerCase().includes('oxford'));
+    let referencesSection = '\n\n## References\n\n';
     
-    if (hasNice || hasOxford || sources.length > 0) {
-      return 'Based on clinical guidelines and medical references.';
+    // Extract unique sources with proper details
+    const uniqueSources = this.getUniqueSources(sources);
+    
+    uniqueSources.forEach((source, index) => {
+      const refNumber = index + 1;
+      const title = source.title || 'Medical Guidelines';
+      const sourceType = source.metadata?.source || source.source || 'Clinical Reference';
+      const section = source.metadata?.section || source.section || '';
+      const page = source.metadata?.page || source.pageNumber;
+      
+      referencesSection += `${refNumber}. **${title}**`;
+      
+      if (sourceType && sourceType !== 'other') {
+        referencesSection += ` - ${sourceType}`;
+      }
+      
+      if (section) {
+        referencesSection += `, Section: ${section}`;
+      }
+      
+      if (page) {
+        referencesSection += `, Page: ${page}`;
+      }
+      
+      referencesSection += '\n';
+    });
+    
+    return referencesSection;
+  }
+  
+  /**
+   * Get unique sources from the provided sources array
+   */
+  private static getUniqueSources(sources: any[]): any[] {
+    const seen = new Set();
+    const uniqueSources: any[] = [];
+    
+    for (const source of sources) {
+      const identifier = source.title + (source.metadata?.source || source.source || '');
+      if (!seen.has(identifier)) {
+        seen.add(identifier);
+        uniqueSources.push(source);
+        
+        // Limit to 5 references for readability
+        if (uniqueSources.length >= 5) break;
+      }
     }
     
-    return '';
+    return uniqueSources;
   }
   
   /**

@@ -624,6 +624,35 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount ?? 0;
   }
 
+  async clearExpiredQueryCache(): Promise<number> {
+    const result = await this.db.delete(queryCache).where(sql`${queryCache.expiresAt} < NOW()`);
+    return result.rowCount ?? 0;
+  }
+
+  async clearUserChatHistory(userId: string): Promise<number> {
+    const result = await this.db.delete(ragChatMessages).where(eq(ragChatMessages.userId, userId));
+    return result.rowCount ?? 0;
+  }
+
+  async clearUserChatSummaries(userId: string): Promise<number> {
+    const result = await this.db.delete(chatSummaries).where(eq(chatSummaries.userId, userId));
+    return result.rowCount ?? 0;
+  }
+
+  async getCacheStats(userId: string): Promise<any> {
+    const userChatCount = await this.db.select({ count: sql`count(*)` }).from(ragChatMessages).where(eq(ragChatMessages.userId, userId));
+    const userSummaryCount = await this.db.select({ count: sql`count(*)` }).from(chatSummaries).where(eq(chatSummaries.userId, userId));
+    const totalCacheCount = await this.db.select({ count: sql`count(*)` }).from(queryCache);
+    const expiredCacheCount = await this.db.select({ count: sql`count(*)` }).from(queryCache).where(sql`${queryCache.expiresAt} < NOW()`);
+
+    return {
+      userChatMessages: Number(userChatCount[0]?.count || 0),
+      userChatSummaries: Number(userSummaryCount[0]?.count || 0),
+      totalCacheEntries: Number(totalCacheCount[0]?.count || 0),
+      expiredCacheEntries: Number(expiredCacheCount[0]?.count || 0)
+    };
+  }
+
   async clearExpiredCache(): Promise<number> {
     const result = await this.db.delete(queryCache).where(sql`expires_at < NOW()`);
     return result.rowCount ?? 0;

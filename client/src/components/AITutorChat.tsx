@@ -321,13 +321,37 @@ export default function AITutorChat({ courseId, currentModule, isMobile, isOpen,
 
   const clearChat = async () => {
     try {
-      console.log("Clearing chat for course:", courseId);
-      await apiRequest("DELETE", `/api/chat/${courseId}`);
-      queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
-      setLastSessionBreak(new Date());
-      console.log("Chat cleared successfully");
+      console.log("Clearing chat history and cache...");
+      
+      // Clear chat history and cache using the new API
+      const response = await apiRequest("DELETE", "/api/cache/clear");
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Cache and chat history cleared successfully:", result);
+        
+        // Invalidate all chat queries to refresh the UI
+        queryClient.invalidateQueries({ queryKey: ["/api/chat"] });
+        setLastSessionBreak(new Date());
+        
+        // Show success message
+        console.log(`Cleared ${result.cleared?.chatMessages || 0} chat messages and ${result.cleared?.expiredCache || 0} cache entries`);
+      } else {
+        throw new Error("Failed to clear cache");
+      }
     } catch (error) {
-      console.error("Failed to clear chat:", error);
+      console.error("Failed to clear chat and cache:", error);
+      
+      // Fallback to old course-specific clearing
+      try {
+        console.log("Falling back to course-specific clearing for course:", courseId);
+        await apiRequest("DELETE", `/api/chat/${courseId}`);
+        queryClient.invalidateQueries({ queryKey: ["/api/chat", courseId] });
+        setLastSessionBreak(new Date());
+        console.log("Course-specific chat cleared successfully");
+      } catch (fallbackError) {
+        console.error("Fallback clearing also failed:", fallbackError);
+      }
     }
   };
 

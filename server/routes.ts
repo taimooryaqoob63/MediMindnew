@@ -10,6 +10,7 @@ import path from "path";
 import fs from "fs/promises";
 import express from "express";
 import chunkQualityRoutes from './routes/chunkQuality';
+import cacheRoutes from './routes/cache';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -20,6 +21,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register chunk quality routes
   app.use('/api/chunk-quality', chunkQualityRoutes);
+
+  // Register cache management routes
+  app.use('/api/cache', cacheRoutes);
 
   // Configure multer for video uploads
   const storage_config = multer.diskStorage({
