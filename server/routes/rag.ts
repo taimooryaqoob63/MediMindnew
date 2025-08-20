@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { isAuthenticated } from "../replitAuth";
 import { storage } from "../storage";
-import { documentProcessor } from "../services/documentProcessor";
+import { doclingInspiredProcessor } from "../services/doclingInspiredProcessor";
 import { vectorStore } from "../services/vectorStore";
 import { ragOrchestrator } from "../services/ragAgents";
 import { enhancedRagOrchestrator } from "../services/enhancedRagOrchestrator";
@@ -652,8 +652,8 @@ export async function registerRAGRoutes(app: Express) {
           ]
         });
       } else {
-        // Use standard document processor
-        const documentId = await documentProcessor.processDocument(
+        // Use docling-inspired document processor
+        const documentId = await doclingInspiredProcessor.processDocument(
           filePath,
           documentType,
           category
@@ -777,22 +777,21 @@ export async function registerRAGRoutes(app: Express) {
               });
 
               // Start reprocessing in background
-              documentProcessor.processDocument(
+              doclingInspiredProcessor.processDocument(
                 document.source,
                 document.documentType,
                 document.category,
                 { 
-                  extractEntities: true, 
-                  buildKnowledgeGraph: true 
+                  semanticChunking: true
                 }
-              ).then(async (newDocumentId) => {
+              ).then(async (newDocumentId: string) => {
                 console.log(`Successfully reprocessed: ${document.title}`);
                 await storage.updateProcessingJob(job.id, { 
                   status: 'completed',
                   progress: 100,
                   errorMessage: 'Document reprocessed successfully'
                 });
-              }).catch(async (error) => {
+              }).catch(async (error: any) => {
                 console.error(`Failed to reprocess ${document.title}:`, error);
                 await storage.updateProcessingJob(job.id, { 
                   status: 'failed',
@@ -1520,111 +1519,6 @@ export async function registerRAGRoutes(app: Express) {
         message: 'Enhanced RAG system test failed',
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString()
-      });
-    }
-  });
-
-  // Structured chunk embedding endpoint
-  app.post("/api/rag/embed-structured-chunks", isAuthenticated, async (req, res) => {
-    try {
-      const { chunks } = req.body;
-
-      if (!chunks || !Array.isArray(chunks)) {
-        return res.status(400).json({ 
-          message: "chunks array is required" 
-        });
-      }
-
-      // Validate chunk structure
-      for (const chunk of chunks) {
-        if (!chunk.title || !chunk.description || !chunk.content || !chunk.source || !chunk.tags) {
-          return res.status(400).json({ 
-            message: "Each chunk must have title, description, content, source, and tags fields" 
-          });
-        }
-      }
-
-      console.log(`🚀 Embedding ${chunks.length} structured chunks...`);
-
-      // Import the structured chunk embedder
-      const { structuredChunkEmbedder } = await import('../services/structuredChunkEmbedder');
-      
-      // Process chunks
-      const chunkIds = await structuredChunkEmbedder.embedChunks(chunks);
-
-      res.json({
-        message: "Structured chunks embedded successfully",
-        processedChunks: chunkIds.length,
-        chunkIds,
-        embeddingModel: 'text-embedding-3-large',
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error("Structured chunk embedding error:", error);
-      res.status(500).json({ 
-        message: "Failed to embed structured chunks",
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // Search within structured chunks by source
-  app.post("/api/rag/search-structured-chunks", isAuthenticated, async (req, res) => {
-    try {
-      const { query, source, topK = 5 } = req.body;
-
-      if (!query || !source) {
-        return res.status(400).json({ 
-          message: "query and source are required" 
-        });
-      }
-
-      const { structuredChunkEmbedder } = await import('../services/structuredChunkEmbedder');
-      
-      const results = await structuredChunkEmbedder.searchInSource(query, source, topK);
-
-      res.json({
-        query,
-        source,
-        results: results.map(result => ({
-          chunkId: result.metadata.chunk_id,
-          title: result.metadata.title,
-          description: result.metadata.description,
-          source: result.metadata.source,
-          tags: result.metadata.tags,
-          score: result.score
-        })),
-        totalResults: results.length,
-        embeddingModel: 'text-embedding-3-large'
-      });
-
-    } catch (error) {
-      console.error("Structured chunk search error:", error);
-      res.status(500).json({ 
-        message: "Failed to search structured chunks",
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // Get embedding statistics
-  app.get("/api/rag/structured-chunks/stats", isAuthenticated, async (req, res) => {
-    try {
-      const { structuredChunkEmbedder } = await import('../services/structuredChunkEmbedder');
-      const stats = await structuredChunkEmbedder.getEmbeddingStats();
-      
-      res.json({
-        message: "Structured chunk statistics retrieved",
-        stats,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error("Error getting structured chunk stats:", error);
-      res.status(500).json({ 
-        message: "Failed to get structured chunk statistics",
-        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });

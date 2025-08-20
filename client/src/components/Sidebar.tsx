@@ -1,4 +1,4 @@
-import { PlayCircle, Check, FileText, BarChart3, Network, Upload } from "lucide-react";
+import { PlayCircle, Check, FileText, BarChart3, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLocation } from "wouter";
@@ -24,7 +24,7 @@ export default function Sidebar({
   isMobile
 }: SidebarProps) {
   const [, setLocation] = useLocation();
-
+  
   const isModuleCompleted = (moduleId: string) => {
     return progress.some(p => p.moduleId === moduleId && p.completed);
   };
@@ -140,14 +140,6 @@ export default function Sidebar({
               >
                 <Network className="mr-3 h-4 w-4 text-gray-500" />
                 <span className="text-left">Knowledge Graph</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                onClick={() => setLocation("/custom-chunk-upload")}
-              >
-                <Upload className="mr-3 h-4 w-4 text-gray-500" />
-                <span className="text-left">Custom Chunk Upload</span>
               </Button>
             </div>
           </div>

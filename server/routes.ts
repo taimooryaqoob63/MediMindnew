@@ -5,11 +5,11 @@ import { getAITutorResponse } from "./services/openai";
 import { insertChatMessageSchema, insertModuleSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { registerRAGRoutes } from "./routes/rag";
-import { registerCustomChunkRoutes } from "./routes/customChunkRoutes";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 import express from "express";
+import chunkQualityRoutes from './routes/chunkQuality';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -17,8 +17,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register RAG routes
   await registerRAGRoutes(app);
-  // Register custom chunk routes
-  await registerCustomChunkRoutes(app);
+
+  // Register chunk quality routes
+  app.use('/api/chunk-quality', chunkQualityRoutes);
 
   // Configure multer for video uploads
   const storage_config = multer.diskStorage({
@@ -177,9 +178,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validation = insertModuleSchema.safeParse(req.body);
       if (!validation.success) {
-        return res.status(400).json({ 
-          message: "Invalid module data", 
-          errors: validation.error.issues 
+        return res.status(400).json({
+          message: "Invalid module data",
+          errors: validation.error.issues
         });
       }
 
@@ -301,9 +302,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timestamp: new Date().toISOString()
       });
 
-      res.json({ 
+      res.json({
         message: chatMessage,
-        suggestedQuestions: aiResponse.suggestedQuestions 
+        suggestedQuestions: aiResponse.suggestedQuestions
       });
     } catch (error) {
       console.error('Chat error:', error);

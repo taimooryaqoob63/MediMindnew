@@ -216,8 +216,7 @@ export class VectorStore {
   async queryVectors(
     queryEmbedding: number[],
     topK: number = 5,
-    filter?: Record<string, any>,
-    namespace?: string
+    filter?: Record<string, any>
   ): Promise<Array<{
     id: string;
     score: number;
@@ -235,11 +234,6 @@ export class VectorStore {
         topK,
         includeMetadata: true,
       };
-      
-      // Add namespace if specified
-      if (namespace) {
-        queryRequest.namespace = namespace;
-      }
       
       // Only add filter if it's valid and not empty
       if (filter && typeof filter === 'object' && Object.keys(filter).length > 0) {
@@ -319,42 +313,10 @@ export class VectorStore {
       const embedding = await this.createEmbedding(query);
       console.log(`✅ Embedding created with dimension: ${embedding.length}`);
       
-      // Query vectors from multiple namespaces
+      // Query vectors
       console.log('🔎 Querying vectors...');
-      
-      // Query default namespace first
-      const defaultVectors = await this.queryVectors(embedding, topK, filter);
-      console.log(`📊 Found ${defaultVectors.length} vectors from default namespace`);
-      
-      // Query custom chunk namespaces
-      const customNamespaces = ['page_1_sentences_1-3', 'page_1_sentences_4-6', 'page_2_sentences_1-3'];
-      const customVectors: Array<{ id: string; score: number; metadata?: Record<string, any> }> = [];
-      
-      for (const namespace of customNamespaces) {
-        try {
-          const namespaceVectors = await this.queryVectors(embedding, Math.ceil(topK/2), filter, namespace);
-          customVectors.push(...namespaceVectors);
-          console.log(`📊 Found ${namespaceVectors.length} vectors from namespace "${namespace}"`);
-        } catch (error) {
-          console.log(`⚠️ No vectors found in namespace "${namespace}"`);
-        }
-      }
-      
-      // Combine and deduplicate results
-      const allVectors = [...defaultVectors, ...customVectors];
-      const uniqueVectors = new Map<string, any>();
-      allVectors.forEach(vector => {
-        const existing = uniqueVectors.get(vector.id);
-        if (!existing || vector.score > existing.score) {
-          uniqueVectors.set(vector.id, vector);
-        }
-      });
-      
-      const vectors = Array.from(uniqueVectors.values())
-        .sort((a, b) => b.score - a.score)
-        .slice(0, topK);
-      
-      console.log(`📊 Total unique vectors found: ${vectors.length}`);
+      const vectors = await this.queryVectors(embedding, topK, filter);
+      console.log(`📊 Found ${vectors.length} vectors from Pinecone`);
       
       // Log vector scores for debugging
       vectors.forEach((vector, index) => {
@@ -407,35 +369,8 @@ export class VectorStore {
       // Create embedding for the query
       const embedding = await this.createEmbedding(query);
       
-      // Search default namespace
-      const defaultResults = await this.queryVectors(embedding, topK, filters);
-      
-      // Search custom chunk namespaces
-      const customNamespaces = ['page_1_sentences_1-3', 'page_1_sentences_4-6', 'page_2_sentences_1-3'];
-      const customResults: Array<{ id: string; score: number; metadata?: Record<string, any> }> = [];
-      
-      for (const namespace of customNamespaces) {
-        try {
-          const namespaceResults = await this.queryVectors(embedding, Math.ceil(topK/2), filters, namespace);
-          customResults.push(...namespaceResults);
-        } catch (error) {
-          // Namespace might not exist, continue
-        }
-      }
-      
-      // Combine and return best results
-      const allResults = [...defaultResults, ...customResults];
-      const uniqueResults = new Map<string, any>();
-      allResults.forEach(result => {
-        const existing = uniqueResults.get(result.id);
-        if (!existing || result.score > existing.score) {
-          uniqueResults.set(result.id, result);
-        }
-      });
-      
-      return Array.from(uniqueResults.values())
-        .sort((a, b) => b.score - a.score)
-        .slice(0, topK);
+      // Search for similar vectors
+      return await this.queryVectors(embedding, topK, filters);
     } catch (error) {
       console.error('Error querying vectors:', error);
       return [];
