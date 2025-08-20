@@ -285,15 +285,14 @@ export class EnhancedRagOrchestrator {
         cacheHit: false,
       });
 
-      // STEP 1: Always clean the raw synthesized content.
-      const rawContent = this.cleanupFinalResponse(
+      // STEP 1: Always clean the raw synthesized content and keep it simple
+      const cleanContent = this.cleanupFinalResponse(
         responseWithDisclaimer.content || finalResponse.content || "",
       );
 
-      // STEP 2: Use your best formatter to structure the final output.
-      // This ensures a consistent, readable, and professional look for every response.
+      // STEP 2: Keep it simple - no additional formatting 
       const beautifulContent = ImprovedResponseFormatter.formatDiabetesResponse(
-        rawContent,
+        cleanContent,
         responseWithDisclaimer.sources || finalResponse.sources || []
       );
 
@@ -1156,46 +1155,29 @@ Blood sugar monitoring is crucial for diabetes care. **Normal levels** should be
       const genSettings = getGenerationSettings(queryType);
 
       const response = await this.openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
-            content: `You are an expert healthcare information synthesizer. Your critical task is to combine multiple expert opinions into ONE single, cohesive, and non-repetitive response.
-            
-CRITICAL RULES:
-1.  **NO REPETITION**: Do not repeat any sentence, fact, or instruction. If multiple experts say the same thing, state it only once.
-2.  **STRUCTURED FORMAT**: Use clear markdown headings (e.g., ## Explanation, ## Key Steps).
-3.  **BE CONCISE**: Synthesize, do not just combine. The final answer should be shorter than the inputs.
-4.  **PLAIN LANGUAGE**: Use simple, clear English suitable for a busy care worker.
-5.  **PROPER FORMATTING**: Use **bold** not *asterisk* patterns like *word*word*.
-6.  **NO PLACEHOLDERS**: Never include [BAD], [citation needed], or incomplete information.
-7.  **UNIQUE SENTENCES**: Each sentence must add new, different information.
-8.  **STOP DUPLICATING**: If you find yourself repeating content, stop immediately.
+            content: `You are a healthcare assistant. Give a simple, direct answer in plain English. 
 
-RESPONSE STRUCTURE (Maximum 300 words):
-- ## Brief Explanation (1-2 sentences)
-- ## Practical Steps (3-4 clear actions)
-- ## Next Action (1 specific thing to do)
-- Each section must be unique and concise
+RULES:
+- Maximum 150 words total
+- No markdown headers or formatting
+- No repetition
+- Simple sentences only
+- Direct and practical
 
-FINAL CHECK: Review your response. Zero repetition allowed. Every sentence must be unique.`,
+Answer the healthcare question clearly and concisely.`,
           },
           {
             role: "user",
-            content: `Please synthesize the following expert opinions into a single, final answer for the query. Ensure there is zero repetition.\n\n${agentOutputs}`,
+            content: `Answer this healthcare question simply and directly:\n\n${agentOutputs}`,
           },
         ],
-        temperature: 0.1, // Low temperature for consistency
-        max_tokens: 250, // Much shorter responses
-        presence_penalty: 1.8, // High penalty for repetition
-        frequency_penalty: 1.8, // High penalty for repetition
-        top_p: 0.7, // Balanced token selection
-        stop: [
-          "As there is no specific",
-          "*Infections*",
-          "*Retinopathy*",
-          "[BAD]",
-        ], // Stop tokens to prevent repetition and malformed formatting
+        temperature: 0.2,
+        max_tokens: 150, // Very short responses
+        top_p: 0.8,
       });
 
       let synthesizedContent =
@@ -1812,16 +1794,16 @@ ${citations}
   private cleanupFinalResponse(content: string): string {
     if (!content) return content;
 
-    console.log("Applying comprehensive final response cleanup...");
+    console.log("Applying simple response cleanup...");
 
     let cleaned = content;
 
-    // Step 1: Remove document reference patterns
+    // Remove all markdown headers to keep it simple
+    cleaned = cleaned.replace(/#{1,6}\s+/g, "");
+    
+    // Remove document references
     cleaned = cleaned.replace(/\(document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g, "");
-    cleaned = cleaned.replace(
-      /\(source: document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g,
-      "",
-    );
+    cleaned = cleaned.replace(/\(source: document-[0-9]+-[0-9]+(\.[a-z]+)?\)/g, "");
     cleaned = cleaned.replace(/\[document-[0-9]+-[0-9]+(\.[a-z]+)?\]/g, "");
 
     // Step 2: Remove placeholder text
@@ -1932,6 +1914,12 @@ ${citations}
     // Step 9: Clean up any remaining formatting artifacts
     cleaned = cleaned.replace(/:\s*:/g, ":"); // Double colons
     cleaned = cleaned.replace(/\*\s*\*/g, ""); // Spaced asterisks
+    
+    // Step 10: Enforce maximum length - user wants 300 tokens max
+    const words = cleaned.split(/\s+/).filter(word => word.length > 0);
+    if (words.length > 200) { // ~300 tokens = ~200 words
+      cleaned = words.slice(0, 200).join(' ') + '.';
+    }
 
     // Fix standalone "Information" lines and artifacts
     cleaned = cleaned.replace(/^Information\s*$/gm, ""); // Remove standalone "Information"

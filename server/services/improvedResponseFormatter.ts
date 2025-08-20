@@ -4,87 +4,67 @@
  */
 export class ImprovedResponseFormatter {
   /**
-   * Format AI responses for optimal readability in care home settings
+   * Format AI responses for optimal readability - SIMPLE and SHORT
    */
   static formatDiabetesResponse(content: string, sources: any[]): string {
-    // Clean the raw content first
-    let cleaned = this.cleanRawContent(content);
+    // Clean and shorten the content drastically
+    let cleaned = this.cleanAndShortenContent(content);
     
-    // Check if it's already well-formatted
-    if (this.isWellFormatted(cleaned)) {
-      return this.addSourcesSection(cleaned, sources);
+    // Keep it super simple - maximum 200 words total
+    const words = cleaned.split(/\s+/);
+    if (words.length > 200) {
+      cleaned = words.slice(0, 200).join(' ') + '.';
     }
     
-    // Extract main components
-    const components = this.extractComponents(cleaned);
+    // No fancy formatting - just clean text with minimal structure
+    let formatted = cleaned;
     
-    // Build structured response
-    let formatted = '';
-    
-    // Brief Explanation (Always first)
-    if (components.explanation) {
-      formatted += `## Quick Explanation\n\n${components.explanation}\n\n`;
+    // Only add sources if there are any and they're relevant
+    if (sources && sources.length > 0) {
+      formatted += '\n\n' + this.addSimpleSources(sources);
     }
     
-    // Practical Example (Care home focused)
-    if (components.example) {
-      formatted += `## Practical Example\n\n${components.example}\n\n`;
-    }
-    
-    // Clear Steps (Easy to follow)
-    if (components.steps && components.steps.length > 0) {
-      formatted += `## What To Do: A Step-by-Step Guide\n\n`;
-      components.steps.forEach((step, index) => {
-        formatted += `${index + 1}. ${step}\n`;
-      });
-      formatted += `\n`;
-    }
-    
-    // Next Action (One clear thing to do)
-    if (components.action) {
-      formatted += `## Your Next Step\n\n**${components.action}**\n\n`;
-    }
-    
-    // Emergency Info (If relevant)
-    if (components.emergency) {
-      formatted += `## Important Considerations\n\n${components.emergency}\n\n`;
-    }
-    
-    // Add sources at the end
-    return this.addSourcesSection(formatted, sources);
+    return formatted.trim();
   }
   
   /**
-   * Clean raw content from AI responses
+   * Clean and drastically shorten content
    */
-  private static cleanRawContent(content: string): string {
+  private static cleanAndShortenContent(content: string): string {
     if (!content) return '';
     
-    // Remove document references like (document-123-456)
-    let cleaned = content.replace(/\(document-[0-9]+-[0-9]+[^)]*\)/g, '');
+    // Remove all markdown headers and formatting
+    let cleaned = content.replace(/#{1,6}\s+/g, '');
     
-    // Remove [BAD] and [PLACEHOLDER] markers
+    // Remove document references
+    cleaned = cleaned.replace(/\(document-[0-9]+-[0-9]+[^)]*\)/g, '');
+    
+    // Remove markers and artifacts
     cleaned = cleaned.replace(/\[BAD\]/gi, '');
     cleaned = cleaned.replace(/\[PLACEHOLDER\]/gi, '');
+    cleaned = cleaned.replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1');
     
-    // Clean up extra whitespace
+    // Remove excessive line breaks and clean whitespace
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
     cleaned = cleaned.replace(/\s{2,}/g, ' ');
-    cleaned = cleaned.replace(/\s+([.!?])/g, '$1');
     
-    // Remove duplicate sentences (basic check)
-    const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 10);
+    // Split into sentences and remove duplicates aggressively
+    const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 15);
     const uniqueSentences: string[] = [];
     
     for (const sentence of sentences) {
       const trimmed = sentence.trim();
-      if (trimmed && !uniqueSentences.some(existing => 
-        this.areSimilarSentences(existing, trimmed)
-      )) {
-        uniqueSentences.push(trimmed);
+      if (trimmed && uniqueSentences.length < 6) { // Max 6 sentences
+        const isDuplicate = uniqueSentences.some(existing => 
+          this.areSimilarSentences(existing, trimmed)
+        );
+        if (!isDuplicate) {
+          uniqueSentences.push(trimmed);
+        }
       }
     }
     
-    return uniqueSentences.join('. ').trim();
+    return uniqueSentences.join('. ').trim() + '.';
   }
   
   /**
@@ -168,44 +148,22 @@ export class ImprovedResponseFormatter {
   }
   
   /**
-   * Add sources section with proper citations
+   * Add simple sources - no fancy formatting
    */
-  private static addSourcesSection(content: string, sources: any[]): string {
+  private static addSimpleSources(sources: any[]): string {
     if (!sources || sources.length === 0) {
-      return content;
+      return '';
     }
     
-    // Group sources by type
-    const niceGuides = sources.filter(s => s.source?.includes('NICE') || s.title?.toLowerCase().includes('nice'));
-    const oxfordSources = sources.filter(s => s.source?.includes('Oxford') || s.title?.toLowerCase().includes('oxford'));
-    const otherSources = sources.filter(s => !niceGuides.includes(s) && !oxfordSources.includes(s));
+    // Just show we have medical sources - keep it minimal
+    const hasNice = sources.some(s => s.title?.toLowerCase().includes('nice') || s.source?.includes('NICE'));
+    const hasOxford = sources.some(s => s.title?.toLowerCase().includes('oxford'));
     
-    let sourcesSection = '\n## 📚 Medical Guidelines Used\n\n';
-    
-    if (niceGuides.length > 0) {
-      sourcesSection += '**NICE Guidelines:**\n';
-      niceGuides.forEach(source => {
-        sourcesSection += `- ${source.title || 'NICE Guidance'}\n`;
-      });
-      sourcesSection += '\n';
+    if (hasNice || hasOxford || sources.length > 0) {
+      return 'Based on clinical guidelines and medical references.';
     }
     
-    if (oxfordSources.length > 0) {
-      sourcesSection += '**Oxford Medical Resources:**\n';
-      oxfordSources.forEach(source => {
-        sourcesSection += `- ${source.title || 'Oxford Diabetes Guidelines'}\n`;
-      });
-      sourcesSection += '\n';
-    }
-    
-    if (otherSources.length > 0) {
-      sourcesSection += '**Additional References:**\n';
-      otherSources.forEach(source => {
-        sourcesSection += `- ${source.title || 'Medical Resource'}\n`;
-      });
-    }
-    
-    return content + sourcesSection;
+    return '';
   }
   
   /**
