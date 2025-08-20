@@ -66,7 +66,7 @@ export interface ProcessingOptions {
 
 export class EnhancedDocumentProcessor {
   private defaultOptions: ProcessingOptions = {
-    chunkSize: 1000, // tokens, not words
+    chunkSize: 1200, // tokens, not words
     chunkOverlap: 200, // tokens overlap
     extractEntities: true,
     buildKnowledgeGraph: true,
