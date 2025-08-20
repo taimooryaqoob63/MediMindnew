@@ -47,9 +47,9 @@ function Router() {
           <Route path="/training" component={TrainingPage} />
           <Route path="/manage" component={CourseManagementWrapper} />
           <Route path="/documents" component={DocumentManagementWrapper} />
-          <Route path="/custom-chunk-upload" component={() => <CustomChunkUpload />} />
-          <Route path="/analytics" component={() => <RAGAnalytics />} />
-          <Route path="/knowledge-graph" component={() => <KnowledgeGraphPage />} />
+          <Route path="/custom-chunk-upload" component={CustomChunkUpload} />
+          <Route path="/analytics" component={RAGAnalytics} />
+          <Route path="/knowledge-graph" component={KnowledgeGraphPage} />
         </>
       )}
       <Route component={NotFound} />

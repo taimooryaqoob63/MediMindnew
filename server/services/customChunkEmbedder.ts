@@ -236,7 +236,13 @@ export class CustomChunkEmbedder {
       const results = searchResults.matches?.map(match => ({
         id: match.id || '',
         score: match.score || 0,
-        metadata: match.metadata as ChunkMetadata
+        metadata: {
+          title: (match.metadata as any)?.title || '',
+          description: (match.metadata as any)?.description || '',
+          source: (match.metadata as any)?.source || '',
+          tags: (match.metadata as any)?.tags || [],
+          chunk_id: (match.metadata as any)?.chunk_id || match.id || ''
+        }
       })) || [];
 
       console.log(`📊 Found ${results.length} matching chunks`);
