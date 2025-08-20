@@ -1192,8 +1192,6 @@ FINAL CHECK: Review your response. Zero repetition allowed. Every sentence must 
         top_p: 0.7, // Balanced token selection
         stop: [
           "As there is no specific",
-          "Carbon dioxide (CO2) is a",
-          "As a care worker",
           "*Infections*",
           "*Retinopathy*",
           "[BAD]",
