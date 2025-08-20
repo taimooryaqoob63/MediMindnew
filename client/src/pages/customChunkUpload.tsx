@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Trash2, Plus, Search, Upload } from "lucide-react";
+import { Trash2, Plus, Search, Upload, FileText, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface StructuredChunk {
@@ -47,6 +47,8 @@ export default function CustomChunkUpload() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searchNamespace, setSearchNamespace] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isProcessingDoc, setIsProcessingDoc] = useState(false);
 
   const addChunk = () => {
     setChunks([...chunks, {
@@ -80,6 +82,57 @@ export default function CustomChunkUpload() {
     const updatedChunks = [...chunks];
     updatedChunks[chunkIndex].tags.splice(tagIndex, 1);
     setChunks(updatedChunks);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        setUploadedFile(file);
+      } else {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a Word document (.docx file).",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  const processWordDocument = async () => {
+    if (!uploadedFile) return;
+
+    setIsProcessingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append('document', uploadedFile);
+
+      const response = await fetch('/api/custom-chunks/process-word', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setChunks(result.chunks);
+        toast({
+          title: "Document Processed Successfully",
+          description: `Extracted ${result.chunks.length} structured chunks from your Word document.`
+        });
+      } else {
+        throw new Error(result.message || 'Failed to process document');
+      }
+    } catch (error) {
+      console.error('Document processing error:', error);
+      toast({
+        title: "Processing Failed",
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessingDoc(false);
+    }
   };
 
   const embedChunks = async () => {
@@ -203,6 +256,58 @@ export default function CustomChunkUpload() {
           </p>
         </div>
       </div>
+
+      {/* Word Document Upload Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Upload Word Document
+          </CardTitle>
+          <CardDescription>
+            Upload a .docx file with headings to automatically extract structured chunks. Each heading will become a chunk title with its content.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <Input
+                type="file"
+                accept=".docx"
+                onChange={handleFileUpload}
+                className="cursor-pointer"
+              />
+            </div>
+            {uploadedFile && (
+              <Button 
+                onClick={processWordDocument} 
+                disabled={isProcessingDoc}
+                className="flex items-center gap-2"
+              >
+                {isProcessingDoc ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4" />
+                    Process Document
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+          {uploadedFile && (
+            <Alert>
+              <FileText className="h-4 w-4" />
+              <AlertDescription>
+                Ready to process: {uploadedFile.name} ({(uploadedFile.size / 1024 / 1024).toFixed(2)} MB)
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
