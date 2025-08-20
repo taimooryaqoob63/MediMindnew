@@ -1,0 +1,60 @@
+8:20:49 PM [express] GET /api/placeholder-image 200 in 206ms
+🚀 [1755721278796] Enhanced RAG chat request received: {
+  message: 'what is Easy Read Report of cqc',
+  courseId: '0df7f31a-892f-4e84-9f09-19cb893d62eb',
+  hasConversationHistory: false,
+  userEmail: '8gh44bbhpy@privaterelay.appleid.com',
+  timestamp: '2025-08-20T20:21:18.796Z'
+}
+🔍 [1755721278796] Environment check: {
+  hasPineconeKey: true,
+  hasOpenAIKey: true,
+  pineconeIndex: 'medimind-rag'
+}
+👤 [1755721278796] User object created: {
+  userId: '45791410',
+  email: '8gh44bbhpy@privaterelay.appleid.com',
+  role: 'care_worker'
+}
+🤖 [1755721278796] Starting enhanced RAG processing...
+8:21:19 PM [express] GET /api/notifications/unread 304 in 1140ms :: []
+🔍 Starting enhanced retrieval with reranking
+Query: "what is Easy Read Report of cqc" | Type: educational | Limit: 15
+🧠 Performing knowledge graph expansion
+🧠 KG expanded query: "what is Easy Read Report of cqc"
+🔍 Enhanced hybrid search: "what is Easy Read Report of cqc" (educational)
+📊 Retrieved 0 BM25 + 0 vector results
+✅ Enhanced search complete: 0 results (min score: 0.5)
+📊 Retrieved 0 initial results
+Applying deduplication to individual agent response...
+Applying basic semantic deduplication...
+Basic deduplication: 12 -> 12 sentences
+Applying robust semantic deduplication before synthesis...
+Starting semantic deduplication for 1 agent response(s)...
+Processing 12 sentences for semantic deduplication
+Semantic deduplication complete. Removed 0 duplicate sentences.
+Returning single, deduplicated agent response.
+Applying comprehensive final response cleanup...
+Comprehensive cleanup complete - removed duplications, document references, and formatting artifacts
+✅ [1755721278796] Enhanced RAG processing completed: {
+  hasContent: true,
+  confidence: 91,
+  sourcesCount: 0,
+  agentsUsed: 1,
+  usedRAG: true,
+  responseTime: 15961
+}
+🔄 [1755721278796] Applying final deduplication...
+Simple safety deduplication - Original length: 1032
+No obvious duplication found - content appears clean
+💾 [1755721278796] Storing chat message in database...
+💾 [1755721278796] Chat message stored successfully: {
+  messageId: 'a8b36f5b-8e8c-409d-89b5-05e02a69d21f',
+  timestamp: 2025-08-20T20:21:34.810Z
+}
+📤 [1755721278796] Sending final response: {
+  hasContent: true,
+  confidence: 91,
+  sourcesCount: 0,
+  messageId: 'a8b36f5b-8e8c-409d-89b5-05e02a69d21f',
+  contentLength: 1032
