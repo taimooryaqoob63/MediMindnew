@@ -11,7 +11,6 @@ import CourseManagement from "@/pages/courseManagement";
 import DocumentManagement from "@/pages/documentManagement";
 import RAGAnalytics from "@/pages/ragAnalytics";
 import KnowledgeGraphPage from "@/pages/knowledgeGraph";
-import CustomChunkUpload from "./pages/customChunkUpload";
 
 
 function CourseManagementWrapper() {
@@ -49,7 +48,6 @@ function Router() {
           <Route path="/documents" component={DocumentManagementWrapper} />
           <Route path="/analytics" component={() => <RAGAnalytics />} />
           <Route path="/knowledge-graph" component={() => <KnowledgeGraphPage />} />
-          <Route path="/custom-chunks" element={<CustomChunkUpload />} />
         </>
       )}
       <Route component={NotFound} />
