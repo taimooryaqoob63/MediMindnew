@@ -402,30 +402,52 @@ export class EnhancedDocumentProcessor {
     
     let cleaned = content;
     
-    // Remove common document headers and metadata
+    // Remove common document headers and metadata - much more aggressive
     const headerPatterns = [
-      /^.*?copyright.*?(?=\n|$)/gim,
-      /^.*?clarity informatics.*?(?=\n|$)/gim,
-      /^.*?\(trading agreement\).*?(?=\n|$)/gim,
-      /^.*?clinical knowledge summaries.*?(?=\n|$)/gim,
-      /^.*?all rights reserved.*?(?=\n|$)/gim,
-      /^.*?\(CKS\).*?copyright.*?(?=\n|$)/gim,
-      /^.*?the content.*?site.*?copyright.*?(?=\n|$)/gim
+      /.*?copyright.*?(?=\n|[A-Z])/gim,
+      /.*?clarity informatics.*?(?=\n|[A-Z])/gim,
+      /.*?trading agreement.*?(?=\n|[A-Z])/gim,
+      /.*?clinical knowledge summaries.*?(?=\n|[A-Z])/gim,
+      /.*?all rights reserved.*?(?=\n|[A-Z])/gim,
+      /.*?\(CKS\).*?(?=\n|[A-Z])/gim,
+      /.*?the content.*?site.*?(?=\n|[A-Z])/gim,
+      /.*?agreement\).*?(?=\n|[A-Z])/gim
     ];
     
     for (const pattern of headerPatterns) {
       cleaned = cleaned.replace(pattern, '');
     }
     
-    // Remove navigation breadcrumbs and links
-    cleaned = cleaned.replace(/\(\/?[a-zA-Z\/-]+\/?\)/g, ''); // Remove navigation paths like (/topics/diabetes-type-2/references/)
+    // Remove navigation breadcrumbs and ALL reference links
+    cleaned = cleaned.replace(/\(\/?[a-zA-Z0-9\/_-]+\/?\)/g, ''); // Remove navigation paths
+    cleaned = cleaned.replace(/\[\w+,\s*\d{4}\s*\(.*?\)\]/g, ''); // Remove full references [Author, 2018 (...)]
     
-    // Clean up incomplete references and brackets
-    cleaned = cleaned.replace(/\[\w+,\s*$/gm, ''); // Remove incomplete references like "[Zeitler," at end of lines
-    cleaned = cleaned.replace(/\[\w+,\s*\d*\s*$/gm, ''); // Remove incomplete year references
+    // Clean up incomplete references and brackets - much more aggressive
+    cleaned = cleaned.replace(/\[\w+[,\s]*\d*.*?\]/g, ''); // Remove all reference patterns
+    cleaned = cleaned.replace(/\[\w+,?.*?$/gm, ''); // Remove incomplete references at line ends
+    cleaned = cleaned.replace(/\[.*?\]/g, ''); // Remove all bracketed content
     
-    // Fix broken parentheses - remove orphaned closing parens at start of text
-    cleaned = cleaned.replace(/^\s*\)/, '');
+    // Fix broken parentheses - much more thorough
+    cleaned = cleaned.replace(/^\s*\)+/gm, ''); // Remove orphaned closing parens at start of lines
+    cleaned = cleaned.replace(/\s*\)+\s*$/gm, ''); // Remove orphaned closing parens at end of lines
+    
+    // Remove text fragments that start mid-sentence
+    const lines = cleaned.split('\n');
+    const filteredLines = lines.filter(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return false;
+      if (trimmed.length < 10) return false;
+      // Skip lines that start with lowercase (likely fragments) unless they start with medical terms
+      if (/^[a-z]/.test(trimmed) && !/^(insulin|diabetes|glucose|treatment|patient|medication)/.test(trimmed.toLowerCase())) {
+        return false;
+      }
+      // Skip lines that are just fragments of copyright text
+      if (/^(agreement|copyright|rights|reserved|clarity|informatics)\b/i.test(trimmed)) {
+        return false;
+      }
+      return true;
+    });
+    cleaned = filteredLines.join('\n');
     
     // Remove excessive whitespace and normalize
     cleaned = cleaned.replace(/\n\s*\n\s*\n/g, '\n\n'); // Max 2 consecutive newlines
@@ -473,10 +495,14 @@ export class EnhancedDocumentProcessor {
       /clarity informatics/i,
       /trading agreement/i,
       /clinical knowledge summaries/i,
-      /^\s*\(CKS\)/i
+      /^\s*\(CKS\)/i,
+      /^\s*agreement\)/i,
+      /^\s*[a-z]/, // Starts with lowercase (likely fragment)
+      /^\s*\)/, // Starts with closing paren
+      /^\w+\s*\)\s*$/ // Just a word followed by closing paren
     ];
     
-    return metadataPatterns.some(pattern => pattern.test(text));
+    return metadataPatterns.some(pattern => pattern.test(text)) || text.trim().length < 25;
   }
   
   private cleanSentence(sentence: string): string {
@@ -695,13 +721,15 @@ export class EnhancedDocumentProcessor {
   private isIncompleteContent(text: string): boolean {
     const incompletePatterns = [
       /^\s*\)/, // Starts with closing parenthesis
-      /\[\w+,\s*$/, // Ends with incomplete reference
+      /\[.*?\]/, // Contains any bracketed references
       /^\s*[a-z]/, // Starts with lowercase (likely continuation)
-      /^\s*(and|or|but|however|therefore|thus|hence)\s/i, // Starts with conjunction
-      /copyright|rights reserved/i // Contains copyright text
+      /^\s*(and|or|but|however|therefore|thus|hence|the|where|that)\s/i, // Starts with continuation words
+      /copyright|rights reserved|agreement|clarity informatics/i, // Contains copyright text
+      /^\s*\w+\s*\)/, // Single word followed by closing paren
+      /\(\s*$/  // Ends with opening parenthesis
     ];
     
-    return incompletePatterns.some(pattern => pattern.test(text)) || text.trim().length < 20;
+    return incompletePatterns.some(pattern => pattern.test(text)) || text.trim().length < 30;
   }
   
   // Ensure chunk endings are proper and complete
