@@ -1529,3 +1529,26 @@ export async function registerRAGRoutes(app: Express) {
   const { smartChunkingRoutes } = await import('./smartChunking.js');
   app.use('/api/smart-chunking', smartChunkingRoutes);
 }
+  // Clear query cache
+  app.post("/api/rag/clear-cache", isAuthenticated, async (req, res) => {
+    try {
+      console.log('🗑️ Clearing query cache...');
+      
+      // Get all cached queries and delete them
+      // Note: You'll need to add a method to storage to clear query cache
+      const result = await db.delete(queryCache);
+      
+      console.log('✅ Query cache cleared successfully');
+      
+      res.json({ 
+        message: "Query cache cleared successfully",
+        recordsDeleted: result.rowCount || 0
+      });
+    } catch (error) {
+      console.error("❌ Error clearing query cache:", error);
+      res.status(500).json({ 
+        message: "Failed to clear query cache",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });

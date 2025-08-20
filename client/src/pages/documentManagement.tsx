@@ -274,6 +274,31 @@ export default function DocumentManagement({ user }: DocumentManagementProps) {
                 <div className="flex items-center justify-between border-t pt-4">
                   <div>
                     <p className="text-sm text-gray-600 font-medium">
+                      🧹 Clear Cache Data
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Clear cached query responses and temporary data to free up space and ensure fresh responses.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      if (window.confirm('Clear all cached data? This will remove stored query responses.')) {
+                        fetch('/api/rag/clear-cache', { method: 'POST' })
+                          .then(res => res.json())
+                          .then(data => alert(`Cache cleared: ${data.recordsDeleted} records removed`))
+                          .catch(err => alert('Error clearing cache'));
+                      }
+                    }}
+                    variant="outline"
+                    className="ml-4"
+                  >
+                    Clear Cache
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between border-t pt-4">
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">
                       🗑️ Clear All Data (Fresh Start)
                     </p>
                     <p className="text-xs text-gray-500 mt-1">

@@ -126,6 +126,10 @@ export interface IStorage {
   // Query Refinements
   createQueryRefinement(refinement: InsertQueryRefinement): Promise<QueryRefinement>;
   getQueryRefinements(userId: string): Promise<QueryRefinement[]>;
+
+  // Cache management
+  clearQueryCache(): Promise<number>;
+  clearExpiredCache(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -612,6 +616,17 @@ export class DatabaseStorage implements IStorage {
 
   async getQueryRefinements(userId: string): Promise<QueryRefinement[]> {
     return await this.db.select().from(queryRefinements).where(eq(queryRefinements.userId, userId));
+  }
+
+  // Cache management
+  async clearQueryCache(): Promise<number> {
+    const result = await this.db.delete(queryCache);
+    return result.rowCount ?? 0;
+  }
+
+  async clearExpiredCache(): Promise<number> {
+    const result = await this.db.delete(queryCache).where(sql`expires_at < NOW()`);
+    return result.rowCount ?? 0;
   }
 }
 
@@ -1345,6 +1360,15 @@ export class MemStorage implements IStorage {
 
   async getQueryRefinements(userId: string): Promise<QueryRefinement[]> {
     return [];
+  }
+
+  // Cache management implementations for MemStorage
+  async clearQueryCache(): Promise<number> {
+    return 0; // No-op in memory storage
+  }
+
+  async clearExpiredCache(): Promise<number> {
+    return 0; // No-op in memory storage
   }
 
 }
