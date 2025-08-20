@@ -112,78 +112,42 @@ export class EnhancedDocumentProcessor {
     return null;
   }
 
-  // Improved document structure parsing - much more inclusive
+  // Simulate Docling-like structured parsing
   private async parseWithDoclingStructure(content: string, filePath: string): Promise<DoclingStructure> {
+    // This simulates what Docling would provide - structured document parsing
     const lines = content.split('\n');
     const sections: DoclingStructure['sections'] = [];
     const references: string[] = [];
     const pageNumbers: Record<string, number> = {};
     
-    // Always create a default section to ensure content is captured
-    let currentSection: DoclingStructure['sections'][0] = {
-      heading: 'Document Content',
-      level: 1,
-      paragraphs: [],
-      tables: [],
-      figures: []
-    };
-    
+    let currentSection: DoclingStructure['sections'][0] | null = null;
     let currentPage = 1;
-    let currentParagraph = '';
 
     for (const line of lines) {
       const trimmedLine = line.trim();
-      if (!trimmedLine) {
-        // Empty line - if we have accumulated paragraph content, save it
-        if (currentParagraph.trim()) {
-          currentSection.paragraphs.push(currentParagraph.trim());
-          currentParagraph = '';
-        }
-        continue;
-      }
+      if (!trimmedLine) continue;
 
-      // More flexible heading detection
-      const headingPatterns = [
-        /^(\d+\.?\d*\.?\d*)\s+(.+)$/, // Numbered headings
-        /^[A-Z][A-Z\s]{4,}$/, // All caps headings (reduced minimum)
-        /^(CHAPTER|SECTION|PART|INTRODUCTION|CONCLUSION|SUMMARY|BACKGROUND|METHODS|RESULTS|DISCUSSION)\b/i,
-        /^.{1,50}:$/, // Lines ending with colon (short titles)
-        /^#+\s/, // Markdown headings
-        /^[A-Z][^.!?]*$/ // Single sentence in title case without punctuation
-      ];
-
-      const isHeading = headingPatterns.some(pattern => pattern.test(trimmedLine)) && 
-                       trimmedLine.length < 100 && // Reasonable heading length
-                       !trimmedLine.includes('.') || trimmedLine.match(/^\d/); // Avoid normal sentences unless numbered
+      // Detect headings (simplified - look for numbered sections or all caps)
+      const headingMatch = trimmedLine.match(/^(\d+\.?\d*\.?\d*)\s+(.+)$/);
+      const isHeading = headingMatch || /^[A-Z\s]{5,}$/.test(trimmedLine);
 
       if (isHeading) {
-        // Save current paragraph if exists
-        if (currentParagraph.trim()) {
-          currentSection.paragraphs.push(currentParagraph.trim());
-          currentParagraph = '';
-        }
-
-        // Save previous section if it has content
-        if (currentSection.paragraphs.length > 0 || currentSection.tables.length > 0 || currentSection.figures.length > 0) {
+        // Save previous section
+        if (currentSection) {
           sections.push(currentSection);
         }
 
         // Start new section
         currentSection = {
-          heading: trimmedLine,
-          level: 1,
+          heading: headingMatch ? headingMatch[2] : trimmedLine,
+          level: headingMatch ? (headingMatch[1].split('.').length) : 1,
           paragraphs: [],
           tables: [],
           figures: []
         };
-      } else {
-        // Process content
-        if (trimmedLine.toLowerCase().includes('table') && trimmedLine.includes(':')) {
-          // Save current paragraph first
-          if (currentParagraph.trim()) {
-            currentSection.paragraphs.push(currentParagraph.trim());
-            currentParagraph = '';
-          }
+      } else if (currentSection) {
+        // Add to current section
+        if (trimmedLine.includes('Table') && trimmedLine.includes(':')) {
           // Detect table
           const tableId = `T${currentSection.tables.length + 1}`;
           currentSection.tables.push({
@@ -191,12 +155,7 @@ export class EnhancedDocumentProcessor {
             caption: trimmedLine,
             data: []
           });
-        } else if (trimmedLine.toLowerCase().includes('figure') && trimmedLine.includes(':')) {
-          // Save current paragraph first
-          if (currentParagraph.trim()) {
-            currentSection.paragraphs.push(currentParagraph.trim());
-            currentParagraph = '';
-          }
+        } else if (trimmedLine.includes('Figure') && trimmedLine.includes(':')) {
           // Detect figure
           const figureId = `F${currentSection.figures.length + 1}`;
           currentSection.figures.push({
@@ -204,61 +163,25 @@ export class EnhancedDocumentProcessor {
             caption: trimmedLine,
             description: ''
           });
-        } else if (trimmedLine.includes('doi:') || trimmedLine.includes('NICE:') || trimmedLine.includes('http')) {
+        } else if (trimmedLine.includes('doi:') || trimmedLine.includes('NICE:')) {
           // Detect reference
           references.push(trimmedLine);
         } else {
-          // Accumulate paragraph content
-          currentParagraph += (currentParagraph ? ' ' : '') + trimmedLine;
+          // Regular paragraph
+          currentSection.paragraphs.push(trimmedLine);
         }
 
         // Track page numbers (simplified)
-        if (trimmedLine.includes('Page ') || currentSection.paragraphs.length % 15 === 0) {
+        if (trimmedLine.includes('Page ') || currentSection.paragraphs.length % 20 === 0) {
           pageNumbers[trimmedLine.substring(0, 50)] = currentPage++;
         }
       }
     }
 
-    // Save final paragraph if exists
-    if (currentParagraph.trim()) {
-      currentSection.paragraphs.push(currentParagraph.trim());
-    }
-
-    // Always add the final section if it has content
-    if (currentSection.paragraphs.length > 0 || currentSection.tables.length > 0 || currentSection.figures.length > 0) {
+    // Add final section
+    if (currentSection) {
       sections.push(currentSection);
     }
-
-    // If no sections were created, create one with all content as paragraphs
-    if (sections.length === 0) {
-      const allText = content.trim();
-      if (allText) {
-        // Split content into sentences and group them into paragraphs
-        const sentences = this.splitIntoSentences(allText);
-        const paragraphs: string[] = [];
-        let currentPara = '';
-        
-        for (const sentence of sentences) {
-          if (currentPara.length + sentence.length > 500) { // Max paragraph length
-            if (currentPara.trim()) paragraphs.push(currentPara.trim());
-            currentPara = sentence;
-          } else {
-            currentPara += (currentPara ? ' ' : '') + sentence;
-          }
-        }
-        if (currentPara.trim()) paragraphs.push(currentPara.trim());
-
-        sections.push({
-          heading: 'Document Content',
-          level: 1,
-          paragraphs: paragraphs,
-          tables: [],
-          figures: []
-        });
-      }
-    }
-
-    console.log(`📄 Document parsing completed: ${sections.length} sections, ${sections.reduce((acc, s) => acc + s.paragraphs.length, 0)} paragraphs`);
 
     return {
       sections,
@@ -278,7 +201,7 @@ export class EnhancedDocumentProcessor {
     return { size: 1000, overlap: 200 };
   }
 
-  // Semantic chunking - groups related sentences based on meaning rather than length
+  // Structure-aware chunking with improved logic
   private async chunkDocumentStructured(
     structure: DoclingStructure,
     docType: string,
@@ -289,17 +212,56 @@ export class EnhancedDocumentProcessor {
     for (const section of structure.sections) {
       const sectionPath = [section.heading];
 
-      // Process paragraphs with semantic chunking
+      // Process paragraphs with improved chunking
       for (const paragraph of section.paragraphs) {
-        if (!paragraph.trim()) continue;
-
-        // Always create chunks from paragraphs - semantic grouping
-        const semanticChunks = await this.semanticChunkParagraph(paragraph, maxTokens);
+        const { size: chunkSize, overlap } = this.getAdaptiveChunkSize(docType, 'paragraph');
+        const paragraphTokens = this.estimateTokenCount(paragraph);
         
-        for (const chunk of semanticChunks) {
-          if (chunk.trim()) { // Only check if content exists
+        if (paragraphTokens > chunkSize) {
+          // Split large paragraphs by sentences while preserving context
+          const sentences = this.splitIntoSentences(paragraph);
+          let currentChunk = '';
+          let currentTokens = 0;
+          
+          for (const sentence of sentences) {
+            const sentenceTokens = this.estimateTokenCount(sentence);
+            
+            if (currentTokens + sentenceTokens > chunkSize && currentChunk.trim()) {
+              // Add current chunk
+              chunks.push({
+                content: currentChunk.trim(),
+                metadata: {
+                  sectionPath,
+                  nodeType: 'paragraph',
+                  page: structure.pageNumbers[paragraph.substring(0, 50)]
+                }
+              });
+              
+              // Start new chunk with overlap
+              currentChunk = this.getOverlapText(currentChunk, overlap) + ' ' + sentence;
+              currentTokens = this.estimateTokenCount(currentChunk);
+            } else {
+              currentChunk += (currentChunk ? ' ' : '') + sentence;
+              currentTokens += sentenceTokens;
+            }
+          }
+          
+          // Add final chunk if it has content
+          if (currentChunk.trim()) {
             chunks.push({
-              content: chunk.trim(),
+              content: currentChunk.trim(),
+              metadata: {
+                sectionPath,
+                nodeType: 'paragraph',
+                page: structure.pageNumbers[paragraph.substring(0, 50)]
+              }
+            });
+          }
+        } else {
+          // Keep short paragraphs as single chunks (lowered threshold to be more inclusive)
+          if (paragraphTokens >= 20) {
+            chunks.push({
+              content: paragraph,
               metadata: {
                 sectionPath,
                 nodeType: 'paragraph',
@@ -310,7 +272,7 @@ export class EnhancedDocumentProcessor {
         }
       }
 
-      // Process tables - always include
+      // Process tables
       for (const table of section.tables) {
         chunks.push({
           content: `Table: ${table.caption}\nData: ${JSON.stringify(table.data)}`,
@@ -322,7 +284,7 @@ export class EnhancedDocumentProcessor {
         });
       }
 
-      // Process figures - always include
+      // Process figures
       for (const figure of section.figures) {
         chunks.push({
           content: `Figure: ${figure.caption}\nDescription: ${figure.description}`,
@@ -334,52 +296,32 @@ export class EnhancedDocumentProcessor {
       }
     }
 
-    // Ensure we always have chunks if we have content
+    // Fallback: If no chunks were created, try basic chunking on the raw content
     if (chunks.length === 0 && structure.sections.length > 0) {
-      console.warn('⚠️  Semantic chunking produced 0 chunks, using sentence-based fallback');
+      console.warn('⚠️  Structure-aware chunking produced 0 chunks, falling back to basic chunking');
       
-      // Combine all section content and force chunk creation
+      // Combine all section content
       const allContent = structure.sections
         .flatMap(s => s.paragraphs)
         .filter(p => p.trim().length > 0)
-        .join('\n\n');
+        .join(' ');
       
       if (allContent.trim()) {
-        // Force creation of chunks using sentence-based approach
-        const sentences = this.splitIntoSentences(allContent);
-        if (sentences.length > 0) {
-          // Group sentences into chunks of reasonable size
-          const sentenceChunks = this.groupSentencesIntoChunks(sentences, maxTokens);
-          
-          for (let i = 0; i < sentenceChunks.length; i++) {
-            chunks.push({
-              content: sentenceChunks[i],
-              metadata: {
-                sectionPath: ['Document Content'],
-                nodeType: 'paragraph'
-              }
-            });
-          }
-        } else {
-          // Last resort: split by character length
-          const textChunks = this.forceCreateChunks(allContent, maxTokens);
-          for (const chunk of textChunks) {
-            chunks.push({
-              content: chunk,
-              metadata: {
-                sectionPath: ['Document Content'],
-                nodeType: 'paragraph'
-              }
-            });
-          }
+        // Use basic chunking as fallback
+        const basicChunks = await this.basicChunkContent(allContent, maxTokens);
+        for (let i = 0; i < basicChunks.length; i++) {
+          chunks.push({
+            content: basicChunks[i],
+            metadata: {
+              sectionPath: ['Fallback Content'],
+              nodeType: 'paragraph'
+            }
+          });
         }
       }
     }
 
-    // Post-processing: merge small adjacent chunks for better context
-    const optimizedChunks = this.mergeSmallChunks(chunks, maxTokens);
-    console.log(`🧠 Semantic chunking completed: ${optimizedChunks.length} chunks created`);
-    return optimizedChunks;
+    return chunks;
   }
 
   private splitIntoSentences(text: string): string[] {
@@ -404,281 +346,42 @@ export class EnhancedDocumentProcessor {
   }
 
   private estimateTokenCount(text: string): number {
-    // Improved token estimation based on OpenAI's tokenizer patterns
-    // Average of ~3.5 characters per token for English text
+    // More accurate token estimation: ~4 characters per token for English
+    // Account for word boundaries and punctuation
+    const words = text.split(/\s+/).length;
     const chars = text.length;
-    const words = text.split(/\s+/).filter(w => w.length > 0).length;
-    
-    // Use a weighted approach: combine character-based and word-based estimation
-    // Character-based: ~3.5 chars per token (more accurate for modern tokenizers)
-    // Word-based: ~1.3 tokens per word (accounts for subwords)
-    const charBasedTokens = chars / 3.5;
-    const wordBasedTokens = words * 1.3;
-    
-    // Use weighted average, favoring character-based for longer text
-    const weight = Math.min(chars / 1000, 0.8); // More weight to chars as text gets longer
-    const estimatedTokens = (charBasedTokens * weight) + (wordBasedTokens * (1 - weight));
-    
-    return Math.ceil(Math.max(estimatedTokens, words * 0.8)); // Ensure minimum of 0.8 tokens per word
+    return Math.ceil(Math.max(words * 0.75, chars / 4));
   }
 
-  // Enhanced semantic chunking for individual paragraphs
-  private async semanticChunkParagraph(paragraph: string, maxTokens: number = 1000): Promise<string[]> {
-    if (!paragraph.trim()) return [];
-    
-    const targetSize = Math.max(maxTokens, 400); // Ensure minimum meaningful size
-    const paragraphTokens = this.estimateTokenCount(paragraph);
-    
-    // If paragraph is appropriately sized, return as single chunk
-    if (paragraphTokens >= 200 && paragraphTokens <= targetSize * 1.2) {
-      return [paragraph.trim()];
-    }
-    
-    // If paragraph is very small, check if we should combine it later
-    if (paragraphTokens < 200) {
-      // Still return it - the caller will handle small chunk aggregation
-      return [paragraph.trim()];
-    }
-
-    // Split large paragraphs into sentences for better chunking
-    const sentences = this.splitIntoSentences(paragraph);
-    if (sentences.length === 0) {
-      return paragraph.trim() ? [paragraph.trim()] : [];
-    }
-    
-    if (sentences.length === 1) {
-      // Single very long sentence - split by clauses or force split
-      return this.splitLongSentence(sentences[0], targetSize);
-    }
-
-    return this.groupSentencesIntoChunks(sentences, targetSize);
-  }
-
-  // Group sentences into semantically coherent chunks with improved logic
-  private groupSentencesIntoChunks(sentences: string[], maxTokens: number = 1000): string[] {
-    if (sentences.length === 0) return [];
-    
-    const targetChunkSize = Math.max(maxTokens, 300); // Minimum chunk size of 300 tokens
-    const minChunkSize = Math.max(200, Math.floor(targetChunkSize * 0.3)); // At least 30% of target
-    const maxOverlap = Math.min(100, Math.floor(targetChunkSize * 0.2)); // Max 20% overlap
-    
+  private async basicChunkContent(content: string, maxTokens: number = 1000): Promise<string[]> {
     const chunks: string[] = [];
+    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
     let currentChunk = '';
     let currentTokens = 0;
+    const overlap = 200;
 
-    for (let i = 0; i < sentences.length; i++) {
-      const sentence = sentences[i].trim();
-      if (!sentence) continue;
+    for (const paragraph of paragraphs) {
+      const paragraphTokens = this.estimateTokenCount(paragraph);
       
-      const sentenceTokens = this.estimateTokenCount(sentence);
-      
-      // If single sentence is very large, handle it specially
-      if (sentenceTokens > targetChunkSize * 1.2) {
-        // Save current chunk if it has substantial content
-        if (currentTokens >= minChunkSize) {
-          chunks.push(currentChunk.trim());
-          currentChunk = '';
-          currentTokens = 0;
-        }
-        
-        // Split very long sentence and add as separate chunks
-        const subChunks = this.splitLongSentence(sentence, targetChunkSize);
-        chunks.push(...subChunks);
-        continue;
-      }
-      
-      // Check if adding this sentence would exceed limit
-      if (currentTokens + sentenceTokens > targetChunkSize && currentTokens >= minChunkSize) {
+      // If adding this paragraph would exceed the limit and we have content
+      if (currentTokens + paragraphTokens > maxTokens && currentChunk.trim()) {
         chunks.push(currentChunk.trim());
-        
-        // Start new chunk with overlap only if current chunk is substantial
-        if (currentTokens > maxOverlap * 2) {
-          const overlapText = this.getLastSentences(currentChunk, maxOverlap);
-          currentChunk = overlapText + (overlapText ? ' ' : '') + sentence;
-          currentTokens = this.estimateTokenCount(currentChunk);
-        } else {
-          // If current chunk is small, don't add overlap
-          currentChunk = sentence;
-          currentTokens = sentenceTokens;
-        }
+        // Start new chunk with overlap from previous
+        currentChunk = this.getOverlapText(currentChunk, overlap) + '\n\n' + paragraph;
+        currentTokens = this.estimateTokenCount(currentChunk);
       } else {
-        currentChunk += (currentChunk ? ' ' : '') + sentence;
-        currentTokens += sentenceTokens;
+        currentChunk += (currentChunk ? '\n\n' : '') + paragraph;
+        currentTokens += paragraphTokens;
       }
     }
 
-    // Add final chunk if substantial
-    if (currentTokens >= minChunkSize) {
-      chunks.push(currentChunk.trim());
-    } else if (chunks.length > 0 && currentChunk.trim()) {
-      // Merge small final chunk with previous chunk if possible
-      const lastChunk = chunks[chunks.length - 1];
-      const combinedTokens = this.estimateTokenCount(lastChunk + ' ' + currentChunk);
-      if (combinedTokens <= targetChunkSize * 1.3) {
-        chunks[chunks.length - 1] = lastChunk + ' ' + currentChunk.trim();
-      } else {
-        chunks.push(currentChunk.trim());
-      }
-    } else if (currentChunk.trim()) {
-      // First chunk - always include if it has content
+    // Add final chunk if it has content
+    if (currentChunk.trim()) {
       chunks.push(currentChunk.trim());
     }
 
-    // Final validation - ensure all chunks meet minimum requirements
-    const validChunks = chunks.filter(chunk => {
-      const tokens = this.estimateTokenCount(chunk);
-      return tokens >= 150 && chunk.trim().length > 50; // At least 150 tokens and 50 characters
-    });
-
-    console.log(`📊 Chunking stats: ${validChunks.length} chunks, avg tokens: ${Math.round(validChunks.reduce((sum, chunk) => sum + this.estimateTokenCount(chunk), 0) / validChunks.length)}`);
-    
-    return validChunks.length > 0 ? validChunks : (sentences.length > 0 ? [sentences.join(' ')] : []);
-  }
-
-  // Get last few sentences for overlap
-  private getLastSentences(text: string, maxTokens: number): string {
-    const sentences = this.splitIntoSentences(text);
-    let result = '';
-    let tokens = 0;
-    
-    for (let i = sentences.length - 1; i >= 0; i--) {
-      const sentence = sentences[i];
-      const sentenceTokens = this.estimateTokenCount(sentence);
-      
-      if (tokens + sentenceTokens > maxTokens) break;
-      
-      result = sentence + (result ? ' ' + result : '');
-      tokens += sentenceTokens;
-    }
-    
-    return result;
-  }
-
-  // Split very long sentences by natural break points
-  private splitLongSentence(sentence: string, maxTokens: number = 1000): string[] {
-    if (!sentence.trim()) return [];
-    
-    // Try to split by natural break points first
-    const breakPoints = /[,;:]\s+|\s+(?:and|but|or|however|therefore|moreover|furthermore|additionally|specifically|particularly)\s+/gi;
-    const parts = sentence.split(breakPoints).filter(part => part.trim().length > 10);
-    
-    if (parts.length > 1) {
-      // Group parts into appropriately sized chunks
-      const chunks: string[] = [];
-      let currentChunk = '';
-      let currentTokens = 0;
-      
-      for (const part of parts) {
-        const partTokens = this.estimateTokenCount(part);
-        
-        if (currentTokens + partTokens > maxTokens && currentChunk.trim()) {
-          chunks.push(currentChunk.trim());
-          currentChunk = part;
-          currentTokens = partTokens;
-        } else {
-          currentChunk += (currentChunk ? ' ' : '') + part;
-          currentTokens += partTokens;
-        }
-      }
-      
-      if (currentChunk.trim()) {
-        chunks.push(currentChunk.trim());
-      }
-      
-      return chunks.length > 0 ? chunks : [sentence.trim()];
-    }
-    
-    // No natural breaks - force split by words as last resort
-    return this.forceCreateChunks(sentence, maxTokens);
-  }
-  
-  // Force chunk creation as absolute last resort
-  private forceCreateChunks(content: string, maxTokens: number = 1000): string[] {
-    if (!content.trim()) return [];
-    
-    const chunks: string[] = [];
-    const words = content.split(/\s+/).filter(w => w.length > 0);
-    const targetWordsPerChunk = Math.floor(maxTokens * 0.8); // More conservative estimate
-    
-    for (let i = 0; i < words.length; i += targetWordsPerChunk) {
-      const chunkWords = words.slice(i, i + targetWordsPerChunk);
-      const chunk = chunkWords.join(' ').trim();
-      if (chunk && this.estimateTokenCount(chunk) >= 100) { // Ensure minimum size
-        chunks.push(chunk);
-      }
-    }
-    
-    return chunks.length > 0 ? chunks : (content.trim() ? [content.trim()] : []);
-  }
-
-  // Smart chunk merging to combine small adjacent chunks
-  private mergeSmallChunks(
-    chunks: Array<{ content: string; metadata: Partial<EnhancedMetadata> }>, 
-    maxTokens: number = 1000
-  ): Array<{ content: string; metadata: Partial<EnhancedMetadata> }> {
-    if (chunks.length <= 1) return chunks;
-    
-    const minChunkSize = 250; // Minimum desired chunk size
-    const maxMergedSize = Math.floor(maxTokens * 1.3); // Allow 30% over target for merged chunks
-    const optimized: Array<{ content: string; metadata: Partial<EnhancedMetadata> }> = [];
-    
-    let i = 0;
-    while (i < chunks.length) {
-      const currentChunk = chunks[i];
-      const currentTokens = this.estimateTokenCount(currentChunk.content);
-      
-      // If chunk is already good size, keep it
-      if (currentTokens >= minChunkSize) {
-        optimized.push(currentChunk);
-        i++;
-        continue;
-      }
-      
-      // Try to merge with next chunks
-      let mergedContent = currentChunk.content;
-      let mergedTokens = currentTokens;
-      let mergedMetadata = { ...currentChunk.metadata };
-      let chunksToMerge = 1;
-      
-      // Look ahead to find mergeable chunks
-      for (let j = i + 1; j < chunks.length && j < i + 3; j++) { // Max merge 3 chunks
-        const nextChunk = chunks[j];
-        const nextTokens = this.estimateTokenCount(nextChunk.content);
-        
-        // Check if we can merge without exceeding limits
-        if (mergedTokens + nextTokens <= maxMergedSize) {
-          // Check if chunks are from the same section (better semantic coherence)
-          const sameSectionPath = JSON.stringify(currentChunk.metadata.sectionPath || []) === 
-                                JSON.stringify(nextChunk.metadata.sectionPath || []);
-          
-          if (sameSectionPath || mergedTokens < minChunkSize * 0.7) { // Force merge if very small
-            mergedContent += '\n\n' + nextChunk.content;
-            mergedTokens += nextTokens;
-            chunksToMerge++;
-            
-            // Update metadata to reflect merged nature
-            if (nextChunk.metadata.sectionPath && !mergedMetadata.sectionPath?.includes(nextChunk.metadata.sectionPath[0])) {
-              mergedMetadata.sectionPath = [...(mergedMetadata.sectionPath || []), ...(nextChunk.metadata.sectionPath || [])];
-            }
-          } else {
-            break; // Don't merge if sections are different and we have enough content
-          }
-        } else {
-          break; // Would exceed size limit
-        }
-      }
-      
-      // Add the merged chunk
-      optimized.push({
-        content: mergedContent,
-        metadata: mergedMetadata
-      });
-      
-      i += chunksToMerge;
-    }
-    
-    console.log(`📊 Chunk optimization: ${chunks.length} → ${optimized.length} chunks (merged ${chunks.length - optimized.length})`);
-    return optimized;
+    // Filter out very small chunks (minimum 10 tokens for fallback)
+    return chunks.filter(chunk => this.estimateTokenCount(chunk) >= 10);
   }
 
   // Determine embedding model based on content type
@@ -936,10 +639,6 @@ export class EnhancedDocumentProcessor {
     }
   }
 
-  private escapeRegex(text: string): string {
-    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
   private async extractEntitiesEnhanced(
     documentId: string, 
     content: string, 
@@ -951,38 +650,28 @@ export class EnhancedDocumentProcessor {
       conditions: ['diabetes', 'hypoglycemia', 'hyperglycemia', 'neuropathy', 'retinopathy'],
       measurements: ['HbA1c', 'blood glucose', 'blood pressure', 'BMI'],
       organizations: ['NICE', 'NHS', 'CQC', 'WHO'],
-      // Skip guidelines entirely to avoid regex issues - focus on medical terms only
-      guidelines: []
+      guidelines: structure.references
     };
 
     const extractedEntities = [];
 
     for (const [category, terms] of Object.entries(medicalEntities)) {
-      if (!Array.isArray(terms)) continue;
-      
       for (const term of terms) {
-        if (!term || typeof term !== 'string' || term.length > 100) continue; // Skip invalid or very long terms
+        const regex = new RegExp(`\\b${term}\\b`, 'gi');
+        const matches = content.match(regex);
         
-        try {
-          const escapedTerm = this.escapeRegex(term);
-          const regex = new RegExp(`\\b${escapedTerm}\\b`, 'gi');
-          const matches = content.match(regex);
-          
-          if (matches && matches.length > 0) {
-            extractedEntities.push({
-              name: term,
-              type: category,
-              description: `${category} entity found in enhanced document`,
-              metadata: { 
-                frequency: matches.length,
-                documentId,
-                enhanced: true,
-                ontologyClass: category
-              }
-            });
-          }
-        } catch (error) {
-          console.warn(`Skipping problematic term "${term}" in category ${category}:`, error instanceof Error ? error.message : 'Unknown error');
+        if (matches && matches.length > 0) {
+          extractedEntities.push({
+            name: term,
+            type: category,
+            description: `${category} entity found in enhanced document`,
+            metadata: { 
+              frequency: matches.length,
+              documentId,
+              enhanced: true,
+              ontologyClass: category
+            }
+          });
         }
       }
     }

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { isAuthenticated } from "../replitAuth";
 import { storage } from "../storage";
-import { doclingInspiredProcessor } from "../services/doclingInspiredProcessor";
+import { documentProcessor } from "../services/documentProcessor";
 import { vectorStore } from "../services/vectorStore";
 import { ragOrchestrator } from "../services/ragAgents";
 import { enhancedRagOrchestrator } from "../services/enhancedRagOrchestrator";
@@ -652,8 +652,8 @@ export async function registerRAGRoutes(app: Express) {
           ]
         });
       } else {
-        // Use docling-inspired document processor
-        const documentId = await doclingInspiredProcessor.processDocument(
+        // Use standard document processor
+        const documentId = await documentProcessor.processDocument(
           filePath,
           documentType,
           category
@@ -777,21 +777,22 @@ export async function registerRAGRoutes(app: Express) {
               });
 
               // Start reprocessing in background
-              doclingInspiredProcessor.processDocument(
+              documentProcessor.processDocument(
                 document.source,
                 document.documentType,
                 document.category,
                 { 
-                  semanticChunking: true
+                  extractEntities: true, 
+                  buildKnowledgeGraph: true 
                 }
-              ).then(async (newDocumentId: string) => {
+              ).then(async (newDocumentId) => {
                 console.log(`Successfully reprocessed: ${document.title}`);
                 await storage.updateProcessingJob(job.id, { 
                   status: 'completed',
                   progress: 100,
                   errorMessage: 'Document reprocessed successfully'
                 });
-              }).catch(async (error: any) => {
+              }).catch(async (error) => {
                 console.error(`Failed to reprocess ${document.title}:`, error);
                 await storage.updateProcessingJob(job.id, { 
                   status: 'failed',

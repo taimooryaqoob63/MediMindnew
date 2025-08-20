@@ -18,8 +18,8 @@ export interface ProcessingOptions {
 
 export class DocumentProcessor {
   private defaultOptions: ProcessingOptions = {
-    chunkSize: 1500, // tokens - increased for better context
-    chunkOverlap: 150, // tokens overlap - reduced to avoid excessive fragmentation
+    chunkSize: 1000, // tokens, not words
+    chunkOverlap: 200, // tokens overlap
     extractEntities: true,
     buildKnowledgeGraph: true,
   };
@@ -209,12 +209,6 @@ export class DocumentProcessor {
     chunkSize: number,
     overlap: number
   ): Promise<string[]> {
-    // Validate inputs
-    if (!content.trim()) return [];
-    
-    const targetChunkSize = Math.max(chunkSize, 200); // Minimum chunk size of 200 tokens
-    const maxOverlap = Math.min(overlap, Math.floor(targetChunkSize * 0.3)); // Max 30% overlap
-    
     // Split content into paragraphs first to preserve document structure
     const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
     const chunks: string[] = [];
@@ -224,32 +218,44 @@ export class DocumentProcessor {
     for (const paragraph of paragraphs) {
       const paragraphTokens = this.estimateTokenCount(paragraph);
       
-      // If paragraph alone is much larger than chunk size, use sliding window approach
-      if (paragraphTokens > targetChunkSize * 1.5) {
-        // Save current chunk if it has substantial content
-        if (currentTokens > targetChunkSize * 0.3) {
+      // If paragraph alone is larger than chunk size, split it by sentences
+      if (paragraphTokens > chunkSize) {
+        // Save current chunk if it has content
+        if (currentChunk.trim()) {
           chunks.push(currentChunk.trim());
           currentChunk = '';
           currentTokens = 0;
         }
         
-        // Use sliding window for very large paragraphs
-        const largeParaChunks = this.chunkLargeParagraph(paragraph, targetChunkSize, maxOverlap);
-        chunks.push(...largeParaChunks);
+        // Split large paragraph by sentences
+        const sentences = this.splitIntoSentences(paragraph);
+        let sentenceChunk = '';
+        let sentenceTokens = 0;
+        
+        for (const sentence of sentences) {
+          const sentenceTokenCount = this.estimateTokenCount(sentence);
+          
+          if (sentenceTokens + sentenceTokenCount > chunkSize && sentenceChunk.trim()) {
+            chunks.push(sentenceChunk.trim());
+            // Add overlap from previous chunk
+            sentenceChunk = this.getOverlapText(sentenceChunk, overlap) + ' ' + sentence;
+            sentenceTokens = this.estimateTokenCount(sentenceChunk);
+          } else {
+            sentenceChunk += (sentenceChunk ? ' ' : '') + sentence;
+            sentenceTokens += sentenceTokenCount;
+          }
+        }
+        
+        if (sentenceChunk.trim()) {
+          chunks.push(sentenceChunk.trim());
+        }
       } else {
         // Check if adding this paragraph would exceed chunk size
-        if (currentTokens + paragraphTokens > targetChunkSize && currentTokens > targetChunkSize * 0.3) {
+        if (currentTokens + paragraphTokens > chunkSize && currentChunk.trim()) {
           chunks.push(currentChunk.trim());
-          // Start new chunk with overlap if current chunk is substantial
-          if (currentTokens > maxOverlap * 2) {
-            const overlapText = this.getOverlapText(currentChunk, maxOverlap);
-            currentChunk = overlapText + '\n\n' + paragraph;
-            currentTokens = this.estimateTokenCount(currentChunk);
-          } else {
-            // If current chunk is small, don't add overlap to avoid over-fragmentation
-            currentChunk = paragraph;
-            currentTokens = paragraphTokens;
-          }
+          // Start new chunk with overlap
+          currentChunk = this.getOverlapText(currentChunk, overlap) + '\n\n' + paragraph;
+          currentTokens = this.estimateTokenCount(currentChunk);
         } else {
           currentChunk += (currentChunk ? '\n\n' : '') + paragraph;
           currentTokens += paragraphTokens;
@@ -257,166 +263,42 @@ export class DocumentProcessor {
       }
     }
     
-    // Add final chunk if it has substantial content
-    if (currentTokens > targetChunkSize * 0.2) { // At least 20% of target size
+    // Add final chunk if it has content
+    if (currentChunk.trim()) {
       chunks.push(currentChunk.trim());
-    } else if (chunks.length > 0 && currentChunk.trim()) {
-      // Merge small final chunk with previous chunk if possible
-      const lastChunk = chunks[chunks.length - 1];
-      const combinedTokens = this.estimateTokenCount(lastChunk + '\n\n' + currentChunk);
-      if (combinedTokens <= targetChunkSize * 1.2) {
-        chunks[chunks.length - 1] = lastChunk + '\n\n' + currentChunk.trim();
-      } else {
-        chunks.push(currentChunk.trim());
-      }
     }
     
-    // Filter and validate chunks - require minimum of 100 tokens for meaningful retrieval
-    const validChunks = chunks.filter(chunk => {
-      const tokens = this.estimateTokenCount(chunk);
-      return tokens >= 100 && chunk.trim().length > 50; // At least 100 tokens and 50 characters
-    });
-    
-    console.log(`Chunking complete: ${validChunks.length} chunks created, avg tokens: ${Math.round(validChunks.reduce((sum, chunk) => sum + this.estimateTokenCount(chunk), 0) / validChunks.length)}`);
-    
-    return validChunks;
+    // Filter out very small chunks (less than 50 tokens)
+    return chunks.filter(chunk => this.estimateTokenCount(chunk) >= 50);
   }
 
-  private chunkLargeParagraph(paragraph: string, chunkSize: number, overlap: number): string[] {
-    // For very large paragraphs, use a sliding window approach
-    const sentences = this.splitIntoSentences(paragraph);
-    const chunks: string[] = [];
-    let currentChunk = '';
-    let currentTokens = 0;
-    
-    for (let i = 0; i < sentences.length; i++) {
-      const sentence = sentences[i];
-      const sentenceTokens = this.estimateTokenCount(sentence);
-      
-      // If single sentence is larger than chunk size, split it further
-      if (sentenceTokens > chunkSize) {
-        if (currentChunk.trim()) {
-          chunks.push(currentChunk.trim());
-          currentChunk = '';
-          currentTokens = 0;
-        }
-        // Split very long sentences by clauses/phrases
-        const subChunks = this.splitLongSentence(sentence, chunkSize, overlap);
-        chunks.push(...subChunks);
-        continue;
-      }
-      
-      // Check if adding this sentence would exceed chunk size
-      if (currentTokens + sentenceTokens > chunkSize && currentChunk.trim()) {
-        chunks.push(currentChunk.trim());
-        // Start new chunk with some context from previous chunk
-        const overlapText = this.getOverlapText(currentChunk, overlap);
-        currentChunk = overlapText + (overlapText ? ' ' : '') + sentence;
-        currentTokens = this.estimateTokenCount(currentChunk);
-      } else {
-        currentChunk += (currentChunk ? ' ' : '') + sentence;
-        currentTokens += sentenceTokens;
-      }
-    }
-    
-    if (currentChunk.trim()) {
-      chunks.push(currentChunk.trim());
-    }
-    
-    return chunks;
-  }
-  
   private splitIntoSentences(text: string): string[] {
-    // Improved sentence splitting that handles abbreviations and edge cases
+    // Split by sentence boundaries while preserving structure
     return text
-      .split(/(?<=[.!?])\s+(?=[A-Z])/) // Split on sentence boundaries followed by whitespace and capital letter
-      .filter(sentence => sentence.trim().length > 10); // Filter out very short fragments
-  }
-  
-  private splitLongSentence(sentence: string, chunkSize: number, overlap: number): string[] {
-    // Split extremely long sentences by natural break points
-    const breakPoints = /[,;:]\s+|\s+(?:and|but|or|however|therefore|moreover|furthermore)\s+/gi;
-    const parts = sentence.split(breakPoints).filter(part => part.trim());
-    
-    if (parts.length <= 1) {
-      // If no natural breaks, split by word count as last resort
-      const words = sentence.split(/\s+/);
-      const wordsPerChunk = Math.floor(chunkSize * 0.75); // Rough conversion
-      const chunks = [];
-      for (let i = 0; i < words.length; i += wordsPerChunk) {
-        const chunk = words.slice(i, i + wordsPerChunk).join(' ');
-        if (chunk.trim()) chunks.push(chunk.trim());
-      }
-      return chunks;
-    }
-    
-    // Combine parts into appropriately sized chunks
-    const chunks: string[] = [];
-    let currentChunk = '';
-    let currentTokens = 0;
-    
-    for (const part of parts) {
-      const partTokens = this.estimateTokenCount(part);
-      
-      if (currentTokens + partTokens > chunkSize && currentChunk.trim()) {
-        chunks.push(currentChunk.trim());
-        currentChunk = part;
-        currentTokens = partTokens;
-      } else {
-        currentChunk += (currentChunk ? ' ' : '') + part;
-        currentTokens += partTokens;
-      }
-    }
-    
-    if (currentChunk.trim()) {
-      chunks.push(currentChunk.trim());
-    }
-    
-    return chunks;
+      .split(/([.!?]+\s+)/) // Split by sentence endings but keep the delimiters
+      .reduce((sentences: string[], part: string, index: number, array: string[]) => {
+        if (index % 2 === 0) {
+          // This is sentence content
+          const nextDelimiter = array[index + 1] || '';
+          sentences.push((part + nextDelimiter).trim());
+        }
+        return sentences;
+      }, [])
+      .filter(sentence => sentence.trim().length > 0);
   }
 
   private getOverlapText(text: string, overlapTokens: number): string {
-    if (!text.trim() || overlapTokens <= 0) return '';
-    
-    const words = text.split(/\s+/).filter(w => w.length > 0);
-    if (words.length === 0) return '';
-    
-    // More conservative overlap calculation - use ~0.8 words per token
-    const overlapWords = Math.min(
-      Math.floor(overlapTokens * 0.8), 
-      Math.floor(words.length * 0.3), // Never take more than 30% of the text
-      words.length
-    );
-    
-    // Try to end overlap at sentence boundaries for better context
-    const overlapText = words.slice(-overlapWords).join(' ');
-    const sentences = overlapText.split(/[.!?]+\s*/);
-    
-    // If we have multiple sentences in overlap, try to end at sentence boundary
-    if (sentences.length > 1 && sentences[sentences.length - 1].length < 50) {
-      return sentences.slice(0, -1).join('. ').trim() + '.';
-    }
-    
-    return overlapText;
+    const words = text.split(/\s+/);
+    const overlapWords = Math.min(Math.floor(overlapTokens * 0.75), words.length); // ~0.75 words per token
+    return words.slice(-overlapWords).join(' ');
   }
 
   private estimateTokenCount(text: string): number {
-    // Improved token estimation based on OpenAI's tokenizer patterns
-    // Average of ~3.5 characters per token for English text
+    // More accurate token estimation: ~4 characters per token for English
+    // Account for word boundaries and punctuation
+    const words = text.split(/\s+/).length;
     const chars = text.length;
-    const words = text.split(/\s+/).filter(w => w.length > 0).length;
-    
-    // Use a weighted approach: combine character-based and word-based estimation
-    // Character-based: ~3.5 chars per token (more accurate for modern tokenizers)
-    // Word-based: ~1.3 tokens per word (accounts for subwords)
-    const charBasedTokens = chars / 3.5;
-    const wordBasedTokens = words * 1.3;
-    
-    // Use weighted average, favoring character-based for longer text
-    const weight = Math.min(chars / 1000, 0.8); // More weight to chars as text gets longer
-    const estimatedTokens = (charBasedTokens * weight) + (wordBasedTokens * (1 - weight));
-    
-    return Math.ceil(Math.max(estimatedTokens, words * 0.8)); // Ensure minimum of 0.8 tokens per word
+    return Math.ceil(Math.max(words * 0.75, chars / 4));
   }
 
   private async processChunk(
@@ -577,138 +459,6 @@ export class DocumentProcessor {
       progress,
       ...(message && { metadata: { currentStep: message } })
     });
-  }
-
-  /**
-   * Analyze chunking quality for a set of documents
-   */
-  async analyzeChunkingQuality(documentIds?: string[]): Promise<{
-    analysis: Array<{
-      documentId: string;
-      documentTitle: string;
-      totalChunks: number;
-      avgTokens: number;
-      avgQuality: number;
-      chunksWithVectors: number;
-      enhancedChunks: number;
-      qualityDistribution: {
-        excellent: number;
-        good: number;
-        poor: number;
-      };
-    }>;
-    overallStats: {
-      totalDocuments: number;
-      totalChunks: number;
-      avgQualityOverall: number;
-      avgTokensOverall: number;
-      chunksWithVectors: number;
-      enhancedChunks: number;
-    };
-    recommendations: string[];
-  }> {
-    try {
-      const documents = documentIds 
-        ? await Promise.all(documentIds.map(id => storage.getDocument(id)))
-        : await storage.getDocuments();
-      
-      const analysis = [];
-      let totalChunks = 0;
-      let totalTokens = 0;
-      let totalQuality = 0;
-      let chunksWithVectors = 0;
-      let enhancedChunks = 0;
-
-      for (const doc of documents.filter(d => d !== null)) {
-        const chunks = await storage.getDocumentChunks(doc!.id);
-        
-        if (chunks.length === 0) continue;
-
-        const tokenCounts = chunks.map(chunk => this.estimateTokenCount(chunk.content));
-        const avgTokens = tokenCounts.reduce((sum, count) => sum + count, 0) / tokenCounts.length;
-        
-        // Calculate quality score based on token count distribution
-        const qualityScores = tokenCounts.map(tokens => {
-          if (tokens >= 200) return 95; // Excellent: substantial content
-          if (tokens >= 100) return 80; // Good: adequate content  
-          if (tokens >= 50) return 65;  // Fair: minimal content
-          return 40; // Poor: insufficient content
-        });
-        
-        const avgQuality = qualityScores.reduce((sum, score) => sum + score, 0) / qualityScores.length;
-        
-        const excellent = qualityScores.filter(score => score >= 90).length;
-        const good = qualityScores.filter(score => score >= 70 && score < 90).length;
-        const poor = qualityScores.filter(score => score < 70).length;
-        
-        const withVectors = chunks.filter(chunk => chunk.vectorId).length;
-        const enhanced = chunks.length; // All chunks are "enhanced" in our system
-        
-        analysis.push({
-          documentId: doc!.id,
-          documentTitle: doc!.title,
-          totalChunks: chunks.length,
-          avgTokens: Math.round(avgTokens),
-          avgQuality: Math.round(avgQuality * 10) / 10,
-          chunksWithVectors: withVectors,
-          enhancedChunks: enhanced,
-          qualityDistribution: { excellent, good, poor }
-        });
-        
-        totalChunks += chunks.length;
-        totalTokens += tokenCounts.reduce((sum, count) => sum + count, 0);
-        totalQuality += avgQuality * chunks.length;
-        chunksWithVectors += withVectors;
-        enhancedChunks += enhanced;
-      }
-
-      const avgTokensOverall = totalChunks > 0 ? Math.round(totalTokens / totalChunks) : 0;
-      const avgQualityOverall = totalChunks > 0 ? Math.round((totalQuality / totalChunks) * 10) / 10 : 0;
-
-      // Generate recommendations
-      const recommendations = [];
-      
-      if (avgTokensOverall < 150) {
-        recommendations.push("Chunks are smaller than optimal - consider increasing chunk size for better context");
-      } else if (avgTokensOverall > 800) {
-        recommendations.push("Chunks are quite large - consider reducing chunk size for more focused retrieval");
-      }
-      
-      const tokenVariance = analysis.length > 0 
-        ? analysis.reduce((sum, doc) => sum + Math.abs(doc.avgTokens - avgTokensOverall), 0) / analysis.length
-        : 0;
-        
-      if (tokenVariance > avgTokensOverall * 0.3) {
-        recommendations.push("High variance in chunk sizes - chunking strategy is working well for content diversity");
-      }
-      
-      if (avgQualityOverall >= 85) {
-        recommendations.push("Excellent chunk quality - good balance of size and content coherence");
-      } else if (avgQualityOverall < 70) {
-        recommendations.push("Poor chunk quality detected - consider reviewing chunking parameters");
-      }
-      
-      const vectorCoverage = totalChunks > 0 ? (chunksWithVectors / totalChunks) * 100 : 0;
-      if (vectorCoverage < 95) {
-        recommendations.push(`Only ${Math.round(vectorCoverage)}% of chunks have vectors - check vector generation process`);
-      }
-
-      return {
-        analysis,
-        overallStats: {
-          totalDocuments: analysis.length,
-          totalChunks,
-          avgQualityOverall,
-          avgTokensOverall,
-          chunksWithVectors,
-          enhancedChunks
-        },
-        recommendations
-      };
-    } catch (error) {
-      console.error('Error analyzing chunking quality:', error);
-      throw error;
-    }
   }
 }
 
