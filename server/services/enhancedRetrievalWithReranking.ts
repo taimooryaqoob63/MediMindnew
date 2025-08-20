@@ -250,16 +250,17 @@ export class EnhancedRetrievalWithReranking {
 
       // Convert search results to DocumentChunk format
       const chunks: DocumentChunk[] = [];
+      
       for (const result of results) {
         const chunk = await storage.getDocumentChunk(result.id);
         if (chunk) {
           chunks.push(chunk);
         }
       }
-
+      
       return chunks;
     } catch (error) {
-      console.log('⚠️ Hybrid search failed, falling back to basic retrieval:', error);
+      console.log('⚠️ Hybrid search failed:', error);
       return [];
     }
   }

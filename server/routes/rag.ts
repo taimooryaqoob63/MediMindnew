@@ -5,6 +5,7 @@ import { doclingInspiredProcessor } from "../services/doclingInspiredProcessor";
 import { vectorStore } from "../services/vectorStore";
 import { ragOrchestrator } from "../services/ragAgents";
 import { enhancedRagOrchestrator } from "../services/enhancedRagOrchestrator";
+import { enhancedRetrievalWithReranking } from "../services/enhancedRetrievalWithReranking";
 import { superEnhancedRagOrchestrator } from "../services/superEnhancedRagOrchestrator";
 import { simplifiedRagOrchestrator } from "../services/simplifiedRagOrchestrator";
 import { enhancedDocumentProcessor } from "../services/enhancedDocumentProcessor";
@@ -983,6 +984,7 @@ export async function registerRAGRoutes(app: Express) {
       });
     }
   });
+
 
   // Get RAG chat history
   app.get("/api/rag/chat/:courseId?", isAuthenticated, async (req, res) => {
