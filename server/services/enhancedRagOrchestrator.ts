@@ -93,27 +93,22 @@ export class EnhancedRagOrchestrator {
     conversationHistory?: string[],
   ): Promise<ChatResponse> {
     const startTime = Date.now();
-    console.log(`🎯 [ORCHESTRATOR] processQuery called with query: "${query.substring(0, 50)}..." for user: ${user.id}`);
 
     try {
       // Step 1: Enhanced emergency and intent detection
-      console.log(`🔍 [ORCHESTRATOR] Step 1: Starting intent analysis...`);
       const intentAnalysis = await nlpIntentDetector.analyzeIntent(
         query,
         conversationHistory?.join("\n"),
       );
-      console.log(`✅ [ORCHESTRATOR] Step 1: Intent analysis completed`);
       const emergencyCheck = {
         isEmergency: intentAnalysis.isEmergency,
         keywords: intentAnalysis.entities,
         urgencyLevel: intentAnalysis.urgencyLevel,
       };
 
-      // Step 2: Check cache (TEMPORARILY DISABLED FOR DEBUGGING)
-      console.log(`💾 [ORCHESTRATOR] Step 2: Cache check DISABLED for debugging - forcing fresh retrieval`);
-      const cacheResult = null; // await this.checkQueryCache(query);
+      // Step 2: Check cache
+      const cacheResult = await this.checkQueryCache(query);
       if (cacheResult) {
-        console.log(`🎯 [ORCHESTRATOR] Step 2: Cache hit! Returning cached result`);
         await this.logAnalytics({
           eventType: "cache_hit",
           userId: user.id,
@@ -131,20 +126,14 @@ export class EnhancedRagOrchestrator {
         }
         return cacheResult;
       }
-      console.log(`❌ [ORCHESTRATOR] Step 2: No cache hit, proceeding with retrieval...`);
 
       // Step 3: Intent analysis
-      console.log(`🔍 [ORCHESTRATOR] Step 3: Starting detailed query analysis...`);
       const analysis = await this.analyzeQueryWithIntent(query, user);
-      console.log(`✅ [ORCHESTRATOR] Step 3: Query analysis completed`);
 
       // Step 4: Agent context
-      console.log(`👥 [ORCHESTRATOR] Step 4: Getting agent context...`);
       const agentContext = await this.getAgentContext(user.id, courseId);
-      console.log(`✅ [ORCHESTRATOR] Step 4: Agent context retrieved`);
 
       // Step 5: Enhanced retrieval with smart chunking and reranking
-      console.log(`🔍 [ORCHESTRATOR] Calling enhanced retrieval for query: "${query}"`);
       const enhancedRetrieval =
         await enhancedRetrievalWithReranking.performEnhancedRetrieval(
           query,
@@ -157,16 +146,6 @@ export class EnhancedRagOrchestrator {
             minConfidence: 70,
           },
         );
-      
-      console.log(`🔍 [ORCHESTRATOR] Enhanced retrieval returned ${enhancedRetrieval.chunks.length} chunks`);
-      if (enhancedRetrieval.chunks.length === 0) {
-        console.log(`❌ [ORCHESTRATOR] No chunks returned from enhanced retrieval! This is the issue.`);
-      } else {
-        console.log(`✅ [ORCHESTRATOR] Got chunks from enhanced retrieval:`);
-        enhancedRetrieval.chunks.slice(0, 2).forEach((chunk, index) => {
-          console.log(`  Chunk ${index}: ${chunk.id} - ${chunk.content.substring(0, 60)}...`);
-        });
-      }
 
       // Step 6: Agent pruning
       const selectedAgents = this.pruneAgents(analysis);
